@@ -77,56 +77,56 @@ if (params.illumina == '' &&  params.fasta == '' ) {
 /* Comment section: */
 
 //db
-include pprmetaGet from './modules/pprmeta' 
-include metaGetDB from './modules/ratio_evalue'
-include virsorterGetDB from './modules/virsorterGetDB' 
-include viphogGetDB from './modules/viphogGetDB' 
-include ncbiGetDB from './modules/ncbiGetDB' 
-include rvdbGetDB from './modules/rvdbGetDB' 
-include pvogsGetDB from './modules/pvogsGetDB' 
-include vogdbGetDB from './modules/vogdbGetDB' 
-include vpfGetDB from './modules/vpfGetDB'
-include imgvrGetDB from './modules/imgvrGetDB'
+include pprmetaGet from './nextflow/modules/pprmeta' 
+include metaGetDB from './nextflow/modules/ratio_evalue'
+include virsorterGetDB from './nextflow/modules/virsorterGetDB' 
+include viphogGetDB from './nextflow/modules/viphogGetDB' 
+include ncbiGetDB from './nextflow/modules/ncbiGetDB' 
+include rvdbGetDB from './nextflow/modules/rvdbGetDB' 
+include pvogsGetDB from './nextflow/modules/pvogsGetDB' 
+include vogdbGetDB from './nextflow/modules/vogdbGetDB' 
+include vpfGetDB from './nextflow/modules/vpfGetDB'
+include imgvrGetDB from './nextflow/modules/imgvrGetDB'
 //include './modules/kaijuGetDB' params(cloudProcess: params.cloudProcess, cloudDatabase: params.cloudDatabase)
 
 //preprocessing
-include rename from './modules/rename'
-include restore from './modules/restore'
+include rename from './nextflow/modules/rename'
+include restore from './nextflow/modules/restore'
 
 //assembly (optional)
-include fastp from './modules/fastp'
-include fastqc from './modules/fastqc'
-include multiqc from './modules/multiqc' 
-include spades from './modules/spades' 
+include fastp from './nextflow/modules/fastp'
+include fastqc from './nextflow/modules/fastqc'
+include multiqc from './nextflow/modules/multiqc' 
+include spades from './nextflow/modules/spades' 
 
 //detection
-include virsorter from './modules/virsorter' 
-include virfinder from './modules/virfinder' 
-include pprmeta from './modules/pprmeta'
-include length_filtering from './modules/length_filtering' 
-include parse from './modules/parse' 
-include prodigal from './modules/prodigal'
+include virsorter from './nextflow/modules/virsorter' 
+include virfinder from './nextflow/modules/virfinder' 
+include pprmeta from './nextflow/modules/pprmeta'
+include length_filtering from './nextflow/modules/length_filtering' 
+include parse from './nextflow/modules/parse' 
+include prodigal from './nextflow/modules/prodigal'
 //include phanotate from './modules/phanotate' 
-include hmmscan as hmmscan_viphogs from './modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.version)
-include hmmscan as hmmscan_rvdb from './modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'rvdb', version: params.version)
-include hmmscan as hmmscan_pvogs from './modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'pvogs', version: params.version)
-include hmmscan as hmmscan_vogdb from './modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vogdb', version: params.version)
-include hmmscan as hmmscan_vpf from './modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vpf', version: params.version)
-include hmm_postprocessing from './modules/hmm_postprocessing'
-include ratio_evalue from './modules/ratio_evalue' 
-include annotation from './modules/annotation' 
-include assign from './modules/assign' 
-include blast from './modules/blast' 
-include blast_filter from './modules/blast_filter' 
+include hmmscan as hmmscan_viphogs from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.version)
+include hmmscan as hmmscan_rvdb from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'rvdb', version: params.version)
+include hmmscan as hmmscan_pvogs from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'pvogs', version: params.version)
+include hmmscan as hmmscan_vogdb from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vogdb', version: params.version)
+include hmmscan as hmmscan_vpf from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vpf', version: params.version)
+include hmm_postprocessing from './nextflow/modules/hmm_postprocessing'
+include ratio_evalue from './nextflow/modules/ratio_evalue' 
+include annotation from './nextflow/modules/annotation' 
+include assign from './nextflow/modules/assign' 
+include blast from './nextflow/modules/blast' 
+include blast_filter from './nextflow/modules/blast_filter' 
 
 //visuals
-include plot_contig_map from './modules/plot_contig_map' 
-include generate_krona_table from './modules/krona' 
-include generate_sankey_table from './modules/sankey'
-include generate_chromomap_table from './modules/chromomap'
-include krona from './modules/krona'
-include sankey from './modules/sankey'
-include chromomap from './modules/chromomap'
+include plot_contig_map from './nextflow/modules/plot_contig_map' 
+include generate_krona_table from './nextflow/modules/krona' 
+include generate_sankey_table from './nextflow/modules/sankey'
+include generate_chromomap_table from './nextflow/modules/chromomap'
+include krona from './nextflow/modules/krona'
+include sankey from './nextflow/modules/sankey'
+include chromomap from './nextflow/modules/chromomap'
 
 //include './modules/kaiju' params(output: params.output, illumina: params.illumina, fasta: params.fasta)
 //include './modules/filter_reads' params(output: params.output)
