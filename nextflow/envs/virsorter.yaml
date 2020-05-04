@@ -1,0 +1,7 @@
+name: virsorter
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - perl-bioperl-core=1.007002
+  - virsorter=1.0.6

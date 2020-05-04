@@ -1,0 +1,8 @@
+name: virfinder
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - r-virfinder=1.1
+  - r-purrr
+  - bioconductor-biostrings=2.54.0

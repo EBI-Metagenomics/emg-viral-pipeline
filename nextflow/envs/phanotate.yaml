@@ -1,0 +1,11 @@
+name: phanotate
+channels:
+  - anaconda
+  - bioconda
+  - conda-forge
+dependencies:
+  - git=2.23.0
+  - trnascan-se=2.0.5
+  - emboss=6.6.0
+  - make=4.2.1
+  - gcc=4.8.5

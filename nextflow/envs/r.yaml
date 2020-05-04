@@ -1,0 +1,10 @@
+name: r
+channels:
+  - bioconda
+  - conda-forge
+  - r
+dependencies:
+  - r-ggplot2=3.1.1
+  - r-optparse=1.6.2
+  - r-gggenes=0.4.0
+  - r-rcolorbrewer=1.1_2

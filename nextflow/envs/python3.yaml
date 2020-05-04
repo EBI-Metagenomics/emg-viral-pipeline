@@ -1,0 +1,13 @@
+name: python3
+channels:
+  - bioconda
+  - conda-forge
+  - anaconda
+  - etetoolkit
+dependencies:
+  - python=3.7
+  - sed=4.7
+  - biopython=1.74
+  - pandas=1.0.0
+  - xlrd=1.2.0
+  - ete3=3.1.1

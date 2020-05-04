@@ -1,0 +1,6 @@
+name: blast
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - blast=2.9.0
