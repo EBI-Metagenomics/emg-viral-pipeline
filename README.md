@@ -63,9 +63,25 @@ nextflow run EBI-Metagenomics/emg-viral-pipeline --help
 ```
 
 Run annotation for a small assembly file (takes approximately 30min + time for database download; ~49 GB):
-````
-nextflow run EBI-Metagenomics/emg-viral-pipeline --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/test/assembly.fasta"
-````
+```bash
+nextflow run EBI-Metagenomics/emg-viral-pipeline --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta"
+```
+
+EBI cluster:
+```bash
+source /hps/nobackup2/production/metagenomics/virus-pipeline/CONFIG 
+
+# recommended run example to easily resume a run later and to have all run-related .nextflow.log files in the correct folder
+OUTPUT=/path/to/output/dir
+mkdir -p $OUTPUT
+DIR=$PWD
+cd $OUTPUT
+# this will pull the pipeline if it is not already available
+# use `nextflow pull EBI-Metagenomics/emg-viral-pipeline` to update the pipeline
+nextflow run EBI-Metagenomics/emg-viral-pipeline --fasta "/homes/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" --output $OUTPUT --workdir $OUTPUT/work $DATABASES --cachedir $SINGULARITY -profile ebi
+cd $DIR
+```
+
 
 ## Profiles
 
