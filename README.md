@@ -64,7 +64,7 @@ nextflow run EBI-Metagenomics/emg-viral-pipeline --help
 
 Run annotation for a small assembly file (takes approximately 30min + time for database download; ~49 GB):
 ````
-nextflow run EBI-Metagenomics/emg-viral-pipeline --fasta '~/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/test/assembly.fasta'
+nextflow run EBI-Metagenomics/emg-viral-pipeline --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/test/assembly.fasta"
 ````
 
 ## Profiles
