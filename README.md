@@ -1,21 +1,34 @@
-![](https://img.shields.io/badge/CWL-magenta)
+![](https://img.shields.io/badge/CWL-v1.0-magenta)
 ![](https://img.shields.io/badge/nextflow-20.01.0-brightgreen)
 ![](https://img.shields.io/badge/uses-docker-blue.svg)
 ![](https://img.shields.io/badge/uses-conda-yellow.svg)
 
-# VIRify General
-![Sankey plot](nextflow/figures/sankey.png)
+1. [ VIRify pipeline ](#virify)
+2. [ CWL execution ](#cwl)
+3. [ Nextflow execution ](#nf)
 
-TODO ...
+<a name="virify"></a>
+
+# VIRify
+![Sankey plot](nextflow/figures/sankey.png)
+VIRify is a recently developed pipeline for the detection, annotation, and taxonomic classification of viral contigs in metagenomic and metatranscriptomic assemblies. The pipeline is part of the repertoire of analysis services offered by [MGnify](https://www.ebi.ac.uk/metagenomics/). VIRify’s taxonomic classification relies on the detection of taxon-specific profile hidden Markov models (HMMs), built upon a set of 22,014 orthologous protein domains and referred to as ViPhOGs. 
+
+## Metatranscriptomics
+
+TODO ... Alex? 
+
+<a name="cwl"></a>
 
 # CWL
 
 TODO ...
 
+<a name="nf"></a>
+
 # Nextflow
 Email: hoelzer.martin@gmail.com
 
-A nextflow implementation of the VIRify pipeline for the detection of viruses from metagenomic assemblies.
+A nextflow implementation of the VIRify pipeline for the detection of viruses from metagenomic assemblies. The same scripts are used in the CWL and Nextflow implementation. 
 
 ## What do I need?
 
