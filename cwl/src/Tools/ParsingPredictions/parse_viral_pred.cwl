@@ -1,0 +1,93 @@
+#!/usr/bin/env cwl-runner
+cwlVersion: v1.0
+class: CommandLineTool
+
+label: "Parse predictions"
+
+hints:
+ DockerRequirement:
+   dockerFile: Dockerfile
+
+requirements:
+  InlineJavascriptRequirement: {}
+
+baseCommand: ["parse_viral_pred.py"]
+
+inputs:
+  assembly:
+    type: File
+    format: edam:format_1929
+    inputBinding:
+      separate: true
+      prefix: "-a"
+  virfinder_tsv:
+    type: File?
+    format: edam:format_3475
+    inputBinding:
+      separate: true
+      prefix: "-f"
+  virsorter_dir:
+    type: Directory
+    inputBinding:
+      separate: true
+      prefix: "-s"
+  pprmeta_csv:
+    type: File?
+    format: edam:format_3752
+    inputBinding:
+      separate: true
+      prefix: "-p"
+  output_dir:
+    type: string?
+    inputBinding:
+      separate: true
+      prefix: "-o"
+
+stdout: stdout.txt
+stderr: stderr.txt
+
+outputs:
+  stdout: stdout
+  stderr: stderr
+
+  high_confidence_contigs:
+    type: File?
+    format: edam:format_1929
+    outputBinding:
+      glob: "high_confidence_putative_viral_contigs.fna"
+  low_confidence_contigs:
+    type: File?
+    format: edam:format_1929
+    outputBinding:
+      glob: "low_confidence_putative_viral_contigs.fna"
+  prophages_contigs:
+    type: File?
+    format: edam:format_1929
+    outputBinding:
+      glob: "putative_prophages.fna"
+
+doc: |
+  usage: parse_viral_pred.py [-h] -a ASSEMB -f FINDER -s SORTER [-o OUTDIR]
+
+  description: script generates three output_files: high_confidence.fasta, low_confidence.fasta, Prophages.fasta
+
+  optional arguments:
+  -h, --help            show this help message and exit
+  -a ASSEMB, --assemb ASSEMB
+                        Metagenomic assembly fasta file
+  -f FINDER, --vfout FINDER
+                        Absolute or relative path to VirFinder output file
+  -s SORTER, --vsdir SORTER
+                        Absolute or relative path to directory containing
+                        VirSorter output
+  -o OUTDIR, --outdir OUTDIR
+                        Absolute or relative path of directory where output
+                        viral prediction files should be stored (default: cwd)
+$namespaces:
+ s: http://schema.org/
+ edam: http://edamontology.org/
+$schemas:
+ - https://schema.org/docs/schema_org_rdfa.html
+
+s:license: "https://www.apache.org/licenses/LICENSE-2.0"
+s:copyrightHolder: "EMBL - European Bioinformatics Institute"

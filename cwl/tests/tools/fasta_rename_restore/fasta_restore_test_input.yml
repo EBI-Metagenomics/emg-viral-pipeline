@@ -1,0 +1,8 @@
+input:
+  class: File
+  path: ERR575691_host_filtered_renamed.fasta
+  format: http://edamontology.org/format_1929
+name_map:
+  class: File
+  path: fasta_map.tsv
+  format: http://edamontology.org/format_3475

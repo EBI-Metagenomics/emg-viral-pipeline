@@ -4,6 +4,7 @@ import argparse
 import csv
 import sys
 import re
+import os
 
 
 def _parse_name(seq):
@@ -47,8 +48,17 @@ def rename(args):
 
 def restore(args):
     """Restore a multi-fasta fasta using the mapping file.
+
     VirSorter metadata is preserved.
     """
+    if not args.input:
+        print("File not provided. Skipping")
+        return
+
+    if not os.path.exists(args.input):
+        print("File " + args.input + " doesn't exist. Skipping")
+        return
+
     print("Restoring " + args.input)
     mapping = {}
     with open(args.map, "r") as map_tsv:
@@ -76,7 +86,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Rename multi fastas and restore the names tools.")
     parser.add_argument(
-        "-i", "--input", help="indicate input FASTA file", required=True)
+        "-i", "--input", help="indicate input FASTA file", required=False)
     parser.add_argument(
         "-m", "--map", help="Map current names with the renames", type=str,
         default="fasta_map.tsv")

@@ -1,0 +1,7 @@
+database:
+  class: Directory
+  path: ../../../databases/IMG_VR_2018-07-01_4 
+query: 
+  class: File
+  path: high_confidence_putative_viral_contigs.fna
+  format: http://edamontology.org/format_1929

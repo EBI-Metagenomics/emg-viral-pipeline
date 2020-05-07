@@ -1,0 +1,391 @@
+LOCUS       VIRSorter_seq188-circular         2512 bp    dna     circular ENV 02/24/20
+
+DEFINITION  Putative phage sequence (category 3), predicted by PhageSorter
+ACCESSION   VIRSorter_seq188-circular
+KEYWORDS    .
+FEATURES             Location/Qualifiers
+     source          1..2512
+                     /organism="Putative phage sequence (category 3),
+                     predicted by PhageSorter"
+     gene            159..338
+                     /gene="gene_1"
+                     /locus_tag="VIRSorter_seq188-circular_gene_1"
+     CDS             159..338
+                     /codon_start=1
+                     /gene="gene_1"
+                     /locus_tag="VIRSorter_seq188-circular_gene_1"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="MRKVHCGTWNMAKKLENEIQLQTRTIGPEIWLETLKKVENETET
+                     LFDLEYGEKTEKRGK"
+     gene            540..704
+                     /gene="gene_2"
+                     /locus_tag="VIRSorter_seq188-circular_gene_2"
+     CDS             540..704
+                     /codon_start=1
+                     /gene="gene_2"
+                     /locus_tag="VIRSorter_seq188-circular_gene_2"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="MVRKLKNVENETLTLYDQEYGEKHSKTWKMRNAQCRTWNMARIL
+                     ENVKIEKRTW"
+     gene            1067..1258
+                     /gene="gene_3"
+                     /locus_tag="VIRSorter_seq188-circular_gene_3"
+     CDS             1067..1258
+                     /codon_start=1
+                     /gene="gene_3"
+                     /locus_tag="VIRSorter_seq188-circular_gene_3"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="MARKLKKVQNETQTLFGLEYGKKHRKTWKMRIAQCSIWNMARKL
+                     KNLENETQTVFDLEYGEKH"
+     gene            1329..1448
+                     /gene="gene_4"
+                     /locus_tag="VIRSorter_seq188-circular_gene_4"
+     CDS             1329..1448
+                     /codon_start=1
+                     /gene="gene_4"
+                     /locus_tag="VIRSorter_seq188-circular_gene_4"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="METHTIGPEIRLGTLKRVENETETLFDVEYGEKTEKGGK"
+     gene            1766..1930
+                     /gene="gene_5"
+                     /locus_tag="VIRSorter_seq188-circular_gene_5"
+     CDS             1766..1930
+                     /codon_start=1
+                     /gene="gene_5"
+                     /locus_tag="VIRSorter_seq188-circular_gene_5"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="MVKKLKNVENETLTLYDQKYGEKHSKTWKMRNAQCRTWNMARIL
+                     ENVKIEKRTL"
+     gene            2028..2207
+                     /gene="gene_6"
+                     /locus_tag="VIRSorter_seq188-circular_gene_6"
+     CDS             2028..2207
+                     /codon_start=1
+                     /gene="gene_6"
+                     /locus_tag="VIRSorter_seq188-circular_gene_6"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="MRKVHCGTWNMAKKLENEIQLQTRTIGPEIWLETLKKVENETET
+                     LFDLEYGEKTEKRGK"
+     gene            join(2409..2512,1..61)
+                     /gene="gene_7"
+                     /locus_tag="VIRSorter_seq188-circular_gene_7"
+     CDS             join(2409..2512,1..61)
+                     /codon_start=1
+                     /gene="gene_7"
+                     /locus_tag="VIRSorter_seq188-circular_gene_7"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="MVRKLKNVENETLTLYDQEYGEKHSKTWKMRNAQCRTWNMARIL
+                     ENVKIEKRTL"
+ORIGIN      
+        1 tcggacttgg aatatggcga gaatactgga aaacgtgaaa attgagaaaa ggacactgta
+       61 aatacatgga atatggcgtg aaaaatgaaa aacgtggaaa atgagaaaca cacactgtag
+      121 gttatgaata tggctagaaa tgctgaaaaa cgtgaaaaat gagaaaggta cattgtggga
+      181 cctggaatat ggcgaaaaaa ctggaaaatg aaatacaatt acaaactcgc acaataggac
+      241 ctgaaatatg gctagaaaca ttgaagaagg tagaaaatga gacagaaaca ctgtttgacc
+      301 tagaatatgg cgagaaaact gaaaaacgtg gaaaatgaga aacacacaat atacgaactg
+      361 gattatgaag agaaaactca aaaacgtgaa aaatgagtca aaaaaactgt agaacctgga
+      421 atatggtgtg aaaactgaca aaagaggaaa aagtgaaact cacatgttaa cacctggaat
+      481 atcgcaagaa acactgaaaa acgtggaaaa ggagaaacaa acactgtagg acttggaata
+      541 tggtgagaaa actgaaaaac gtggaaaatg agacgctaac tctgtatgac caggaatatg
+      601 gcgagaaaca ctcaaaaacg tggaaaatga gaaatgctca gtgtcggact tggaatatgg
+      661 cgagaatact ggaaaacgtg aaaattgaga aaaggacatg gtaaggacat ggaatatggc
+      721 gtgaaaaatg aaaatcgtgg aaaatgagta acacacactg taggatatga aatatggcta
+      781 gaaacactga aaaacgtgaa aaatgagaag tgtacattgt gggacttgga atatggttaa
+      841 aaaactagaa aatgaaatat aatgagaaac tcgcacaata ggatcagaaa tatggctaga
+      901 aacatttaaa aaggtagaaa atgagcccaa aacactgttt gacctataat atagcgagaa
+      961 aactgaaaaa cgtggaaaat gcgaaacaca cactgtagta cctagaatat ggttagaaag
+     1021 agtgaaatac acgaaaaatg agaaatacac actttaggcc tggattatgg ctagaaaact
+     1081 caaaaaagtg caaaatgaga cacaaacact gtttggcctg gaatatggca agaaacacag
+     1141 aaaaacgtgg aaaatgagaa ttgctcagtg cagtatctgg aatatggcaa gaaaactgaa
+     1201 aaacttggaa aatgagacac aaacagtgtt tgacctggaa tatggcgaga aacactgaaa
+     1261 aaggtgaaaa atgagaagtg tacattgagg acctggaata tggcaaaaaa actggaaaat
+     1321 aaaatacaat ggaaactcac acaataggac cggaaataag gctaggaaca ttgaaaaggg
+     1381 tagaaaatga gacagaaaca ctgtttgacg tagaatatgg cgaaaaaact gaaaaaggtg
+     1441 gaaaatgaga aacacacaat gtagtacata gaaaatggtg agaaagagtg aaaaacatga
+     1501 aaattgagaa atacccactg tacgacctgg atcatggcga gaaaactgaa aaacatggaa
+     1561 tatgagacac acaaactgta ggacctggat tatggggaga aaactcataa acgtggaaaa
+     1621 tgagtcaaaa acactgtagg gcctggaata tgtttgaaaa ctgacaaacg aggaaaaagt
+     1681 ggaactcaca tgttaacacc tgtaatatcg caagaaacac tgaaaaacag ggaaaaggag
+     1741 aaacaaacac tgtaggactt ggaatatggt gaaaaaactg aaaaacgtgg aaaatgagac
+     1801 gctaactctg tatgaccaga aatacggcga gaaacactca aaaacatgga aaatgagaaa
+     1861 tgctcagtgt cggacttgga atatggcgag aatactggaa aacgtgaaaa ttgagaaaag
+     1921 gacactgtaa atacatggaa tatggcgtga aaaatgaaaa acgtggaaaa tgagaaacac
+     1981 acactgtagg ttatgaatat ggctagaaat gctgaaaaac gtgaaaaatg agaaaggtac
+     2041 attgtgggac ctggaatatg gcgaaaaaac tggaaaatga aatacaatta caaactcgca
+     2101 caataggacc tgaaatatgg ctagaaacat tgaagaaggt agaaaatgag acagaaacac
+     2161 tgtttgacct agaatatggc gagaaaactg aaaaacgtgg aaaatgagaa acacacaata
+     2221 tacgaactgg attatgaaga gaaaactcaa aaacgtgaaa aatgagtcaa aaaaactgta
+     2281 gaacctggaa tatggtgtga aaactgacaa aagaggaaaa agtgaaactc acatgttaac
+     2341 acctggaata tcgcaagaaa cactgaaaaa cgtggaaaag gagaaacaaa cactgtagga
+     2401 cttggaatat ggtgagaaaa ctgaaaaacg tggaaaatga gacgctaact ctgtatgacc
+     2461 aggaatatgg cgagaaacac tcaaaaacgt ggaaaatgag aaatgctcag tg
+//
+LOCUS       VIRSorter_seq195         2483 bp    dna     linear   ENV 02/24/20
+
+DEFINITION  Putative phage sequence (category 3), predicted by PhageSorter
+ACCESSION   VIRSorter_seq195
+KEYWORDS    .
+FEATURES             Location/Qualifiers
+     source          1..2483
+                     /organism="Putative phage sequence (category 3),
+                     predicted by PhageSorter"
+     gene            complement(570..740)
+                     /gene="gene_1"
+                     /locus_tag="VIRSorter_seq195_gene_1"
+     CDS             complement(570..740)
+                     /codon_start=1
+                     /gene="gene_1"
+                     /locus_tag="VIRSorter_seq195_gene_1"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="VENCDTKVEQCDTMVEHCDAKVELCDTRVELSDSTVETVTQQWS
+                     IVTPELRTVKPQ"
+     gene            complement(967..1179)
+                     /gene="gene_2"
+                     /locus_tag="VIRSorter_seq195_gene_2"
+     CDS             complement(967..1179)
+                     /codon_start=1
+                     /gene="gene_2"
+                     /locus_tag="VIRSorter_seq195_gene_2"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="VEDCDSTVYHWDTTVEHSSTRMEHCDNTVEPCDTRVEHCDTTVE
+                     HCDNTLEHLTPDWTTVTAKQSTVTPQ"
+     gene            complement(1186..1596)
+                     /gene="gene_3"
+                     /locus_tag="VIRSorter_seq195_gene_3"
+     CDS             complement(1186..1596)
+                     /codon_start=1
+                     /gene="gene_3"
+                     /locus_tag="VIRSorter_seq195_gene_3"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="VEDCDITVYHSDTTGVHSDTTVEHCAKTVEHCETRLEQCDTTVK
+                     LFDTTVEHCATTVEHCETRVEQCDTTVEHSDNTLEHEIPEWSTVTAKQCTVTPQWSTV
+                     TSQWSTVTVKHSTVKSQCSTVTPQWSTVIKQWSK"
+     gene            complement(1611..1763)
+                     /gene="gene_4"
+                     /locus_tag="VIRSorter_seq195_gene_4"
+     CDS             complement(1611..1763)
+                     /codon_start=1
+                     /gene="gene_4"
+                     /locus_tag="VIRSorter_seq195_gene_4"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="VEHCDSKAEKCDNTVEHGDTTMEYFDTTVQHCDSPVEHCDTIVM
+                     YCDKTV"
+     gene            complement(1854..2054)
+                     /gene="gene_5"
+                     /locus_tag="VIRSorter_seq195_gene_5"
+     CDS             complement(1854..2054)
+                     /codon_start=1
+                     /gene="gene_5"
+                     /locus_tag="VIRSorter_seq195_gene_5"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="VTAWSGAWDSTDSTVENCHITVEHCDTKLQHVTLGWSSVTPQWN
+                     TVSPQLSTVTRQCSTETPIEAL"
+     gene            complement(2315..2452)
+                     /gene="gene_6"
+                     /locus_tag="VIRSorter_seq195_gene_6"
+     CDS             complement(2315..2452)
+                     /codon_start=1
+                     /gene="gene_6"
+                     /locus_tag="VIRSorter_seq195_gene_6"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="VEHCDTTVLHSDRTVKHSINTVEHCDNTVEQCYTKVEHYDTTRA
+                     Q"
+     gene            complement(2407..2481)
+                     /gene="gene_7"
+                     /locus_tag="VIRSorter_seq195_gene_7"
+     CDS             complement(2407..2481)
+                     /codon_start=1
+                     /gene="gene_7"
+                     /locus_tag="VIRSorter_seq195_gene_7"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="DTTVNTVTQQWSTVTPQCCTVTEQ"
+ORIGIN      
+        1 cacagtgctg cactgtggtg acagaactaa actgtggtgt cactgtgctc caaggttgtg
+       61 tcaaggtact ccactttaat gtcacagtgc tccactgggc tgtcacattt ctgcactggt
+      121 gtatcacagt tctccactgt ggtgtcacaa tgctctttgt ggtgtcacag tgctccactg
+      181 tggtgttact gtgttccact ttgttgtcaa agtgctccta tgtggtgtca cagtgctcca
+      241 ctcccgtgtc acagtgctcc actttgctgt caaactgccc cactgtggtg tcacagtgct
+      301 ccactgtact gtcactgtgc tcgaatgtgg ttcacagtgc tccactttgc tgtcaaactg
+      361 ccccactgtg ctgtcacggt gctccaccgt actgtcactg tgctcaaatg tggttcacag
+      421 tgctccactg tgctgtcaaa gtactctact gagctgtcac agtgctccac tgtggtgtca
+      481 catgctgcac tgtggtgtca cagtgcttta ctgtggtgtc acagtgctct actgtggtgt
+      541 cacagtcctc cactgttatg tcaaggtgtt cactgtggtt tcacagtgcg cagctctggt
+      601 gtcacaatgc tccactgttg tgtcacagtc tccactgtgc tgtcactgag ctccaccctg
+      661 gtgtcacaga gttccacttt agcgtcacag tgctcaacca tagtgtcaca ctgctcgact
+      721 ttggtgtcac agttctccac tgtggtgtcc catgctccag tgtagtgtca cactgctcca
+      781 ttgtggtatc acagtgctgc actgtgctgt cagcgtttgg cactgtggtg ccacagtcct
+      841 ctaactgtgg tgtcacaatg atccactatg gtgtcacact gctccactcc tgtgtcacat
+      901 tattcactgt gatatcaaaa ttctcaactc tgctgtcaca gtgcttcact gtgctgtcac
+      961 tgtgctctac tgtggtgtca cagtgctctg ctttgctgtc acagtggtcc agtctggtgt
+     1021 cagatgctct aatgtgttgt cacagtgctc cactgtagtg tcacagtgct ccactctggt
+     1081 gtcacagggc tccactgtgt tgtcacagtg ttccattctg gtgctactgt gctccactgt
+     1141 ggtgtcccag tggtacactg tgctgtcaca gtcctccacc tggtgtcatt tgctccactg
+     1201 tttaatcaca gtactccact gtggtgtcac agtgctgcac tgtgatttca cagtgctgtg
+     1261 ctttactgtc acagtgctcc actgggatgt cacagtgctc cactgtggtg tcacagtgca
+     1321 ctgctttgct gtcacagtgc tccactctgg tatctcatgc tctaatgtgt tgtcagagtg
+     1381 ctccaccgtg gtgtcacatt gctccactct ggtttcacag tgttccactg tggtggcaca
+     1441 gtgttccact gtggtgtcaa agagcttcac tgtggtgtca cattgctcca gtctggtttc
+     1501 acagtgttcc actgttttgg cacagtgttc cactgtggtg tcagagtgca cccctgtggt
+     1561 gtcagagtgg tacactgtga tgtcacagtc ctccactgtg gtgtcatatg ctacactgtt
+     1621 ttgtcacaat acatcactat ggtgtcacag tgctccactg ggctgtcaca gtgctgcact
+     1681 gtggtgtcaa agtactccat tgtggtgtca ccatgctcca ctgtgttgtc gcacttctct
+     1741 gctttgctgt cacagtgctc cactgtggtg tcacagtgct caactgtggt gtcacatgtt
+     1801 ctaatatgtt aacacagagc tccagtgtgg tgtcactgtg ctccactgtg cagtcacagt
+     1861 gcttcaattg gtgtctcagt gctgcactgt cgtgtcacag tgctcaactg tggtgacaca
+     1921 gtattccact gtggtgtcac agagctccac cctagtgtca catgctgtaa tttggtgtca
+     1981 cagtgctcca ctgtgatgtg acagttctcc actgtgctgt cagtgctgtc ccatgctcca
+     2041 ctccatgctg tcacatccct tgtgatgtcc catgctccac tgtggtgtca gagtgctcta
+     2101 atgtggttta cagtgctaca ctgtgctgtc acagggctcc actctgctgt cacagtgctc
+     2161 cactgtgctg tcacaatgct tcactgtggt gtcacagtgc tccaatgtgt tgtcacagtg
+     2221 cttcccttga ggtcacgagc tccacagtgc tgtcacaatg ctcctctatg ctgtcacagt
+     2281 gcaccactgt gaggtcacaa gctccactgt gctgtcactg tgctcttgtg gtatcataat
+     2341 gctctacttt tgtgtaacac tgctccactg tgttgtcaca gtgctccact gtgttgatag
+     2401 agtgcttcac tgttctgtca ctgtgcagca ctgtggtgtc acagtgctcc actgttgtgt
+     2461 cacagtgttc actgtggtgt cac
+//
+LOCUS       VIRSorter_seq305         1560 bp    dna     linear   ENV 02/24/20
+
+DEFINITION  Putative phage sequence (category 3), predicted by PhageSorter
+ACCESSION   VIRSorter_seq305
+KEYWORDS    .
+FEATURES             Location/Qualifiers
+     source          1..1560
+                     /organism="Putative phage sequence (category 3),
+                     predicted by PhageSorter"
+     gene            complement(1..111)
+                     /gene="gene_1"
+                     /locus_tag="VIRSorter_seq305_gene_1"
+     CDS             complement(1..111)
+                     /codon_start=1
+                     /gene="gene_1"
+                     /locus_tag="VIRSorter_seq305_gene_1"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="VENEKQKLFYLDYGKKTKKRAKRETHTIRPGICRETV"
+     gene            complement(552..716)
+                     /gene="gene_2"
+                     /locus_tag="VIRSorter_seq305_gene_2"
+     CDS             complement(552..716)
+                     /codon_start=1
+                     /gene="gene_2"
+                     /locus_tag="VIRSorter_seq305_gene_2"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="MARKLKNVEDEKLTGKTNNMARNTEKPSKRETHTISPKICQEKV
+                     KNVNNEKYTL"
+     gene            complement(685..819)
+                     /gene="gene_3"
+                     /locus_tag="VIRSorter_seq305_gene_3"
+     CDS             complement(685..819)
+                     /codon_start=1
+                     /gene="gene_3"
+                     /locus_tag="VIRSorter_seq305_gene_3"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="VKNMKNVKYTNRTWVMATKQKNGEKETQTLFQLDYGEKTEKRGR
+                     "
+     gene            complement(901..1044)
+                     /gene="gene_4"
+                     /locus_tag="VIRSorter_seq305_gene_4"
+     CDS             complement(901..1044)
+                     /codon_start=1
+                     /gene="gene_4"
+                     /locus_tag="VIRSorter_seq305_gene_4"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="MENETQKLFSLDYGKKTENHAKRETHTIRPGICRETVKNVNNVK
+                     CTL"
+     gene            complement(1151..1270)
+                     /gene="gene_5"
+                     /locus_tag="VIRSorter_seq305_gene_5"
+     CDS             complement(1151..1270)
+                     /codon_start=1
+                     /gene="gene_5"
+                     /locus_tag="VIRSorter_seq305_gene_5"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="MRNAHCRTWYMAIKMQNVENVTNTLSDLEYGEINEKRGK"
+     gene            complement(1310..1462)
+                     /gene="gene_6"
+                     /locus_tag="VIRSorter_seq305_gene_6"
+     CDS             complement(1310..1462)
+                     /codon_start=1
+                     /gene="gene_6"
+                     /locus_tag="VIRSorter_seq305_gene_6"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="MKNVENETKTQLDLEYGEKHCKRVKMRNSHGSTWNMARNTENEQ
+                     NGKQTP"
+     gene            complement(1484..1558)
+                     /gene="gene_7"
+                     /locus_tag="VIRSorter_seq305_gene_7"
+     CDS             complement(1484..1558)
+                     /codon_start=1
+                     /gene="gene_7"
+                     /locus_tag="VIRSorter_seq305_gene_7"
+                     /note="Predicted by MGA"
+                     /product="hypothetical protein"
+                     /transl_table=11
+                     /translation="ETHSISPGICQETVKNVNNEKYTL"
+ORIGIN      
+        1 cactgtttct cggcatattc caggtcttat agtgtgagtt tctctttttg cacgtttttt
+       61 agttttcttg ccataatcca gataaaacag tttttgtttc tcattttcca cacttttcag
+      121 ttctactcaa aatattccag gtcatacagt gtttgtgttt catcttccac gtttttcagt
+      181 tttcttgcca cattccaagt aaaagagtgt ttctgtttca ttttccacat ttttcatttt
+      241 tctcgcgata ttacaggtcc tacagtgtat ttctcacatt ttccacattt tgtatttgtt
+      301 tagccatata ccaggtccta cagtttgcat ttctcatttt tcatgttatt cactgtttct
+      361 cgccatattc ctcatcctac ggtgtgtgtt acccattttt gctcgttttc agtgtttctt
+      421 gccatattcc aggtactacc atattagttt ctcatttttc acctttttca gtgtttctca
+      481 gcatattccg gatctaattg tgtttttgtc tcattttcca catttatagt attttgacaa
+      541 taatccaggt cctacagtgt gtatttctca ttattcacgt ttttaacttt ttcttggcat
+      601 attttagggc ttatagtgtg agtttctctt tttgaaggtt tttcagtgtt tcttgccata
+      661 ttattagtct taccagtgag tttctcatct tccacgtttt tcagttttct cgccataatc
+      721 cagctgaaac agtgtttgtg tctctttttc cccatttttc tgttttgttg ccataaccca
+      781 ggtcctattt gtgtatttca catttttcat gtttttcact gtttcttgct atattccagg
+      841 tcctaccctg tgtatatttc atttttctcg tttgtcagtt ttctcatgat aatccaggtc
+      901 ctacagtgtg catttcacat tattcacgtt tttcactgtt tctcggcata ttccaggtct
+      961 tatagtgtga gtttctcttt ttgcatgatt ttcagttttc ttgccataat ccagggaaaa
+     1021 cagtttttgt gtctcatttt ccatgctttt cagttcttct cacaatattc caggtcatac
+     1081 agtgtttgtg tttcgtcttc cacgtttttc agttttcttg ccacattcca ggtaaaagag
+     1141 tgtttctgtt tcattttcca cgtttttcat ttatctcgcc atattccagg tccgacagtg
+     1201 tgtttgtcac attttccaca ttttgcattt ttatagccat ataccaggta cgacagtgtg
+     1261 catttctcat ttttcacgtt attcactgtt tctcgccata ttccacgttc tatggtgtct
+     1321 gtttcccatt ttgctcgttt tcagtgtttc ttgccatatt ccaggtacta ccatgtgagt
+     1381 ttctcatttt tactctttta cagtgtttct caccatattc cagatctaat tgtgttttgg
+     1441 tctcattttc cacatttttc attctttggc cataatccag gtgctacagt gtgtatttct
+     1501 cattgttcac gtttttaact gtttcttggc atattccggg gcttatagag tgagtttcaa
+//
