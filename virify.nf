@@ -34,6 +34,8 @@ if (workflow.profile == 'standard') {
 println "\033[2mDev ViPhOG database: $params.viphog_version\u001B[0m"
 println "\033[2mDev Meta database: $params.meta_version\u001B[0m"
 println " "
+println "\033[2mOnly run annotation: $params.onlyannotate\u001B[0m"
+println " "
         
 if( !nextflow.version.matches('20.01+') ) {
     println "This workflow requires Nextflow version 20.01 or greater -- You are running version $nextflow.version"
@@ -338,7 +340,7 @@ workflow detect {
         parse(length_filtered_ch.join(virfinder.out).join(virsorter.out).join(pprmeta.out))
 
     emit:
-        parse.out.join(renamed_ch).transpose().map{name, fasta, vs_meta, log, renamed_fasta, map -> tuple (name, fasta, map)}.view()
+        parse.out.join(renamed_ch).transpose().map{name, fasta, vs_meta, log, renamed_fasta, map -> tuple (name, fasta, map)}
 }
 
 
@@ -503,7 +505,7 @@ workflow {
     // only detection based on an assembly
     if (params.fasta) {
       // only annotate the FASTA
-      if (params.only_annotate) {
+      if (params.onlyannotate) {
         plot(
           annotate(
             postprocess(preprocess(fasta_input_ch).map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map)}), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data)
@@ -580,7 +582,7 @@ def helpMSG() {
     --length            Initial length filter in kb [default: $params.length]
     --sankey            select the x taxa with highest count for sankey plot, try and error to change plot [default: $params.sankey]
     --chunk             WIP: chunk FASTA files into smaller pieces for parallel calculation [default: $params.chunk]
-    --only-annotate     Only annotate the input FASTA (no virus prediction, only contig length filtering) [default: $params.only_annotate]
+    --onlyannotate      Only annotate the input FASTA (no virus prediction, only contig length filtering) [default: $params.only_annotate]
 
     ${c_yellow}Developing:${c_reset}
     --viphog_version    define the ViPhOG db version to be used [default: $params.viphog_version]
