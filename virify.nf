@@ -31,7 +31,8 @@ if (workflow.profile == 'standard') {
   println "Output dir name: $params.output\u001B[0m"
   println " "
 }
-println "\033[2mDev ViPhOG database: $params.version\u001B[0m"
+println "\033[2mDev ViPhOG database: $params.viphog_version\u001B[0m"
+println "\033[2mDev Meta database: $params.meta_version\u001B[0m"
 println " "
         
 if( !nextflow.version.matches('20.01+') ) {
@@ -107,11 +108,11 @@ include length_filtering from './nextflow/modules/length_filtering'
 include parse from './nextflow/modules/parse' 
 include prodigal from './nextflow/modules/prodigal'
 //include phanotate from './modules/phanotate' 
-include hmmscan as hmmscan_viphogs from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.version)
-include hmmscan as hmmscan_rvdb from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'rvdb', version: params.version)
-include hmmscan as hmmscan_pvogs from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'pvogs', version: params.version)
-include hmmscan as hmmscan_vogdb from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vogdb', version: params.version)
-include hmmscan as hmmscan_vpf from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vpf', version: params.version)
+include hmmscan as hmmscan_viphogs from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.viphog_version)
+include hmmscan as hmmscan_rvdb from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'rvdb', version: params.viphog_version)
+include hmmscan as hmmscan_pvogs from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'pvogs', version: params.viphog_version)
+include hmmscan as hmmscan_vogdb from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vogdb', version: params.viphog_version)
+include hmmscan as hmmscan_vpf from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vpf', version: params.viphog_version)
 include hmm_postprocessing from './nextflow/modules/hmm_postprocessing'
 include ratio_evalue from './nextflow/modules/ratio_evalue' 
 include annotation from './nextflow/modules/annotation' 
@@ -159,7 +160,7 @@ workflow download_model_meta {
     if (!params.cloudProcess) { metaGetDB(); db = metaGetDB.out }
     // cloud storage via preload.exists()
     if (params.cloudProcess) {
-      preload = file("${params.cloudDatabase}/models/Additional_data_vpHMMs.dict")
+      preload = file("${params.cloudDatabase}/models/Additional_data_vpHMMs_${params.meta_version}.dict")
       if (preload.exists()) { db = preload }
       else  { metaGetDB(); db = metaGetDB.out } 
     }
@@ -185,7 +186,7 @@ workflow download_viphog_db {
     if (!params.cloudProcess) { viphogGetDB(); db = viphogGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/vpHMM_database_${params.version}")
+      db_preload = file("${params.cloudDatabase}/vpHMM_database_${params.viphog_version}")
       if (db_preload.exists()) { db = db_preload }
       else  { viphogGetDB(); db = viphogGetDB.out } 
     }
@@ -291,10 +292,8 @@ workflow download_kaiju_db {
 
 /* Comment section:
 */
-workflow detect {
+workflow preprocess {
     take:   assembly
-            virsorter_db  
-            pprmeta_git  
 
     main:
         // rename contigs
@@ -303,20 +302,45 @@ workflow detect {
         // filter contigs by length
         length_filtering(rename.out)
 
-        // virus detection --> VirSorter, VirFinder and PPR-Meta
-        virsorter(length_filtering.out, virsorter_db)     
-        virfinder(length_filtering.out)
-        pprmeta(length_filtering.out, pprmeta_git)
+    emit:
+        rename.out.join(length_filtering.out, by: 0) //  tuple val(name), file("${name}_renamed.fasta"), file("${name}_map.tsv"), file("${name}*filt*.fasta"), env(CONTIGS)
+}
 
-        // parsing predictions
-        parse(length_filtering.out.join(virfinder.out).join(virsorter.out).join(pprmeta.out))
-
+/* Comment section:
+*/
+workflow postprocess {
+    take:   fasta
+    main:
         // restore contig names
-        restore(parse.out.join(rename.out).transpose())
-
+        restore(fasta)
     emit:
         restore.out
 }
+
+
+/* Comment section:
+*/
+workflow detect {
+    take:   assembly_renamed_length_filtered
+            virsorter_db  
+            pprmeta_git  
+
+    main:
+        renamed_ch = assembly_renamed_length_filtered.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, renamed_fasta, map)}
+        length_filtered_ch = assembly_renamed_length_filtered.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, contig_number)}
+
+        // virus detection --> VirSorter, VirFinder and PPR-Meta
+        virsorter(length_filtered_ch, virsorter_db)     
+        virfinder(length_filtered_ch)
+        pprmeta(length_filtered_ch, pprmeta_git)
+
+        // parsing predictions
+        parse(length_filtered_ch.join(virfinder.out).join(virsorter.out).join(pprmeta.out))
+
+    emit:
+        parse.out.join(renamed_ch).transpose().map{name, fasta, vs_meta, log, renamed_fasta, map -> tuple (name, fasta, map)}.view()
+}
+
 
 
 
@@ -444,12 +468,12 @@ workflow {
     
     if (params.pprmeta) { pprmeta_git = file(params.pprmeta) }
     else { pprmeta_git = download_pprmeta() }
-
-    if (params.meta) { additional_model_data = file(params.meta) }
-    else { additional_model_data = download_model_meta() }
     
     if (params.virsorter) { virsorter_db = file(params.virsorter)} 
     else { download_virsorter_db(); virsorter_db = download_virsorter_db.out }
+
+    if (params.meta) { additional_model_data = file(params.meta) }
+    else { additional_model_data = download_model_meta() }
 
     if (params.viphog) { viphog_db = file(params.viphog)} 
     else {download_viphog_db(); viphog_db = download_viphog_db.out }
@@ -472,17 +496,24 @@ workflow {
     if (params.imgvr) { imgvr_db = file(params.imgvr)} 
     else {download_imgvr_db(); imgvr_db = download_imgvr_db.out }
 
-    
     //download_kaiju_db()
     //kaiju_db = download_kaiju_db.out
     /**************************************************************/
 
     // only detection based on an assembly
     if (params.fasta) {
-      plot(
-        annotate(
-          detect(fasta_input_ch, virsorter_db, pprmeta_git), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data)
-      )
+      // only annotate the FASTA
+      if (params.only_annotate) {
+        plot(
+          annotate(
+            postprocess(preprocess(fasta_input_ch).map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map)}), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data)
+        )
+      } else {
+        plot(
+          annotate(
+            postprocess(detect(preprocess(fasta_input_ch), virsorter_db, pprmeta_git)), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data)
+        )
+      }
     } 
 
     // illumina data to build an assembly first
@@ -490,7 +521,7 @@ workflow {
       assemble_illumina(illumina_input_ch)           
       plot(
         annotate(
-          detect(assemble_illumina.out, virsorter_db, pprmeta_git), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data)
+          postprocess(detect(preprocess(assemble_illumina.out), virsorter_db, pprmeta_git)), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data)
       )
     }
 }
@@ -549,12 +580,16 @@ def helpMSG() {
     --length            Initial length filter in kb [default: $params.length]
     --sankey            select the x taxa with highest count for sankey plot, try and error to change plot [default: $params.sankey]
     --chunk             WIP: chunk FASTA files into smaller pieces for parallel calculation [default: $params.chunk]
+    --only-annotate     Only annotate the input FASTA (no virus prediction, only contig length filtering) [default: $params.only_annotate]
 
     ${c_yellow}Developing:${c_reset}
-    --version         define the ViPhOG db version to be used [default: $params.version]
-                      v1: no additional bit score filter (--cut_ga not applied, just e-value filtered)
-                      v2: --cut_ga, min score used as sequence-specific GA, 3 bit trimmed for domain-specific GA
-                      v3: --cut_ga, like v2 but seq-specific GA trimmed by 3 bits if second best score is 'nan'
+    --viphog_version    define the ViPhOG db version to be used [default: $params.viphog_version]
+                        v1: no additional bit score filter (--cut_ga not applied, just e-value filtered)
+                        v2: --cut_ga, min score used as sequence-specific GA, 3 bit trimmed for domain-specific GA
+                        v3: --cut_ga, like v2 but seq-specific GA trimmed by 3 bits if second best score is 'nan'
+    --meta_version      define the metadata table version to be used [default: $params.meta_version]
+                        v1: older version of the meta data table using an outdated NCBI virus taxonomy 
+                        v2: 2020 version of NCBI virus taxonomy
 
     ${c_dim}Nextflow options:
     -with-report rep.html    cpu / ram usage (may cause errors)

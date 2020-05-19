@@ -29,24 +29,27 @@ out PRJNA530103_small_modified_informative.tsv
 process metaGetDB {
   label 'ratio_evalue'    
   if (params.cloudProcess) { 
-    publishDir "${params.cloudDatabase}/models", mode: 'copy', pattern: "Additional_data_vpHMMs.dict" 
+    publishDir "${params.cloudDatabase}/models", mode: 'copy', pattern: "Additional_data_vpHMMs_${params.meta_version}.dict" 
   }
   else { 
     storeDir "nextflow-autodownload-databases/models" 
   }  
     
     output:
-      file("Additional_data_vpHMMs.dict")
+      file("Additional_data_vpHMMs_${params.meta_version}.dict")
     
     shell:
+    if (params.meta_version.toString() == 'v1')
     """
-    # v2 of metadata file
-#    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/Additional_data_vpHMMs_v2.xlsx
-#    generate_vphmm_object.py -x Additional_data_vpHMMs_v2.xlsx -o Additional_data_vpHMMs.dict
-
     # v1 of metadata file
     wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/Additional_data_vpHMMs.xlsx
-    generate_vphmm_object.py -x Additional_data_vpHMMs.xlsx -o Additional_data_vpHMMs.dict
+    generate_vphmm_object.py -x Additional_data_vpHMMs.xlsx -o Additional_data_vpHMMs_${params.meta_version}.dict
     """
+    else if (params.meta_version.toString() == 'v2')
+    """
+    # v2 of metadata file
+    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/Additional_data_vpHMMs_v2.xlsx
+    generate_vphmm_object.py -x Additional_data_vpHMMs_v2.xlsx -o Additional_data_vpHMMs_${params.meta_version}.dict
+    """
+    
 }
-
