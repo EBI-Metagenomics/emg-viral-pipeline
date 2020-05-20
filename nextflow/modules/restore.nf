@@ -4,7 +4,7 @@ process restore {
       label 'python3'
 
     input:
-      tuple val(name), file(fasta), file(virsorter_meta), file(viruses_log), file(assembly), file(map) 
+      tuple val(name), file(fasta), file(map) 
     
     output:
       tuple val(name), env(BN), file("*_original.fasta")
