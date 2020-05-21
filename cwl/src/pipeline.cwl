@@ -148,7 +148,7 @@ steps:
     run: ./Tools/RatioEvalue/ratio_evalue.cwl
     in:
       hmmscan_table: hmmscan/output_table
-      vphmms_tsv: vphmms_tsv
+      hmms_tsv: vphmms_tsv
     out:
       - informative_table
 
