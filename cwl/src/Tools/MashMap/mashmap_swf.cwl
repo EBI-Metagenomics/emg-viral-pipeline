@@ -30,6 +30,10 @@ steps:
     in:
       query: input_fastas
       reference: reference
+      no_split:
+        valueFrom: $(true)
+      minimum_segment_length:
+        valueFrom: $(2000)  
       output_file:
         valueFrom: $(inputs.query.nameroot + "_mashmap.out")
     out:

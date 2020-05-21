@@ -14,6 +14,9 @@ hints:
       mashmap:
         specs: [ "https://github.com/marbl/MashMap" ]
         version: [ "2.0" ]
+  ResourceRequirement:
+    coresMin: 4
+    ramMin: 3814
 
 baseCommand: mashmap
 
@@ -35,7 +38,7 @@ inputs:
     inputBinding:
       prefix: "-r"
     doc: |
-      an input reference file (fasta/fastq)[.gz]      
+      an input reference file (fasta/fastq)[.gz]
   reference_genomes_list:
     type: File?
     inputBinding:
@@ -100,8 +103,16 @@ inputs:
     type: int?
     inputBinding:
       prefix: "--threads"
+      valueFrom: |
+        ${
+            if (self == null) {
+                return runtime.cores;
+            } else {
+                return self;
+            }
+        }
     doc: |
-      count of threads for parallel execution [default : 1] 
+      count of threads for parallel execution [default : 4] 
 
 stdout: stdout
 stderr: stderr

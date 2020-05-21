@@ -549,13 +549,13 @@
   output:
     output_table:
       - basename: high_confidence_putative_viral_contigs_mashmap.out
-        checksum: sha1$e47f15465d0835698f6a7de6edfbb747ec67ed41
+        checksum: sha1$811a84f5719a6856ce0bb50438d8c5a7445977d0
         class: File
         location: Any
         path: Any
-        size: 82
+        size: 78
       - basename: prophages_mashmap.out
-        checksum: sha1$7095e6b3cf617ed473029eb141d06a53efd184ea
+        checksum: sha1$3d446d0432afedd1bf08b8d49de478d20a677cdd
         class: File
         location: Any
         path": Any
