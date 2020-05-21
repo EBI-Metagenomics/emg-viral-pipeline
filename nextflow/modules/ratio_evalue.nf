@@ -13,7 +13,7 @@ process ratio_evalue {
     shell:
     """
     [ -d "models" ] && cp models/* .
-    ratio_evalue_table.py -i ${modified_table} -t ${model_metadata} -o .
+    ratio_evalue_table.py -i ${modified_table} -t ${model_metadata} -o ${set_name}_modified_informative.tsv
     """
 }
 /* Description:          Generates tabular file (File_informative_ViPhOG.tsv) listing results per protein, which include the ratio of the aligned target profile and the abs value of the total Evalue
@@ -29,27 +29,25 @@ out PRJNA530103_small_modified_informative.tsv
 process metaGetDB {
   label 'ratio_evalue'    
   if (params.cloudProcess) { 
-    publishDir "${params.cloudDatabase}/models", mode: 'copy', pattern: "Additional_data_vpHMMs_${params.meta_version}.dict" 
+    publishDir "${params.cloudDatabase}/models", mode: 'copy', pattern: "additional_data_vpHMMs_${params.meta_version}.tsv" 
   }
   else { 
     storeDir "nextflow-autodownload-databases/models" 
   }  
     
     output:
-      file("Additional_data_vpHMMs_${params.meta_version}.dict")
+      file("additional_data_vpHMMs_${params.meta_version}.tsv")
     
     shell:
     if (params.meta_version.toString() == 'v1')
     """
     # v1 of metadata file
-    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/Additional_data_vpHMMs.xlsx
-    generate_vphmm_object.py -x Additional_data_vpHMMs.xlsx -o Additional_data_vpHMMs_${params.meta_version}.dict
+    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/additional_data_vpHMMs_v1.tsv
     """
     else if (params.meta_version.toString() == 'v2')
     """
     # v2 of metadata file
-    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/Additional_data_vpHMMs_v2.xlsx
-    generate_vphmm_object.py -x Additional_data_vpHMMs_v2.xlsx -o Additional_data_vpHMMs_${params.meta_version}.dict
+    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/additional_data_vpHMMs_v2.tsv
     """
     
 }

@@ -29,7 +29,6 @@ Soon...
 
 ## Setup environment
 
-
 ```bash
 conda env create -f cwl/requirements/conda_env.yml
 conda activate viral_pipeline

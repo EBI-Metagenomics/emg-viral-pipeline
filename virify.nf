@@ -72,6 +72,9 @@ if (params.illumina == '' &&  params.fasta == '' ) {
                 .fromPath( params.fasta, checkIfExists: true)
                 .map { file -> tuple(file.simpleName, file) }
                 }
+        if (params.mashmap) { mashmap_ref_ch = Channel
+                .fromPath( params.mashmap, checkIfExists: true)
+              }
 
 /************************** 
 * MODULES
@@ -120,7 +123,8 @@ include ratio_evalue from './nextflow/modules/ratio_evalue'
 include annotation from './nextflow/modules/annotation' 
 include assign from './nextflow/modules/assign' 
 include blast from './nextflow/modules/blast' 
-include blast_filter from './nextflow/modules/blast_filter' 
+include blast_filter from './nextflow/modules/blast_filter'
+include mashmap from './nextflow/modules/mashmap'
 
 //visuals
 include plot_contig_map from './nextflow/modules/plot_contig_map' 
@@ -162,7 +166,7 @@ workflow download_model_meta {
     if (!params.cloudProcess) { metaGetDB(); db = metaGetDB.out }
     // cloud storage via preload.exists()
     if (params.cloudProcess) {
-      preload = file("${params.cloudDatabase}/models/Additional_data_vpHMMs_${params.meta_version}.dict")
+      preload = file("${params.cloudDatabase}/models/additional_data_vpHMMs_${params.meta_version}.tsv")
       if (preload.exists()) { db = preload }
       else  { metaGetDB(); db = metaGetDB.out } 
     }
@@ -393,6 +397,11 @@ workflow annotate {
           hmmscan_vogdb(prodigal.out, vogdb_db)
           hmmscan_vpf(prodigal.out, vpf_db)
         }
+
+        // mashmap
+        if (params.mashmap) {
+            mashmap(predicted_contigs, mashmap_ref_ch, params.mashmap_len)
+        }
         
     predicted_contigs_filtered = predicted_contigs.map { id, set_name, fasta -> [set_name, id, fasta] }
     plot_contig_map_filtered = plot_contig_map.out.map { id, set_name, dir, table -> [set_name, table] }
@@ -508,28 +517,35 @@ workflow {
       if (params.onlyannotate) {
         plot(
           annotate(
-            postprocess(preprocess(fasta_input_ch).map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map)}), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data)
+            postprocess(
+              preprocess(
+                fasta_input_ch).map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map)}
+              ), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data
+          )
         )
       } else {
         plot(
           annotate(
-            postprocess(detect(preprocess(fasta_input_ch), virsorter_db, pprmeta_git)), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data)
+            postprocess(
+                detect(
+                    preprocess(fasta_input_ch),
+                    virsorter_db, pprmeta_git
+                )
+            ), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data
+          )
         )
       }
     } 
 
     // illumina data to build an assembly first
     if (params.illumina) { 
-      assemble_illumina(illumina_input_ch)           
+      assemble_illumina(illumina_input_ch)    
       plot(
         annotate(
           postprocess(detect(preprocess(assemble_illumina.out), virsorter_db, pprmeta_git)), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data)
       )
     }
 }
-
-
-
 
 /*************  
 * --help
@@ -568,7 +584,7 @@ def helpMSG() {
     --ncbi              a NCBI taxonomy database, from ete3 import NCBITaxa, named ete3_ncbi_tax.sqlite [default: $params.ncbi]
     --imgvr             the IMG/VR, viral (meta)genome sequences [default: $params.imgvr]
     --pprmeta           the PPR-Meta github [default: $params.pprmeta]
-    --meta              the XLSX dictionary w/ meta information about ViPhOG models [default: $params.meta]
+    --meta              the tsv dictionary w/ meta information about ViPhOG models [default: $params.meta]
     Important! If you provide your own hmmer database follow this format:
         rvdb/rvdb.hmm --> <folder>/<name>.hmm && 'folder' == 'name'
     and provide the database following this command structure
@@ -583,6 +599,8 @@ def helpMSG() {
     --sankey            select the x taxa with highest count for sankey plot, try and error to change plot [default: $params.sankey]
     --chunk             WIP: chunk FASTA files into smaller pieces for parallel calculation [default: $params.chunk]
     --onlyannotate      Only annotate the input FASTA (no virus prediction, only contig length filtering) [default: $params.only_annotate]
+    --mashmap           Map the viral contigs against the provided reference ((fasta/fastq)[.gz]) with mashmap [default: $params.mashmap]
+    --mashmap_len       Mashmap mapping segment length, shorter sequences will be ignored [default : $params.mashmap_len]
 
     ${c_yellow}Developing:${c_reset}
     --viphog_version    define the ViPhOG db version to be used [default: $params.viphog_version]

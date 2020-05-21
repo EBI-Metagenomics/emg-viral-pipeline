@@ -1,0 +1,6 @@
+name: mashmap
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - mashmap=2.0=h9dd4a16_2
