@@ -1,0 +1,8 @@
+blast_results_filtered:
+  class: File
+  path: low_confidence_putative_viral_contigs_imgvr_blast_filtered.tsv
+  format: http://edamontology.org/format_3475  
+database:
+  path: ../../../databases/IMG_VR_2018-07-01_4
+  class: Directory
+outfile: blast_merged_result.tsv

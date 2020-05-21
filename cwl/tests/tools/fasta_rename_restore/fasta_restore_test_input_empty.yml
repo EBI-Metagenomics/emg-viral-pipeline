@@ -1,0 +1,4 @@
+name_map:
+  class: File
+  path: fasta_map.tsv
+  format: http://edamontology.org/format_3475

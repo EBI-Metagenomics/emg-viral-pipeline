@@ -1,0 +1,13 @@
+fasta_files:
+  - path: high_confidence_putative_viral_contigs.fna
+    class: File
+    format: http://edamontology.org/format_1929
+  - path: low_confidence_putative_viral_contigs.fna
+    class: File
+    format: http://edamontology.org/format_1929
+  - path: putative_prophages.fna
+    class: File
+    format: http://edamontology.org/format_1929
+database:
+  path: ../../../databases/IMG_VR_2018-07-01_4 
+  class: Directory

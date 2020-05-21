@@ -1,0 +1,18 @@
+virsorter_data_dir:
+  class: Directory
+  path: ../../databases/virsorter_data
+input_fasta_file:
+  class: File
+  path: ERR575691_host_filtered.fasta
+hmms_serialized_file:
+  class: File
+  path: ../../databases/vphmm_2020-01-29.pickle
+hmmscan_database_directory:
+  class: Directory
+  path: ../../databases/vpHMM
+ncbi_tax_db_file:
+  class: File
+  path: ../../databases/ete3_ncbi_tax.sqlite
+blast_database_dir:
+  class: Directory
+  path: ../../databases/IMG_VR_2018-07-01_4

@@ -1,0 +1,25 @@
+language: python
+python: 3.7
+
+install:
+  # conda env
+  - wget "https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh" -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - source "$HOME/miniconda/etc/profile.d/conda.sh"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda info -a
+  # pipeline env
+  - conda env create -f cwl/requirements/conda_env.yml
+  - conda activate viral_pipeline
+
+script:
+  # CWL tests
+  - cd $TRAVIS_BUILD_DIR/cwl/tests
+  # NOTE: run only tests that do not require DBs or files from the FTP server
+  - bash cwltest.sh --test tests.yml -j 4 --verbose -n 1,4,5,6,10,11,12,13,19
+  # Python tests
+  - cd $TRAVIS_BUILD_DIR/
+  - python -m unittest discover tests
+
+cache: pip

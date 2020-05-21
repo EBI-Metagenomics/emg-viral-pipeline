@@ -1,0 +1,12 @@
+fasta_file:
+  class: File
+  path: high_confidence_putative_viral_contigs.fna
+hmms_serialized_file:
+  class: File
+  path: ../../databases/vphmm_2020-01-29.pickle
+hmmscan_database:
+  class: Directory
+  path: ../../databases/vpHMM
+ncbi_tax_db_file:
+  class: File
+  path: ../../databases/ete3_ncbi_tax.sqlite
