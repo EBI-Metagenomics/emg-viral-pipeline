@@ -72,6 +72,8 @@ if (params.illumina == '' &&  params.fasta == '' ) {
                 .fromPath( params.fasta, checkIfExists: true)
                 .map { file -> tuple(file.simpleName, file) }
                 }
+
+    // mashmap input
         if (params.mashmap) { mashmap_ref_ch = Channel
                 .fromPath( params.mashmap, checkIfExists: true)
               }
@@ -400,7 +402,7 @@ workflow annotate {
 
         // mashmap
         if (params.mashmap) {
-            mashmap(predicted_contigs, mashmap_ref_ch, params.mashmap_len)
+            mashmap(predicted_contigs, mashmap_ref_ch)
         }
         
     predicted_contigs_filtered = predicted_contigs.map { id, set_name, fasta -> [set_name, id, fasta] }
@@ -600,7 +602,7 @@ def helpMSG() {
     --chunk             WIP: chunk FASTA files into smaller pieces for parallel calculation [default: $params.chunk]
     --onlyannotate      Only annotate the input FASTA (no virus prediction, only contig length filtering) [default: $params.only_annotate]
     --mashmap           Map the viral contigs against the provided reference ((fasta/fastq)[.gz]) with mashmap [default: $params.mashmap]
-    --mashmap_len       Mashmap mapping segment length, shorter sequences will be ignored [default : $params.mashmap_len]
+    --mashmap_len       Mashmap mapping segment length, shorter sequences will be ignored [default: $params.mashmap_len]
 
     ${c_yellow}Developing:${c_reset}
     --viphog_version    define the ViPhOG db version to be used [default: $params.viphog_version]

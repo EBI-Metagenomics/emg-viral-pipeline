@@ -7,13 +7,12 @@ process mashmap {
     input:
       tuple val(assembly_name), val(confidence_set_name), file(fasta) 
       file(reference)
-      val(length) 
     
     output:
       file("${confidence_set_name}_mashmap_hits.tsv")
     
     shell:
     """
-    mashmap -q ${fasta} -r ${reference} -t ${params.cores} -o ${confidence_set_name}_mashmap_hits.tsv --noSplit -s ${length}
+    mashmap -q ${fasta} -r ${reference} -t ${task.cpus} -o ${confidence_set_name}_mashmap_hits.tsv --noSplit -s ${params.mashmap_len}
     """
 }
