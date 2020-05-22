@@ -8,7 +8,7 @@ process rename {
     output:
       tuple val(name), file("${name}_renamed.fasta"), file("${name}_map.tsv")
     
-    shell:
+    script:
     """    
     if [[ ${fasta} =~ \\.gz\$ ]]; then
       zcat ${fasta} > tmp.fasta

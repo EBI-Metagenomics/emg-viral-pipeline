@@ -13,7 +13,7 @@ process blast_filter {
     output:
       tuple val(assembly_name), val(confidence_set_name), file("*.meta")
     
-    shell:
+    script:
     if (task.attempt.toString() == '1')
     """
       imgvr_merge.py -f ${blast_filtered} -d IMG_VR_2018-07-01_4/IMGVR_all_Sequence_information.tsv -o \$(basename ${blast_filtered} .blast).meta

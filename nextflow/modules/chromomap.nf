@@ -8,7 +8,7 @@ process generate_chromomap_table {
     output:
       tuple val(name), val(set_name), file("${id}.filtered-*.contigs.txt"), file("${id}.filtered-*.anno.txt")
     
-    shell:
+    script:
     id = set_name
     if (set_name == "all") { id = name }
     """
@@ -38,7 +38,7 @@ process chromomap {
     output:
       tuple val(name), val(set_name), file("*.html")
     
-    shell:
+    script:
     id = set_name
     if (set_name == "all") { id = name }
     """

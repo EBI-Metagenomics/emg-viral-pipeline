@@ -11,7 +11,7 @@ process mashmap {
     output:
       file("${confidence_set_name}_mashmap_hits.tsv")
     
-    shell:
+    script:
     """
     mashmap -q ${fasta} -r ${reference} -t ${task.cpus} -o ${confidence_set_name}_mashmap_hits.tsv --noSplit -s ${params.mashmap_len}
     """

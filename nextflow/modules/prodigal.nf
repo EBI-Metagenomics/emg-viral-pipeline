@@ -9,7 +9,7 @@ process prodigal {
     output:
       tuple val(assembly_name), val(confidence_set_name), file("*.faa")
     
-    shell:
+    script:
     """
     prodigal -p "meta" -a ${confidence_set_name}_prodigal.faa -i ${fasta}
     """

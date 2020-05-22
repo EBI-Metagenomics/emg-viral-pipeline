@@ -8,7 +8,7 @@ process phanotate {
     output:
       tuple val(name), stdout, file("*.faa")
     
-    shell:
+    script:
     """
     # this can be removed as soon as a conda recipe is available
     git clone https://github.com/deprekate/PHANOTATE.git

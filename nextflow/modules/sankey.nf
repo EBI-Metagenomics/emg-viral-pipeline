@@ -9,7 +9,7 @@ process generate_sankey_table {
     output:
       tuple val(name), val(set_name), file("${set_name}.sankey.filtered-${params.sankey}.json"), file("${set_name}.sankey.tsv")
     
-    shell:
+    script:
     """
     krona_table_2_sankey_table.rb ${krona_table} ${set_name}.sankey.tsv
     
@@ -31,7 +31,7 @@ process sankey {
     output:
       tuple val(name), val(set_name), file("*.sankey.html")
     
-    shell:
+    script:
     id = set_name
     if (set_name == "all") { id = name }
     """

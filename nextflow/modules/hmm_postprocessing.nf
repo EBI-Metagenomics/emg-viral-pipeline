@@ -8,7 +8,7 @@ process hmm_postprocessing {
     output:
       tuple val(name), val(set_name), file("${set_name}_modified.tsv"), file(faa)
     
-    shell:
+    script:
     """
     hmmscan_format_table.py -t ${hmmer_tbl} -o ${set_name}_modified
     """

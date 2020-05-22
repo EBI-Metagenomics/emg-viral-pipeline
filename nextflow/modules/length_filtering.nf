@@ -8,7 +8,7 @@ process length_filtering {
     output:
       tuple val(name), file("${name}*filt*.fasta"), env(CONTIGS)
     
-    shell:
+    script:
     """    
       filter_contigs_len.py -f ${fasta} -l ${params.length} -o ./
       CONTIGS=\$(grep ">" ${name}*filt*.fasta | wc -l)

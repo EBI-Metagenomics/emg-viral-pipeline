@@ -10,7 +10,7 @@ process ratio_evalue {
     output:
       tuple val(name), val(set_name), file("${set_name}_modified_informative.tsv"), file(faa)
     
-    shell:
+    script:
     """
     [ -d "models" ] && cp models/* .
     ratio_evalue_table.py -i ${modified_table} -t ${model_metadata} -o ${set_name}_modified_informative.tsv
@@ -38,7 +38,7 @@ process metaGetDB {
     output:
       file("additional_data_vpHMMs_${params.meta_version}.tsv")
     
-    shell:
+    script:
     if (params.meta_version.toString() == 'v1')
     """
     # v1 of metadata file
