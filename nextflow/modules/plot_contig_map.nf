@@ -9,7 +9,7 @@ process plot_contig_map {
     output:
       tuple val(name), val(set_name), file("${set_name}_mapping_results"), file("${set_name}_prot_ann_table_filtered.tsv")
     
-    shell:
+    script:
     """
   	# get only contig IDs that have at least one annotation hit 
 	  IDS=\$(awk 'BEGIN{FS="\\t"};{if(\$6!="No hit"){print \$1}}' ${tab} | sort | uniq | grep -v Contig)

@@ -1,0 +1,10 @@
+aa_fasta_files:
+  - class: File
+    path: high_confidence_putative_viral_contigs_prodigal.faa
+    format: http://edamontology.org/format_1929
+  - class: File
+    path: low_confidence_putative_viral_contigs_prodigal.faa
+    format: http://edamontology.org/format_1929
+database:
+  class: Directory
+  path: ../../../databases/vpHMM

@@ -9,7 +9,7 @@ process hmmscan {
     output:
       tuple val(name), val(set_name), file("${set_name}_${params.db}_hmmscan.tbl"), file(faa)
     
-    shell:
+    script:
     """
     if [[ ${params.db} == "viphogs" ]]; then
       if [[ ${params.version} == "v1" ]]; then

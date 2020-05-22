@@ -1,0 +1,5 @@
+fasta_file:
+  class: File
+  path: ERR575691_host_filtered.fasta
+  format: http://edamontology.org/format_1929
+length: 1.0

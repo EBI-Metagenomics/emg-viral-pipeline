@@ -9,7 +9,7 @@ process restore {
     output:
       tuple val(name), env(BN), file("*_original.fasta")
     
-    shell:
+    script:
     """    
     BN=\$(basename ${fasta} .fna)
     rename_fasta.py -i ${fasta} -m ${map} -o \${BN}_original.fasta restore 2> /dev/null

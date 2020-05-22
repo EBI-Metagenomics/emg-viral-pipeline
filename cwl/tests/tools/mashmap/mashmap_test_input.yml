@@ -1,0 +1,11 @@
+input_fastas:
+  - class: File
+    path: high_confidence_putative_viral_contigs.fasta
+    format: http://edamontology.org/format_1929
+  - class: File
+    path: prophages.fasta
+    format: http://edamontology.org/format_1929
+reference:
+  class: File
+  path: reference.fasta
+  format: http://edamontology.org/format_1929

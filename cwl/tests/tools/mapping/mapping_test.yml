@@ -1,0 +1,96 @@
+# cwltest --basedir cwl_test_dir --test ../Tools/Mapping/mapping.cwl --tool cwltool
+
+- job: ../Tools/Mapping/mapping.yml
+  tool: ../Tools/Mapping/mapping.cwl
+  output:
+      folder:
+        basename: Mapping_results
+        class: Directory
+        location: Mapping_results
+        path: Mapping_results
+        listing:
+          - class: File
+            size: 4558
+            basename: NODE_311_length_705_cov_2857.230769_10_H.pdf
+            location: NODE_311_length_705_cov_2857.230769_10_H.pdf
+            path: NODE_311_length_705_cov_2857.230769_10_H.pdf
+
+          - class: File
+            size: 4523
+            basename: NODE_982_length_348_cov_1.825939_10_H.pdf
+            location: NODE_982_length_348_cov_1.825939_10_H.pdf
+            path: NODE_982_length_348_cov_1.825939_10_H.pdf
+
+          - class: File
+            size: 4525
+            basename: NODE_814_length_380_cov_1.563077_10_H.pdf
+            location: NODE_814_length_380_cov_1.563077_10_H.pdf
+            path: NODE_814_length_380_cov_1.563077_10_H.pdf
+
+          - class: File
+            size: 4535
+            basename: NODE_1072_length_330_cov_1.425455_10_H.pdf
+            location: NODE_1072_length_330_cov_1.425455_10_H.pdf
+            path: NODE_1072_length_330_cov_1.425455_10_H.pdf
+
+          - class: File
+            size: 4553
+            basename: NODE_1232_length_305_cov_1.948000_10_H.pdf
+            location: NODE_1232_length_305_cov_1.948000_10_H.pdf
+            path: NODE_1232_length_305_cov_1.948000_10_H.pdf
+
+          - class: File
+            size: 4564
+            basename: NODE_900_length_364_cov_1.546926_10_H.pdf
+            location: NODE_900_length_364_cov_1.546926_10_H.pdf
+            path: NODE_900_length_364_cov_1.546926_10_H.pdf
+
+          - class: File
+            size: 4526
+            basename: NODE_938_length_356_cov_1.176080_10_H.pdf
+            location: NODE_938_length_356_cov_1.176080_10_H.pdf
+            path: NODE_938_length_356_cov_1.176080_10_H.pdf
+
+          - class: File
+            size: 4532
+            basename: NODE_1099_length_325_cov_1.400000_10_H.pdf
+            location: NODE_1099_length_325_cov_1.400000_10_H.pdf
+            path: NODE_1099_length_325_cov_1.400000_10_H.pdf
+
+          - class: File
+            size: 4559
+            basename: NODE_82_length_2020_cov_811.839186_10_H.pdf
+            location: NODE_82_length_2020_cov_811.839186_10_H.pdf
+            path: NODE_82_length_2020_cov_811.839186_10_H.pdf
+
+          - class: File
+            size: 4562
+            basename: NODE_1155_length_316_cov_1.137931_10_H.pdf
+            location: NODE_1155_length_316_cov_1.137931_10_H.pdf
+            path: NODE_1155_length_316_cov_1.137931_10_H.pdf
+
+          - class: File
+            size: 4531
+            basename: NODE_1081_length_329_cov_0.762774_10_H.pdf
+            location: NODE_1081_length_329_cov_0.762774_10_H.pdf
+            path: NODE_1081_length_329_cov_0.762774_10_H.pdf
+
+          - class: File
+            size: 4537
+            basename: NODE_1234_length_305_cov_1.524000_10_H.pdf
+            location: NODE_1234_length_305_cov_1.524000_10_H.pdf
+            path: NODE_1234_length_305_cov_1.524000_10_H.pdf
+
+      stderr:
+        basename: stderr.txt
+        class: File
+        location: stderr.txt
+        path: stderr.txt
+        size: 52
+
+      stdout:
+        basename: stdout.txt
+        class: File
+        location: stdout.txt
+        path: stdout.txt
+        size: 0

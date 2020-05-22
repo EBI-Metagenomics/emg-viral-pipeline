@@ -1,0 +1,12 @@
+Contig	CDS_ID	Start	End	Direction	Best_hit	Abs_Evalue_exp	Label
+NODE_82_length_2020_cov_811.839186_10_H	NODE_82_length_2020_cov_811.839186_10_H_1	3	1364	1	No hit	NA	
+NODE_82_length_2020_cov_811.839186_10_H	NODE_82_length_2020_cov_811.839186_10_H_2	1632	1901	1	No hit	NA	
+NODE_311_length_705_cov_2857.230769_10_H	NODE_311_length_705_cov_2857.230769_10_H_1	31	474	1	No hit	NA	
+NODE_311_length_705_cov_2857.230769_10_H	NODE_311_length_705_cov_2857.230769_10_H_2	484	705	1	No hit	NA	
+NODE_814_length_380_cov_1.563077_10_H	NODE_814_length_380_cov_1.563077_10_H_1	1	162	-1	No hit	NA	
+NODE_900_length_364_cov_1.546926_10_H	NODE_900_length_364_cov_1.546926_10_H_1	3	242	1	No hit	NA	
+NODE_938_length_356_cov_1.176080_10_H	NODE_938_length_356_cov_1.176080_10_H_1	3	356	1	No hit	NA	
+NODE_982_length_348_cov_1.825939_10_H	NODE_982_length_348_cov_1.825939_10_H_1	3	347	1	No hit	NA	
+NODE_1072_length_330_cov_1.425455_10_H	NODE_1072_length_330_cov_1.425455_10_H_1	3	329	1	No hit	NA	
+NODE_1081_length_329_cov_0.762774_10_H	NODE_1081_length_329_cov_0.762774_10_H_1	2	328	-1	No hit	NA	
+NODE_1099_length_325_cov_1.400000_10_H	NODE_1099_length_325_cov_1.400000_10_H_1	1	87	-1	No hit	NA

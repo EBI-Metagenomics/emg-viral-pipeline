@@ -10,7 +10,7 @@ process assign {
     output:
       tuple val(name), val(set_name), file("*tax_assign.tsv")
     
-    shell:
+    script:
     """
     contig_taxonomic_assign.py -i ${tab} -d ${db}
     """

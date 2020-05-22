@@ -8,7 +8,7 @@ process annotation {
     output:
       tuple val(name), val(set_name), file("*_prot_ann_table.tsv")
     
-    shell:
+    script:
     """
     viral_contigs_annotation.py -o . -p ${faa} -t ${tab}
     """

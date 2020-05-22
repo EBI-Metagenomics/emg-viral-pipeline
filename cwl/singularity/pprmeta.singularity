@@ -1,0 +1,73 @@
+Bootstrap: docker
+
+From: ubuntu:bionic
+
+%post
+    apt-get update
+
+    apt-get install -y python2.7 python-pip git unzip wget libxt6
+    
+    rm -rf PPR-Meta
+    
+    git clone https://github.com/zhenchengfang/PPR-Meta.git
+    
+    pip install -U numpy h5py tensorflow keras==2.0.8
+
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    
+    mkdir /mcr-install
+    mkdir /opt/mcr
+    
+    cd /mcr-install
+
+    wget http://ssd.mathworks.com/supportfiles/downloads/R2018a/deployment_files/R2018a/installers/glnxa64/MCR_R2018a_glnxa64_installer.zip
+
+    cd /mcr-install
+
+    unzip -q MCR_R2018a_glnxa64_installer.zip
+    
+    ./install -destinationFolder /opt/mcr -agreeToLicense yes -mode silent
+    
+    cd /
+    
+    rm -rf mcr-install
+
+    chmod +x /PPR-Meta/PPR_Meta
+
+%environment
+
+    export LD_LIBRARY_PATH=/opt/mcr/v94/runtime/glnxa64:/opt/mcr/v94/bin/glnxa64:/opt/mcr/v94/sys/os/glnxa64:/opt/mcr/v94/extern/bin/glnxa64
+
+    export PATH=/PPR-Meta:$PATH
+
+%runscript
+
+    echo "PPR-Meta"
+
+    echo "Arguments received: $*"
+
+    echo " -- Copying PPR-Meta files to /data -- "
+    echo " -- this is a patch because PPR-Meta doesn't copy the files properly --"
+
+    cp /PPR-Meta/*.py /data 
+    cp /PPR-Meta/*.h5 /data
+
+    echo "Starting..."
+
+    # run PPR_Meta and clean after, if error clean and exit with error code
+    PPR_Meta "${@}" && rm /data/*.py && rm /data/*.h5 || $(rm /data/*.py && rm /data/*.h5 && exit 1)
+%help
+
+    PPR-Meta singularity containter.
+
+    This containter 
+
+    In order to use:
+    
+    $ singularity run --pwd /data --bind $(pwd):/data pprmeta.simg contigs.fasta output.csv
+
+%labels
+
+    Maintainer EBI-Metagenomics team
+
+    Version v1.0

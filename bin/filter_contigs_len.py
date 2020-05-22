@@ -2,49 +2,62 @@
 
 import argparse
 import os
-import re
-import sys
+from pathlib import Path
 
 from Bio import SeqIO
 
 
-def filter_contigs(**kwargs):
-	seq_records = SeqIO.parse(kwargs["contig_file"], "fasta")
-	if kwargs["output_dir"] == ".":
-		outdir = os.getcwd()
-	else:
-		outdir = kwargs["output_dir"]
-	#dataset_ident = kwargs["ident"]
-	#outname = "%s_filt%skb.fasta" % (dataset_ident, kwargs["thres"])
-	#if kwargs["thres"] < 1:
-	#	outname = re.split(r"\.[a-z]+$", os.path.basename(kwargs["contig_file"]))[0] + "_filt%sbp.fasta" % int(kwargs["thres"] * 1000)
-	#else:
-	#	outname = re.split(r"\.[a-z]+$", os.path.basename(kwargs["contig_file"]))[0] + "_filt%skb.fasta" % int(kwargs["thres"])
-	outname = re.split(r"\.[a-z]+$", os.path.basename(kwargs["contig_file"]))[0] + "_filt%sbp.fasta" % int(kwargs["thres"] * 1000)
-	final_records = []
-	if kwargs["run_id"] is None:
-		for record in seq_records:
-			if len(record) >= kwargs["thres"]*1000:
-				final_records.append(record)
-	else:
-		counter = 1
-		for record in seq_records:
-			if len(record) >= kwargs["thres"]*1000:
-				record.description = "%s_%s" % (kwargs["run_id"], counter)
-				counter += 1
-				final_records.append(record)
-	SeqIO.write(final_records, os.path.join(outdir, outname), "fasta")
+def _filter_and_rename(iterator, threshold, run_id):
+    counter = 1
+    for record in iterator:
+        if len(record) >= threshold:
+            record.description = run_id + "_" + str(counter)
+            counter += 1
+            yield record
+
+
+def filter_contigs(contig_file, length, out_dir, run_id):
+    """Filter the contigs by length.
+    """
+    threshold = length * 1000
+    seq_records = SeqIO.parse(contig_file, "fasta")
+
+    if out_dir == ".":
+        out_dir = os.getcwd()
+
+    out_name = Path(contig_file).stem + "_filt" + str(int(threshold)) + "bp.fasta"
+
+    final_records = ()
+    if run_id is None:
+        final_records = (record for record in seq_records
+                         if len(record.seq) >= threshold)
+    else:
+        final_records = _filter_and_rename(seq_records, threshold, run_id)
+
+    SeqIO.write(final_records, os.path.join(out_dir, out_name), "fasta")
 
 
 if __name__ == "__main__":
-	parser = argparse.ArgumentParser(description="Extract sequences at least X kb long")
-	parser.add_argument("-f", dest="fasta_file", help="Relative or absolute path to input fasta file", required=True)
-	parser.add_argument("-l", dest="length", help="Length threshold in kb of selected sequences (default: 5kb)", type=float, default="5.0")
-	parser.add_argument("-o", dest="outdir", help="Relative or absolute path to directory where you want to store output (default: cwd)", default=".")
-	parser.add_argument("-i", dest="ident", help="Dataset identifier or accession number. Should only be introduced if you want to add it to each sequence header, along with a sequential number", default = None)
-	if len(sys.argv) == 1 :
-		parser.print_help()
-		sys.exit(1)
-	else:
-		args = parser.parse_args()
-		filter_contigs(contig_file=args.fasta_file, thres=args.length, output_dir=args.outdir, run_id = args.ident)
+    parser = argparse.ArgumentParser(description="Extract sequences at least X kb long")
+    parser.add_argument("-f", dest="fasta_file",
+                        help="Relative or absolute path to input fasta file", required=True)
+    parser.add_argument(
+        "-l", dest="length", help="Length threshold in kb of selected sequences (default: 5kb)",
+        type=float, default="5.0")
+    parser.add_argument(
+        "-o", dest="outdir", help="Relative or absolute path to directory where you "
+        "want to store output (default: cwd)", default=".")
+    parser.add_argument(
+        "-i", dest="ident", help="Dataset identifier or accession number. Should only "
+        " be introduced if you want to add it to each sequence header, along with a "
+        "sequential number",
+        default=None)
+
+    args = parser.parse_args()
+
+    filter_contigs(
+        args.fasta_file,
+        args.length,
+        args.outdir,
+        args.ident
+    )

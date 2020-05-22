@@ -3,7 +3,6 @@
 import argparse
 import operator
 import re
-import sys
 from pathlib import Path
 
 from Bio import SeqIO

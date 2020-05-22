@@ -14,7 +14,7 @@ process parse {
     output:
       tuple val(name), file("*.fna"), file('virsorter_metadata.tsv'), file("${name}_virus_predictions.log")
     
-    shell:
+    script:
     """
     touch virsorter_metadata.tsv
     parse_viral_pred.py -a ${fasta} -f ${virfinder} -s ${virsorter}/Predicted_viral_sequences/ -p ${pprmeta} &> ${name}_virus_predictions.log

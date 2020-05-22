@@ -9,7 +9,7 @@ process generate_krona_table {
     output:
       tuple val(name), val(set_name), file("*.krona.tsv")
     
-    shell:
+    script:
     """
     if [[ "${set_name}" == "all" ]]; then
       grep contig_ID *.tsv | awk 'BEGIN{FS=":"};{print \$2}' | uniq > ${name}.tsv

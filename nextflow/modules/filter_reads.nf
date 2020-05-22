@@ -9,7 +9,7 @@ process filter_reads {
       tuple val(name), file("${name}.filtered.fastq")
       tuple val(name), file("${name}.filtered.fasta")
     
-    shell:
+    script:
     """
     sed '/^@/!d;s//>/;N' ${fastq} > ${name}.fasta
     faSomeRecords ${name}.fasta ${kaiju_filtered} ${name}.filtered.fasta
