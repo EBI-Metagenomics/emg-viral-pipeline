@@ -32,7 +32,6 @@ def ratio_evalue(vphmm_df, taxa_dict):
     for vphmm in vphmm_hits:
         vphmm_specific_df = informative_df[informative_df["target name"] == vphmm] \
             .reset_index(drop=True)
-
         query_vcounts = vphmm_specific_df["query name"].value_counts()
         more_than_one = list(query_vcounts[query_vcounts > 1].index)
 
@@ -96,7 +95,7 @@ def ratio_evalue(vphmm_df, taxa_dict):
 
         final_df["Taxon"] = final_df["ViPhOG"].apply(lambda x: taxa_dict[x])
 
-        return final_df
+    return final_df
 
 
 if __name__ == "__main__":
