@@ -12,7 +12,7 @@ process assign {
     
     script:
     """
-    contig_taxonomic_assign.py -i ${tab} -d ${db}
+    contig_taxonomic_assign.py -i ${tab} -d ${db} --prop ${params.prop} --taxthres ${params.taxthres}
     """
 }
 
