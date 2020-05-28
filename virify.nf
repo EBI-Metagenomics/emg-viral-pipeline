@@ -593,6 +593,7 @@ def helpMSG() {
         --rvdb /path/to/your/rvdb
 
     ${c_yellow}Parameters:${c_reset}
+    --evalue            E-value used to filter ViPhOG hits in the ratio_evalue step [default: $params.evalue]
     --virome            VirSorter parameter, set when running a data set mostly composed of viruses [default: $params.virome]
     --hmmextend         Use additional databases for more hmmscan results [default: $params.hmmextend]
     --blastextend       Use additional BLAST database (IMG/VR) for more annotation [default: $params.blastextend]

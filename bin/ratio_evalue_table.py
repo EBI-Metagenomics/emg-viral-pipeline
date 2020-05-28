@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 
-def ratio_evalue(vphmm_df, taxa_dict):
+def ratio_evalue(vphmm_df, taxa_dict, evalue):
     """This function takes a dataframe containing the result of the comparison
        between predicted viral proteins and the ViPhOG database, and outputs a
        table storing the profile hit length ratio and total sequence Evalue for
@@ -15,11 +15,11 @@ def ratio_evalue(vphmm_df, taxa_dict):
     """
 
     # Keep only informative hits to ViPhOG database and those whose i-Evalue
-    # is <= 0.01
+    # is <= 0.01 (default)
 
     informative_df = vphmm_df[
         (vphmm_df["target name"].isin(taxa_dict.keys())) &
-        (vphmm_df["i-Evalue"] <= 0.01)
+        (vphmm_df["i-Evalue"] <= evalue)
     ]
 
     if len(informative_df) < 1:
@@ -110,10 +110,14 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--outfile", dest="out_file",
                         help="Output table name (default: cwd)",
                         default=".")
+    parser.add_argument("-e", "--evalue", dest="evalue",
+                        help="E-value cutoff for each HMM hit",
+                        default=0.01)
     args = parser.parse_args()
 
     input_file = args.input_file
     output_file = args.out_file
+    evalue = args.evalue
 
     input_df = pd.read_csv(input_file, sep="\t")
 
@@ -124,7 +128,7 @@ if __name__ == "__main__":
     for i in range(len(tsv_df)):
         taxa_dict["ViPhOG" + str(tsv_df["Number"][i]) + ".faa"] = tsv_df["Associated"][i]
 
-    output_df = ratio_evalue(input_df, taxa_dict)
+    output_df = ratio_evalue(input_df, taxa_dict, float(evalue))
 
     if not output_df.empty:
         with open(output_file, "w") as of_handle:
