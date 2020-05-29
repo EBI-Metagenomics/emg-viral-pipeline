@@ -35,12 +35,14 @@ def contig_tax(annot_df, ncbi_db, min_prot, prop_annot, tax_thres):
         filtered_df = contig_df[contig_df["Label"].notnull()]
         filtered_df = filtered_df.reset_index(drop=True)
         total_annot_prot = len(filtered_df)
-        if total_annot_prot < max(min_prot, prop_annot * len(contig_df)):
+##        if total_annot_prot < max(min_prot, prop_annot * len(contig_df)):
+        if total_annot_prot < prop_annot * len(contig_df):
             assigned_taxa.extend([""]*4)
         else:
             filtered_df["Rank"] = filtered_df["Label"].apply(get_tax_rank)
             for item in tax_rank_order:
                 tax_hits = {}
+                rank_total = 0
                 if item == "genus":
                     for row, column in filtered_df.iterrows():
                         if column["Rank"] == item:
@@ -48,11 +50,12 @@ def contig_tax(annot_df, ncbi_db, min_prot, prop_annot, tax_thres):
                                 tax_hits[column["Label"]] = 1
                             else:
                                 tax_hits[column["Label"]] += 1
-                    if len(tax_hits) < 1:
+                            rank_total += 1
+                    if len(tax_hits) < 1 or rank_total < 2:
                         assigned_taxa.append("")
                     else:
                         annot_ratio = max(tax_hits.items(), key=operator.itemgetter(1))[
-                            1]/total_annot_prot
+                            1]/rank_total
                         if annot_ratio < tax_thres:
                             assigned_taxa.append(str(annot_ratio))
                         else:
@@ -71,6 +74,7 @@ def contig_tax(annot_df, ncbi_db, min_prot, prop_annot, tax_thres):
                                 tax_hits[column["Label"]] = 1
                             else:
                                 tax_hits[column["Label"]] += 1
+                            rank_total += 1
                         else:
                             try:
                                 name2taxid = ncbi.get_name_translator(
@@ -87,15 +91,16 @@ def contig_tax(annot_df, ncbi_db, min_prot, prop_annot, tax_thres):
                                                 tax_hits[lineage_names[x]] = 1
                                             else:
                                                 tax_hits[lineage_names[x]] += 1
+                                            rank_total += 1
                                             break
                             except:
                                 continue
 
-                    if len(tax_hits) < 1:
+                    if len(tax_hits) < 1 or rank_total < 2:
                         assigned_taxa.append("")
                     else:
                         annot_ratio = max(tax_hits.items(), key=operator.itemgetter(1))[
-                            1]/total_annot_prot
+                            1]/rank_total
                         if annot_ratio < tax_thres:
                             assigned_taxa.append(str(annot_ratio))
                         else:
@@ -124,7 +129,7 @@ if __name__ == "__main__":
     parser.add_argument("--minprot", dest="min_prot", type=int,
                         help="Minimum number of proteins with ViPhOG annotations required for taxonomic assignment (used when --percent is lower than this value, default: 3)", default=3)
     parser.add_argument("--prop", dest="prot_prop", type=float,
-                        help="Minimum proportion of proteins in a contig that must have a ViPhOG annotation in order to provide a taxonomic assignment (default: 0.2)", default=0.2)
+                        help="Minimum proportion of proteins in a contig that must have a ViPhOG annotation in order to provide a taxonomic assignment (default: 0.1)", default=0.1)
     parser.add_argument("--taxthres", dest="tax_thres", type=float,
                         help="Minimum proportion of annotated genes required for taxonomic assignment (default: 0.6)", default=0.6)
     parser.add_argument("-o", "--outdir", dest="outdir",
