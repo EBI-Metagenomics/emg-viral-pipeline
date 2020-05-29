@@ -43,7 +43,7 @@ VIROME=""
 MASHMAP_REFERENCE=""
 ENV_SCRIPT=""
 
-while getopts "en:j:o:c:m:i:vs:h" opt; do
+while getopts "e:n:j:o:c:m:i:vs:h" opt; do
   case $opt in
     e)
         ENV_SCRIPT="$OPTARG"
@@ -155,7 +155,7 @@ if [ -z "$NAME_RUN" ] || \
    [ -z "$OUT_DIR" ] || \
    [ -z "$CORES" ] || \
    [ -z "$MEMORY" ] || \
-   [ -z "$INPUT_FASTA" ] \
+   [ -z "$INPUT_FASTA" ] || \
    [ -z "$ENV_SCRIPT" ]
 then
     echo ""
@@ -189,17 +189,28 @@ mkdir -p "$OUT"
 # Prepare the yaml file
 YML_INPUT="${NAME_RUN}_${TS}_input.yaml"
 
-cwl_input.py \
--i "${INPUT_FASTA}" \
--s "${VIRSORTER_DATA}" \
--a "${ADDITIONAL_HMMS_DATA}" \
--j "${HMMSCAN_DATABASE_DIRECTORY}" \
--n "${NCBI_TAX_DB_FILE}" \
--b "${IMGVR_BLAST_DB}" \
--p "${PPRMETA_SIMG}" \
--o "${YML_INPUT}" \
-"${MASHMAP_REFERENCE}" \
-"${VIROME}"
+CWL_PARAMS=(
+    -i "${INPUT_FASTA}"
+    -s "${VIRSORTER_DATA}"
+    -a "${ADDITIONAL_HMMS_DATA}"
+    -j "${HMMSCAN_DATABASE_DIRECTORY}"
+    -n "${NCBI_TAX_DB_FILE}"
+    -b "${IMGVR_BLAST_DB}"
+    -p "${PPRMETA_SIMG}"
+    -o "${YML_INPUT}"
+)
+
+if [ ! -z "$MASHMAP_REFERENCE" ];
+then
+    CWL_PARAMS+=("${MASHMAP_REFERENCE}")
+fi
+
+if [ ! -z "$VIROME" ];
+then
+    CWL_PARAMS+=("${VIROME}")
+fi
+
+cwl_input.py "${CWL_PARAMS[@]}"
 
 # assume CWL is src/pipeline.cwl relative to this script
 SCRIPT_DIR="$(dirname "$0")"
