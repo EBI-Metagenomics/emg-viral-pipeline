@@ -41,7 +41,7 @@ class Record:
         if self.category == "prophage" and len(self.prange):
             seq_record.id += f" prophage-{self.prange[0]}:{self.prange[1]}"
         if self.circular:
-            seq_record.id += f" phage-circular"
+            seq_record.id += " phage-circular"
         # clean
         seq_record.description = ""
         return seq_record
@@ -256,3 +256,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args.pprmeta, args.finder, args.sorter, args.assembly, args.outdir)
+

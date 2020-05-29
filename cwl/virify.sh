@@ -2,37 +2,30 @@
 
 set -e
 
-# ENV script
-# This script defines:
-# - CWL file
-# - conda env
-# - TMPDIR => to prevent using the user TMP FOLDER
-# - Add scripts folder to PATH
-# - export databases variables:
-#   - VIRSORTER_DATA 
-#   - HMMS_SERIALIZED_FILE
-#   - HMMSCAN_DATABASE_DIRECTORY
-#   - NCBI_TAX_DB_FILE
-#   - IMGVR_BLAST_DB
-# - Add PERL5LIB point to conda site_perl path 
-# - exports $CWL with the full path to the pipeline.cwl
-
-# source /nfs/production/interpro/metagenomics/virify_pipeline/init.sh  # /path/to/init.sh
-
-set -u
-
 usage () {
     echo ""
     echo "Wrapper script to run the virify workflow using toil-cwl-runner."
-    echo "-n job_name [mandatory]"
+    echo ""
+    echo "-e Environemnt init script [mandatory]: "
+    echo "   * conda env activation"
+    echo "   * Add scripts folder to PATH"
+    echo "   * Full paths for:"
+    echo "      . VIRSORTER_DATA"
+    echo "      . ADDITIONAL_HMMS_DATA"
+    echo "      . HMMSCAN_DATABASE_DIRECTORY"
+    echo "      . NCBI_TAX_DB_FILE"
+    echo "      . IMGVR_BLAST_DB"
+    echo "-n the name for the job *a timestamp will be added to folder* [mandatory]"
     echo "-j toil job store folder path [mandatory]"
     echo "-o output folder [mandatory]"
     echo "-c number of cores for the job [mandatory]"
     echo "-m memory in *megabytes* [mandatory]"
     echo "-i intput fasta contigs [mandatory]"
     echo "-v virome mode for virsorter (default if OFF)"
+    echo "-s mashmap reference file fasta or fastq (.gz) (optional)"
+    echo ""
     echo "Example:
-            virify.sh -n XX -m 1024 -c 12 -j job_folder_path -o /data/results/ -i input.fasta
+            virify.sh -e init.sh -n test-run -m 1024 -c 12 -j job_folder_path -o /data/results/ -i input.fasta
           NOTE:
           - The results folder will be /data/results/{job_name}.
           - The logs will be stored in /data/results/{job_name}/LOGS"
@@ -47,9 +40,21 @@ CORES=""
 MEMORY=""
 INPUT_FASTA=""
 VIROME=""
+MASHMAP_REFERENCE=""
+ENV_SCRIPT=""
 
-while getopts ":n:j:o:c:m:i:v:h" opt; do
+while getopts "en:j:o:c:m:i:vs:h" opt; do
   case $opt in
+    e)
+        ENV_SCRIPT="$OPTARG"
+        if [ ! -f "$ENV_SCRIPT" ];
+        then
+            echo ""
+            echo "ERROR -e cannot be empty." >&2
+            usage;
+            exit 1
+        fi
+        ;;
     n)
         NAME_RUN="$OPTARG"
         if [ ! -n "$NAME_RUN" ];
@@ -105,7 +110,17 @@ while getopts ":n:j:o:c:m:i:v:h" opt; do
         fi        
         ;;
     v)
-        VIROME="--virsorter_virome"
+        VIROME="-v true"
+        ;;
+    s)
+        if [ ! -n "$OPTARG" ];
+        then
+            echo ""
+            echo "ERROR mashmap (-s) cannot be empty." >&2
+            usage;
+            exit 1
+        fi
+        MASHMAP_REFERENCE="-m ${OPTARG}" 
         ;;
     h)
         usage;
@@ -140,7 +155,8 @@ if [ -z "$NAME_RUN" ] || \
    [ -z "$OUT_DIR" ] || \
    [ -z "$CORES" ] || \
    [ -z "$MEMORY" ] || \
-   [ -z "$INPUT_FASTA" ]
+   [ -z "$INPUT_FASTA" ] \
+   [ -z "$ENV_SCRIPT" ]
 then
     echo ""
     echo "ERROR: Missing mandatory parameter."
@@ -148,47 +164,62 @@ then
     exit 1
 fi
 
-# Prefix the path to make it easier to clean
-TMPDIR=${TMPDIR}/${NAME_RUN}
+# shellcheck source=/dev/null
+source "${ENV_SCRIPT}"
 
-JOB_FOLDER="${JOB_FOLDER}/${NAME_RUN}"
-LOG_DIR="${OUT_DIR}/${NAME_RUN}/LOGS"
-OUT="${OUT_DIR}/${NAME_RUN}"
+set -u
+
+TS="$(date +"%Y-%m-%d_%H-%M-%S")"
+
+# Prefix the path to make it easier to clean
+TMPDIR="${TMPDIR:-/scratch}/${NAME_RUN}_${TS}"
+
+JOB_FOLDER="${JOB_FOLDER}/${NAME_RUN}_${TS}"
+LOG_DIR="${OUT_DIR}/${NAME_RUN}_${TS}/LOGS"
+OUT="${OUT_DIR}/${NAME_RUN}_${TS}"
 
 # print
 set -x
 
 # Prepare folders
-rm -rf "${JOB_FOLDER}"
-rm -rf "${OUT}"
-rm -rf "${LOG_DIR}"
-
 mkdir -p "$LOG_DIR"
 mkdir -p "$TMPDIR"
 mkdir -p "$OUT"
 
+# Prepare the yaml file
+YML_INPUT="${NAME_RUN}_${TS}_input.yaml"
+
+cwl_input.py \
+-i "${INPUT_FASTA}" \
+-s "${VIRSORTER_DATA}" \
+-a "${ADDITIONAL_HMMS_DATA}" \
+-j "${HMMSCAN_DATABASE_DIRECTORY}" \
+-n "${NCBI_TAX_DB_FILE}" \
+-b "${IMGVR_BLAST_DB}" \
+-p "${PPRMETA_SIMG}" \
+-o "${YML_INPUT}" \
+"${MASHMAP_REFERENCE}" \
+"${VIROME}"
+
+# assume CWL is src/pipeline.cwl relative to this script
+SCRIPT_DIR="$(dirname "$0")"
+
 toil-cwl-runner \
-  --no-container \
-  --batchSystem LSF \
-  --disableCaching \
-  --logDebug \
-  --maxLogFileSize 0 \
-  --cleanWorkDir=never \
-  --defaultCores "$CORES" \
-  --defaultMemory "$MEMORY"M \
-  --jobStore "$JOB_FOLDER" \
-  --stats \
-  --clusterStats "$LOG_DIR/stats.json" \
-  --outdir "$OUT" \
-  --writeLogs "$LOG_DIR" \
-  --retryCount 0  \
-  --logFile "$LOG_DIR/${NAME_RUN}.log" \
-  "$CWL" \
-  --virsorter_data_dir "$VIRSORTER_DATA" \
-  --hmms_serialized_file "$HMMS_SERIALIZED_FILE" \
-  --hmmscan_database_directory "$HMMSCAN_DATABASE_DIRECTORY" \
-  --ncbi_tax_db_file "$NCBI_TAX_DB_FILE" \
-  --input_fasta_file "$INPUT_FASTA"  \
-  --img_blast_database_dir "$IMGVR_BLAST_DB" \
-  --pprmeta_singularity_simg "$PPRMETA_SIMG" \
-  ${VIROME}
+--no-container \
+--batchSystem LSF \
+--disableCaching \
+--logDebug \
+--maxLogFileSize 0 \
+--cleanWorkDir never \
+--defaultCores "$CORES" \
+--defaultMemory "$MEMORY"M \
+--jobStore "$JOB_FOLDER" \
+--stats \
+--clusterStats "$LOG_DIR/stats.json" \
+--outdir "$OUT" \
+--writeLogs "$LOG_DIR" \
+--retryCount 0  \
+--logFile "$LOG_DIR/${NAME_RUN}.log" \
+--enable-dev \
+"${SCRIPT_DIR}/src/pipeline.cwl" \
+"${YML_INPUT}"

@@ -7,7 +7,7 @@ dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=1_llvm
   - _r-mutex=1.0.1=anacondar_1
-  - binutils_impl_linux-64=2.34=h53a641e_0
+  - binutils_impl_linux-64=2.34=h53a641e_4
   - binutils_linux-64=2.34=hc952b39_20
   - bioconductor-biocgenerics=0.32.0=r36_0
   - bioconductor-biostrings=2.54.0=r36h516909a_0
@@ -48,7 +48,7 @@ dependencies:
   - jpeg=9c=h14c3975_1001
   - krb5=1.16.4=h2fd8d38_0
   - krona=2.7.1=pl526_2
-  - ld_impl_linux-64=2.34=h53a641e_0
+  - ld_impl_linux-64=2.34=h53a641e_4
   - libblas=3.8.0=11_openblas
   - libcblas=3.8.0=11_openblas
   - libcurl=7.68.0=hda55be3_0
@@ -379,6 +379,7 @@ dependencies:
   - sed=4.7=h1bed415_1000
   - setuptools=46.4.0=py37hc8dfbb8_0
   - sqlite=3.28.0=h8b20d00_0
+  - sysroot_linux-64=2.12=h3a0023d_3
   - t_coffee=11.0.8=py37hea885bf_8
   - tidyp=1.04=1
   - tk=8.6.10=hed695b0_0

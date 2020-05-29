@@ -25,10 +25,12 @@ inputs:
     type: Directory
     doc: |
       VirSorter supporting database files.
-  vphmms_tsv:
+  add_hmms_tsv:
     type: File
     format: edam:format_3475
-  hmmscan_database_directory:
+    doc: |
+        Additonal metadata tsv
+  hmmscan_database_dir:
     type: Directory
     doc: |
       HMMScan Viral HMM (databases/vpHMM/vpHMM_database).
@@ -50,7 +52,7 @@ inputs:
     doc: |
       MashMap Reference file. Use MashMap to 
   # == singularity containers == #
-  pprmeta_singularity_simg:
+  pprmeta_simg:
     type: File
     doc: |
       PPR-Meta singularity simg file
@@ -98,7 +100,7 @@ steps:
     label: PPR-Meta
     run: ./Tools/PPRMeta/pprmeta.cwl
     in:
-      singularity_image: pprmeta_singularity_simg
+      singularity_image: pprmeta_simg
       fasta_file: length_filter/filtered_contigs_fasta
     out:
       - pprmeta_output
@@ -138,7 +140,7 @@ steps:
           - prodigal/low_confidence_contigs_genes
           - prodigal/prophages_contigs_genes
         linkMerge: merge_flattened
-      database: hmmscan_database_directory
+      database: hmmscan_database_dir
     out:
       # single concatenated table
       - output_table
@@ -148,7 +150,7 @@ steps:
     run: ./Tools/RatioEvalue/ratio_evalue.cwl
     in:
       hmmscan_table: hmmscan/output_table
-      hmms_tsv: vphmms_tsv
+      hmms_tsv: add_hmms_tsv
     out:
       - informative_table
 
