@@ -239,9 +239,6 @@ TOIL_PARAMS=(
     --writeLogs "$LOG_DIR"
     --retryCount 0
     --logFile "$LOG_DIR/${NAME_RUN}.log"
-    --enable-dev
-    "${SCRIPT_DIR}/src/pipeline.cwl"
-    "${YML_INPUT}"
 )
 
 if [ "${MODE}" = "EBI" ];
@@ -257,9 +254,15 @@ then
     TOIL_PARAMS+=(--singularity)
 fi
 
-if [ ! -n "${RESTART}" ];
+if [ ! -z "${RESTART}" ];
 then
     TOIL_PARAMS+=(--restart)
 fi
+
+TOIL_PARAMS+=(
+    --enable-dev
+    "${SCRIPT_DIR}/src/pipeline.cwl"
+    "${YML_INPUT}"
+)
 
 toil-cwl-runner "${TOIL_PARAMS[@]}"
