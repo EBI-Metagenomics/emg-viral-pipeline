@@ -23,6 +23,8 @@ usage () {
     echo "-i intput fasta contigs [mandatory]"
     echo "-v virome mode for virsorter (default if OFF)"
     echo "-s mashmap reference file fasta or fastq (.gz) (optional)"
+    echo "-r Restart, toil will raise an expection if the work directory doesn't exist"
+    echo "-l Run the worklfow locally using containters (singularity) for dev purposes"
     echo ""
     echo "Example:
             virify.sh -e init.sh -n test-run -m 1024 -c 12 -j job_folder_path -o /data/results/ -i input.fasta
@@ -42,8 +44,10 @@ INPUT_FASTA=""
 VIROME=""
 MASHMAP_REFERENCE=""
 ENV_SCRIPT=""
+RESTART=""
+MODE="EBI"
 
-while getopts "e:n:j:o:c:m:i:vs:h" opt; do
+while getopts "e:n:j:o:c:m:i:vs:rlh" opt; do
   case $opt in
     e)
         ENV_SCRIPT="$OPTARG"
@@ -125,6 +129,12 @@ while getopts "e:n:j:o:c:m:i:vs:h" opt; do
     h)
         usage;
         exit 0
+        ;;
+    r)
+        RESTART="YES"
+        ;;
+    l)
+        MODE="LOCAL"
         ;;
     :)
         usage;
@@ -215,22 +225,41 @@ cwl_input.py "${CWL_PARAMS[@]}"
 # assume CWL is src/pipeline.cwl relative to this script
 SCRIPT_DIR="$(dirname "$0")"
 
-toil-cwl-runner \
---no-container \
---batchSystem LSF \
---disableCaching \
---logDebug \
---maxLogFileSize 0 \
---cleanWorkDir never \
---defaultCores "$CORES" \
---defaultMemory "$MEMORY"M \
---jobStore "$JOB_FOLDER" \
---stats \
---clusterStats "$LOG_DIR/stats.json" \
---outdir "$OUT" \
---writeLogs "$LOG_DIR" \
---retryCount 0  \
---logFile "$LOG_DIR/${NAME_RUN}.log" \
---enable-dev \
-"${SCRIPT_DIR}/src/pipeline.cwl" \
-"${YML_INPUT}"
+TOIL_PARAMS=(
+    --logDebug
+    --maxLogFileSize 0
+    "--cleanWorkDir=never"
+    "--clean=never"
+    --defaultCores "$CORES"
+    --defaultMemory "$MEMORY"M
+    --jobStore "$JOB_FOLDER"
+    --stats
+    --clusterStats "$LOG_DIR/stats.json"
+    --outdir "$OUT"
+    --writeLogs "$LOG_DIR"
+    --retryCount 0
+    --logFile "$LOG_DIR/${NAME_RUN}.log"
+    --enable-dev
+    "${SCRIPT_DIR}/src/pipeline.cwl"
+    "${YML_INPUT}"
+)
+
+if [ "${MODE}" = "EBI" ];
+then
+    TOIL_PARAMS+=(
+        --no-container
+        --batchSystem LSF
+        --disableCaching
+    )
+fi
+if [ "${MODE}" = "LOCAL" ];
+then
+    TOIL_PARAMS+=(--singularity)
+fi
+
+if [ ! -n "${RESTART}" ];
+then
+    TOIL_PARAMS+=(--restart)
+fi
+
+toil-cwl-runner "${TOIL_PARAMS[@]}"
