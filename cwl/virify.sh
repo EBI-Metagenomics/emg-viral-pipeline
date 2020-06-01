@@ -184,10 +184,12 @@ set -u
 YML_INPUT=""
 LOG_DIR=""
 
-set -x
-
 if [ -z "${RESTART}" ];
 then
+    echo "Configuration and folders"
+
+    set -x
+
     TS="$(date +"%Y-%m-%d_%H-%M-%S")"
 
     # Prefix the path to make it easier to clean
@@ -200,6 +202,8 @@ then
     mkdir -p "${TMPDIR}"
     mkdir -p "${LOG_DIR}"
     mkdir -p "${OUT_DIR}"
+
+    set +x
 
     # Prepare the yaml file
     YML_INPUT="${NAME_RUN}_${TS}_input.yaml"
@@ -225,18 +229,21 @@ then
         CWL_PARAMS+=("${VIROME}")
     fi
 
+    set -x
     cwl_input.py "${CWL_PARAMS[@]}"
+    set +x
 fi
 
 # assume CWL is src/pipeline.cwl relative to this script
 SCRIPT_DIR="$(dirname "$0")"
 
 TOIL_PARAMS=(
-    "--cleanWorkDir=never"
-    "--clean=never"
+    "--cleanWorkDir=onSuccess"
+    "--clean=onSuccess"
     --defaultCores "$CORES"
     --defaultMemory "$MEMORY"M
     --retryCount 0
+    --disableProgress
 )
 
 if [ "${MODE}" = "EBI" ];
@@ -280,5 +287,7 @@ else
         "${RESTART}"
     )
 fi
+
+set -x
 
 toil-cwl-runner "${TOIL_PARAMS[@]}"

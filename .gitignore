@@ -35,6 +35,7 @@ hs_err_pid*
 
 # CWL
 cwl/databases
+cwl/tests/local-testing
 
 # python
 __pycache__/
