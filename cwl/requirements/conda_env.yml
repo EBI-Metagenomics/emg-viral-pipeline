@@ -1,5 +1,6 @@
 name: viral_pipeline
 channels:
+  - r
   - bioconda
   - conda-forge
   - defaults
@@ -365,7 +366,7 @@ dependencies:
   - r-rstudioapi=0.11=r36h6115d3f_1
   - r-scales=1.1.1=r36h6115d3f_0
   - r-shape=1.4.4=r36_1003
-  - r-stringi=1.4.3=r36h0357c0b_2
+  - r-stringi=1.4.3=r36h29659fb_0
   - r-stringr=1.4.0=r36h6115d3f_2
   - r-testthat=2.3.2=r36h0357c0b_1
   - r-tibble=3.0.1=r36hcdcec82_1
@@ -422,6 +423,7 @@ dependencies:
     - docutils==0.16
     - enlighten==1.5.1
     - ete3==3.1.1
+    - flake8==3.8.2
     - future==0.18.2
     - galaxy-lib==18.9.2
     - html5lib==1.0.1
@@ -435,6 +437,7 @@ dependencies:
     - lockfile==0.12.2
     - lxml==4.4.2
     - markupsafe==1.1.1
+    - mccabe==0.6.1
     - mistune==0.8.4
     - mypy-extensions==0.4.3
     - networkx==2.4
@@ -444,6 +447,8 @@ dependencies:
     - pathlib2==2.3.2
     - prov==1.5.1
     - psutil==5.6.7
+    - pycodestyle==2.6.0
+    - pyflakes==2.2.0
     - pygments==2.5.2
     - pyparsing==2.4.6
     - python-dateutil==2.8.1
