@@ -69,7 +69,9 @@ $namespaces:
  s: http://schema.org/
  edam: http://edamontology.org/
 $schemas:
- - https://schema.org/docs/schema_org_rdfa.html
+ - https://schema.org/docs/schemaorg.owl
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
-s:copyrightHolder: "EMBL - European Bioinformatics Institute"
+s:copyrightHolder:
+    - name: "EMBL - European Bioinformatics Institute"
+    - url: "https://www.ebi.ac.uk/"
