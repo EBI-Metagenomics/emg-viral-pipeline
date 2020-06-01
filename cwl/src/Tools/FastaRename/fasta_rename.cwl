@@ -28,6 +28,15 @@ arguments:
         if (inputs.input && inputs.input.nameroot) {
           return inputs.input.nameroot + "_renamed.fasta";
         } else {
+          return "empty_map.tsv";
+        }
+      }
+  - prefix: "--map"
+    valueFrom: |
+      ${
+        if (inputs.input && inputs.input.nameroot) {
+          return inputs.input.nameroot + "_map.tsv";
+        } else {
           return "empty_renamed.fasta";
         }
       }
@@ -44,7 +53,7 @@ outputs:
     type: File
     format: edam:format_3475
     outputBinding:
-      glob: "fasta_map.tsv"
+      glob: "*.tsv"
 
 stdout: stdout.txt
 stderr: stderr.txt

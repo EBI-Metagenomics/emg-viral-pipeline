@@ -34,6 +34,15 @@ arguments:
           return "empty_restored.fasta";
         }
       }
+  - prefix: "--map"
+    valueFrom: |
+      ${
+        if (inputs.input && inputs.input.nameroot) {
+          return inputs.input.nameroot + "_map.tsv";
+        } else {
+          return "empty_map.tsv";
+        }
+      }
   - valueFrom: "restore"
     position: 3
 

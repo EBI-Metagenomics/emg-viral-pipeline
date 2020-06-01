@@ -361,7 +361,7 @@
   output:
     name_map:
       checksum: sha1$4d8875fd235f949cd21d12b531ea1db1dc7c0787
-      basename: fasta_map.tsv
+      basename: ERR575691_host_filtered_map.tsv
       location: Any
       path: Any
       class: File

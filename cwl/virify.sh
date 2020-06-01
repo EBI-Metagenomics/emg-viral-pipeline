@@ -239,7 +239,7 @@ SCRIPT_DIR="$(dirname "$0")"
 
 TOIL_PARAMS=(
     "--cleanWorkDir=onSuccess"
-    "--clean=onSuccess"
+    "--clean=never"
     --defaultCores "$CORES"
     --defaultMemory "$MEMORY"M
     --retryCount 0
