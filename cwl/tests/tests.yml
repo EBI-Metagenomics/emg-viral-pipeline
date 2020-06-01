@@ -369,7 +369,7 @@
       format: http://edamontology.org/format_3475  
     renamed_fasta:
       checksum: sha1$8f562c5b5152140f4a4891d74a13df4bb7313a51
-      basename: renamed.fasta 
+      basename: ERR575691_host_filtered_renamed.fasta 
       location: Any
       path: Any
       class: File 
@@ -385,7 +385,7 @@
   output:
     restored_fasta:
       checksum: sha1$952b544cb61be6576e18c129fddab1d3f3d881e6 
-      basename: restored.fasta 
+      basename: ERR575691_host_filtered_renamed_restored.fasta 
       location: Any
       path: Any
       class: File
