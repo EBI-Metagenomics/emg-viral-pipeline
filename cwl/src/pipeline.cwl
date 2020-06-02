@@ -94,7 +94,7 @@ steps:
       data_dir: virsorter_data_dir
       virome_decontamination_mode: virsorter_virome
     out:
-      - predicted_viral_seq_dir
+      - virsorter_fastas 
 
   pprmeta:
     label: PPR-Meta
@@ -111,7 +111,7 @@ steps:
     in:
       assembly: length_filter/filtered_contigs_fasta
       virfinder_tsv: virfinder/virfinder_output
-      virsorter_dir: virsorter/predicted_viral_seq_dir
+      virsorter_fastas: virsorter/virsorter_fastas
       pprmeta_csv: pprmeta/pprmeta_output
     out:
       - high_confidence_contigs
@@ -252,9 +252,9 @@ outputs:
   virfinder_output:
     outputSource: virfinder/virfinder_output
     type: File
-  virsorter_output:
-    outputSource: virsorter/predicted_viral_seq_dir
-    type: Directory
+  virsorter_output_fastas:
+    outputSource: virsorter/virsorter_fastas
+    type: File[]
   high_confidence_contigs:
     outputSource: fasta_restore_name_hc/restored_fasta
     type: File?
@@ -308,7 +308,7 @@ $namespaces:
  s: http://schema.org/
 $schemas:
  - http://edamontology.org/EDAM_1.16.owl
- - https://schema.org/docs/schemaorg.owl
+ - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

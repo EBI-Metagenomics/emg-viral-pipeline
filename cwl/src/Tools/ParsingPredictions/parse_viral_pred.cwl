@@ -26,8 +26,9 @@ inputs:
     inputBinding:
       separate: true
       prefix: "-f"
-  virsorter_dir:
-    type: Directory
+  virsorter_fastas:
+    type: File[]
+    format: edam:format_1929
     inputBinding:
       separate: true
       prefix: "-s"
@@ -87,7 +88,7 @@ $namespaces:
  s: http://schema.org/
  edam: http://edamontology.org/
 $schemas:
- - https://schema.org/docs/schemaorg.owl
+ - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:
