@@ -32,7 +32,7 @@ outputs:
 $namespaces:
  s: http://schema.org/
 $schemas:
- - https://schema.org/docs/schemaorg.owl
+ - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

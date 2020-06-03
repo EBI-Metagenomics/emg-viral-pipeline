@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import glob
 import re
 import sys
 import csv
@@ -108,7 +107,7 @@ def _parse_virsorter_metadata(name):
     return clean_name, "circular" in name, prange
 
 
-def parse_virus_sorter(folder_name):
+def parse_virus_sorter(sorter_files):
     """Extract high, low and prophages confidence Records from virus sorter results.
     High confidence are contigs in the categories 1 and 2
     Low confidence are contigs in the category 3
@@ -119,9 +118,9 @@ def parse_virus_sorter(folder_name):
     low_confidence = dict()
     prophages = dict()
 
-    files = glob.glob(join(folder_name, '*cat-[1,2,3,4,5].fasta'))
-
-    for file in files:
+    for file in sorter_files:
+        if ".fasta" not in file:
+            continue
         for record in SeqIO.parse(file, "fasta"):
             category = record.id[-1:]
             clean_name, circular, prange = _parse_virsorter_metadata(record.id)
@@ -243,8 +242,8 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--vfout", dest="finder", help="Absolute or "
                         "relative path to VirFinder output file",
                         required=True)
-    parser.add_argument("-s", "--vsdir", dest="sorter",
-                        help="Absolute or relative path to directory containing"
+    parser.add_argument("-s", "--vsfiles", dest="sorter", nargs='+',
+                        help="VirSorter .fasta files (i.e. VIRSorter_cat-1.fasta)"
                         " VirSorter output", required=True)
     parser.add_argument("-p", "--pmout", dest="pprmeta",
                         help="Absolute or relative path to PPR-Meta output file"
@@ -256,4 +255,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args.pprmeta, args.finder, args.sorter, args.assembly, args.outdir)
-

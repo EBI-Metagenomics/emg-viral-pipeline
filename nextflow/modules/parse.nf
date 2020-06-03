@@ -17,7 +17,7 @@ process parse {
     script:
     """
     touch virsorter_metadata.tsv
-    parse_viral_pred.py -a ${fasta} -f ${virfinder} -s ${virsorter}/Predicted_viral_sequences/ -p ${pprmeta} &> ${name}_virus_predictions.log
+    parse_viral_pred.py -a ${fasta} -f ${virfinder} -p ${pprmeta} -s ${virsorter}/Predicted_viral_sequences/*.fasta &> ${name}_virus_predictions.log
     """
 }
 

@@ -76,9 +76,10 @@ class ParseViralPredictions(unittest.TestCase):
         """For virsorter => virsorter_finder_test_data/input.fasta the expected is:
         """
         path = self._build_path("/base_fixtures/virsorter/")
-        hc, lc, p = parse_virus_sorter(path)
+        hc, lc, p = parse_virus_sorter([os.path.join(path, f) for f in os.listdir(path)])
 
-        self.assertSetEqual(set([r.seq_id for _, r in hc.items()]), set(["pos_phage_2", "pos_phage_1"]))
+        self.assertSetEqual(set([r.seq_id for _, r in hc.items()]),
+                            set(["pos_phage_2", "pos_phage_1"]))
         self.assertSetEqual(set([r.seq_id for _, r in lc.items()]), set())
         self.assertSetEqual(set([r[0].seq_id for _, r in p.items()]), set(["pos_phage_0"]))
 
@@ -99,7 +100,9 @@ class ParseViralPredictions(unittest.TestCase):
         vs_path = self._build_path("/kleiner2015/predicted_viral_sequences")
         assembly = self._build_path("/kleiner2015/kleiner_2015_renamed.fasta")
 
-        hc, lc, pp, *_ = merge_annotations(pprmeta_path, vf_path, vs_path, assembly)
+        vs_files = [os.path.join(vs_path, f) for f in os.listdir(vs_path)]
+
+        hc, lc, pp, *_ = merge_annotations(pprmeta_path, vf_path, vs_files, assembly)
 
         hc_ids = set([h.id for h in hc])
         lc_ids = set([l.id for l in lc])
@@ -122,7 +125,9 @@ class ParseViralPredictions(unittest.TestCase):
         assembly = self._build_path("/kleiner2015/kleiner_2015_renamed.fasta")
         test_dir = tempfile.mkdtemp()
 
-        main(pprmeta_path, vf_path, vs_path, assembly, test_dir)
+        vs_files = [os.path.join(vs_path, f) for f in os.listdir(vs_path)]
+
+        main(pprmeta_path, vf_path, vs_files, assembly, test_dir)
 
         with open(test_dir + "/high_confidence_putative_viral_contigs.fna", "rb") as hc_f:
             with open(
@@ -167,7 +172,9 @@ class ParseViralPredictions(unittest.TestCase):
 
         test_dir = tempfile.mkdtemp()
 
-        main(pprmeta_path, vf_path, vs_path, assembly, test_dir)
+        sorter_files = [os.path.join(vs_path, f) for f in os.listdir(vs_path)]
+
+        main(pprmeta_path, vf_path, sorter_files, assembly, test_dir)
 
         with open(test_dir + "/high_confidence_putative_viral_contigs.fna", "rb") as hc_f:
             with open(
