@@ -126,7 +126,7 @@ while getopts "e:n:j:o:c:m:i:vs:r:lh" opt; do
             usage;
             exit 1
         fi
-        MASHMAP_REFERENCE="-m ${OPTARG}" 
+        MASHMAP_REFERENCE="${OPTARG}" 
         ;;
     h)
         usage;
@@ -221,7 +221,7 @@ then
 
     if [ ! -z "${MASHMAP_REFERENCE}" ];
     then
-        CWL_PARAMS+=("${MASHMAP_REFERENCE}")
+        CWL_PARAMS+=(-m "${MASHMAP_REFERENCE}")
     fi
 
     if [ ! -z "${VIROME}" ];
