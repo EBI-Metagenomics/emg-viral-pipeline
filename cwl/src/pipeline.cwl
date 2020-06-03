@@ -232,7 +232,7 @@ steps:
   mashmap:
     label: MashMap
     run: ./Tools/MashMap/mashmap_swf.cwl
-    when: $(inputs.mashmap_reference_file !== undefined)
+    when: $(inputs.reference !== undefined)
     in:
       input_fastas:
         source:

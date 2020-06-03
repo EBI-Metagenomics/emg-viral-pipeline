@@ -26,7 +26,7 @@ steps:
     run: mashmap.cwl
     scatter: query
     label: run mashmap
-    when: $(inputs.query !== null)
+    when: $(inputs.query !== undefined && inputs.reference !== undefined)
     in:
       query: input_fastas
       reference: reference
@@ -35,7 +35,14 @@ steps:
       minimum_segment_length:
         valueFrom: $(2000)  
       output_file:
-        valueFrom: $(inputs.query.nameroot + "_mashmap.out")
+        valueFrom: |
+            ${
+                if (inputs.query && inputs.query.nameroot) {
+                    return inputs.query.nameroot + "_mashmap.out";
+                } else {
+                    return "empty_mashmap.out";
+                }
+            }
     out:
       - mashmap_table
 
