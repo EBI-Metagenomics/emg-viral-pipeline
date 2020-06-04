@@ -4,9 +4,6 @@ class: CommandLineTool
 
 label: merge blast with IMG/VR db
 
-requirements:
-  InlineJavascriptRequirement: {}
-
 doc: Combine the filtered blast results with meta information from the IMG/VR database.
 
 baseCommand: ["imgvr_merge.py"]
@@ -22,7 +19,7 @@ inputs:
     inputBinding:
       prefix: "-d"
       valueFrom:
-        $(self.path + "/IMGVR_all_Sequence_information.tsv")
+        $(self.path)/IMGVR_all_Sequence_information.tsv
   outfile:
     type: string
     inputBinding:

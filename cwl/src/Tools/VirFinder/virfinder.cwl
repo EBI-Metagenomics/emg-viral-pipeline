@@ -8,9 +8,6 @@ hints:
  DockerRequirement:
    dockerFile: Dockerfile
 
-requirements:
-  InlineJavascriptRequirement: {}
-
 baseCommand: ["run_virfinder.Rscript"]
 
 inputs:

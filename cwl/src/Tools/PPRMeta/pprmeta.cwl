@@ -4,9 +4,6 @@ class: CommandLineTool
 
 label: "PPR-Meta"
 
-requirements:
-  InlineJavascriptRequirement: {}
-
 baseCommand: ["pprmeta.sh"]
 
 inputs:
@@ -24,7 +21,7 @@ inputs:
 
 arguments:
   - "-o"
-  - $( runtime.outdir + "/" + inputs.fasta_file.nameroot + "_pprmeta.csv" )
+  - $(runtime.outdir)/$(inputs.fasta_file.nameroot)_pprmeta.csv
 
 outputs:
   pprmeta_output:

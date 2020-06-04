@@ -5,7 +5,6 @@ class: Workflow
 label: ViPhOG annotations
 
 requirements:
-  InlineJavascriptRequirement: {}
   ScatterFeatureRequirement: {}
 
 inputs:

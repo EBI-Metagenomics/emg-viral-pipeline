@@ -26,7 +26,7 @@ steps:
     run: mashmap.cwl
     scatter: query
     label: run mashmap
-    when: $(inputs.query !== undefined && inputs.reference !== undefined)
+    when: $(inputs.query !== null && inputs.query.nameroot && !inputs.query.nameroot.includes('empty_'))
     in:
       query: input_fastas
       reference: reference

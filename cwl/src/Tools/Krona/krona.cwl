@@ -9,9 +9,6 @@ label: Krona
 #  DockerRequirement:
 #    dockerPull: kronav2.7.1:1.0
 
-requirements:
-  InlineJavascriptRequirement: {}
-
 baseCommand: ["ktImportText"]
 
 inputs:
@@ -24,7 +21,7 @@ inputs:
 
 arguments:
   - "-o"
-  - $( inputs.otu_counts.nameroot + "_krona.html" )
+  - $(inputs.otu_counts.nameroot)_krona.html
 
 outputs:
   krona_html:

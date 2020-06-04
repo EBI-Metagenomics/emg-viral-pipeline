@@ -8,9 +8,6 @@ hints:
  DockerRequirement:
    dockerFile: Dockerfile
 
-requirements:
-  InlineJavascriptRequirement: {}
-
 baseCommand: ["wrapper_phage_contigs_sorter_iPlant.pl"]
 
 arguments:

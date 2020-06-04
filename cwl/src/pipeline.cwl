@@ -6,7 +6,6 @@ label: virify
 requirements:
   SubworkflowFeatureRequirement: {}  
   MultipleInputFeatureRequirement: {}
-  InlineJavascriptRequirement: {}
   StepInputExpressionRequirement: {}
   ScatterFeatureRequirement: {}
 

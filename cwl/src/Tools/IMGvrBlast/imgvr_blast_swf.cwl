@@ -9,7 +9,6 @@ doc: Run blast against IMG/VR
 requirements:
   StepInputExpressionRequirement: {}
   ScatterFeatureRequirement: {}
-  InlineJavascriptRequirement: {}
 
 inputs:
   fasta_files:
@@ -40,7 +39,7 @@ steps:
       blast_results_filtered: blast/blast_result_filtered
       database: database
       outfile:
-        valueFrom: $(inputs.blast_results_filtered.nameroot + "_merged.tsv")
+        valueFrom: $(inputs.blast_results_filtered.nameroot)_merged.tsv
     out:
       - merged_tsv
     doc: |

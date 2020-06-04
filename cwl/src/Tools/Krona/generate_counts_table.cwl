@@ -6,10 +6,6 @@ label: Convert the assing taxonomy table
 
 baseCommand: ["generate_counts_table.py"]
 
-requirements:
-  InlineJavascriptRequirement: {}
-  StepInputExpressionRequirement: {}
-
 inputs:
   assign_table:
     type: File
@@ -20,7 +16,7 @@ inputs:
 
 arguments:
   - "-o"
-  - $( inputs.assign_table.nameroot + "_tax_counts.tsv" )
+  - $(inputs.assign_table.nameroot)_tax_counts.tsv
 
 outputs:
   count_table:

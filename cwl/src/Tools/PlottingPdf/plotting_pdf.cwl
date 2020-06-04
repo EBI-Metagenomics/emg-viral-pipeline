@@ -7,8 +7,6 @@ label: "Viral contig plotting"
 #  DockerRequirement:
 #    dockerPull: mhoelzer/mapping_viral_predictions:0.1
 
-requirements:
-  InlineJavascriptRequirement: {}
 
 baseCommand: ['Rscript', 'Make_viral_contig_map.R']
 arguments: ["-o", $(inputs.input_table.nameroot)_mapping_results]

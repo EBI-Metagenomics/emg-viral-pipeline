@@ -5,7 +5,6 @@ class: Workflow
 label: "Viral contig assign"
 
 requirements:
-  InlineJavascriptRequirement: {}
   ScatterFeatureRequirement: {}
 
 inputs:

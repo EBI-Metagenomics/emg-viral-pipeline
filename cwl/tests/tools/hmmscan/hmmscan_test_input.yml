@@ -7,4 +7,4 @@ aa_fasta_files:
     format: http://edamontology.org/format_1929
 database:
   class: Directory
-  path: ../../../databases/vpHMM
+  path: ../../../databases/vpHMM_database

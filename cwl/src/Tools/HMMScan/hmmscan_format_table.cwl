@@ -9,9 +9,6 @@ doc: |
 
   Usage: hmmscan_format_table.py -t input_table.tsv -o output_name
 
-requirements:
-  InlineJavascriptRequirement: {}
-
 baseCommand: ["hmmscan_format_table.py"]
 
 inputs:

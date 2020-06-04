@@ -8,14 +8,11 @@ hints:
  DockerRequirement:
    dockerPull: Dockerfile
 
-requirements:
-  InlineJavascriptRequirement: {}
-
 baseCommand: ["ratio_evalue_table.py"]
 
 arguments:
   - "-o"
-  - $( inputs.hmmscan_table.nameroot + "_informative.tsv" )
+  - $(inputs.hmmscan_table.nameroot)_informative.tsv
 
 inputs:
   hmmscan_table:

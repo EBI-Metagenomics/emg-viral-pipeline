@@ -4,4 +4,4 @@ fasta_file:
   format: http://edamontology.org/format_1929
 singularity_image:
   class: File
-  path: ../../../singularity/pprmeta.simg 
+  path: ../../../simgs/pprmeta.simg 

@@ -8,9 +8,6 @@ hints:
  DockerRequirement:
    dockerFile: Dockerfile
 
-requirements:
-  InlineJavascriptRequirement: {}
-
 baseCommand: "viral_contigs_annotation.py"
 arguments: ["-o", $(runtime.outdir)]
 
