@@ -8,6 +8,7 @@ requirements:
   MultipleInputFeatureRequirement: {}
   StepInputExpressionRequirement: {}
   ScatterFeatureRequirement: {}
+  InlineJavascriptRequirement: {}
 
 inputs:
   input_fasta_file:  # input assembly
