@@ -50,7 +50,7 @@ A nextflow implementation of the VIRify pipeline for the detection of viruses fr
 
 ## What do I need?
 
-This pipeline runs with the workflow manager [Nextflow](https://www.nextflow.io/) using [Docker](https://docs.docker.com/v17.09/engine/installation/linux/docker-ce/ubuntu/#install-docker-ce) (Conda will be implemented soonish, hopefully). All other programs and databases are automatically downloaded by Nextflow. _Attention_, the workflow will download databases with a size of roughly 49 GB the first time it is executed. 
+This pipeline runs with the workflow manager [Nextflow](https://www.nextflow.io/) using [Docker](https://docs.docker.com/v17.09/engine/installation/linux/docker-ce/ubuntu/#install-docker-ce) (Conda will be implemented soonish, hopefully). All other programs and databases are automatically downloaded by Nextflow. _Attention_, the workflow will download databases with a size of roughly 19 GB (49 GB with `--hmmextend` and `--blastextend`) the first time it is executed. 
 
 ### Install Nextflow
 ```bash
@@ -80,7 +80,7 @@ Get help:
 nextflow run EBI-Metagenomics/emg-viral-pipeline --help
 ```
 
-Run annotation for a small assembly file (takes approximately 30min + time for database download; ~49 GB):
+Run annotation for a small assembly file (takes approximately 30min + time for database download; ~19 GB):
 ```bash
 nextflow run EBI-Metagenomics/emg-viral-pipeline --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta"
 ```
