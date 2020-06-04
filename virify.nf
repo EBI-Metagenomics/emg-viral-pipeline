@@ -613,7 +613,7 @@ def helpMSG() {
                         v2: --cut_ga, min score used as sequence-specific GA, 3 bit trimmed for domain-specific GA
                         v3: --cut_ga, like v2 but seq-specific GA trimmed by 3 bits if second best score is 'nan'
     --meta_version      define the metadata table version to be used [default: $params.meta_version]
-                        v1: older version of the meta data table using an outdated NCBI virus taxonomy 
+                        v1: older version of the meta data table using an outdated NCBI virus taxonomy, for reproducibility 
                         v2: 2020 version of NCBI virus taxonomy
 
     ${c_dim}Nextflow options:
@@ -628,14 +628,17 @@ def helpMSG() {
     --cachedir          defines the path where images (singularity) are cached [default: $params.cachedir] 
 
     ${c_yellow}Profile:${c_reset}
-    -profile                 standard (local, pure docker) [default]
+    You can merge different profiles for different setups, e.g. -profile local,docker or -profile lsf,docker,singularity
+    -profile                 standard (local,docker) [default]
+                             local
+                             docker
+                             singularity
                              conda
-                             lsf (HPC w/ LSF, singularity/docker)
-                             slurm (HPC w/ SLURM, singularity/docker)
-                             ebi (HPC w/ LSF, singularity/docker, preconfigured for the EBI cluster)
-                             ebi_cloud (HPC w/ LSF, conda, preconfigured for the EBI cluster)
-                             yoda_cloud (HPC w/ LSF, conda, preconfigured for the EBI YODA cluster)
-                             gcloudMartin (googlegenomics and docker, use this as template for your own GCP)
+                             lsf
+                             slurm
+                             ebi (lsf,docker,singularity; preconfigured for the EBI cluster)
+                             yoda (lsf,docker,singularity; preconfigured for the EBI YODA cluster)
+                             gcloud (googlegenomics,docker; use this as template for your own GCP setup)
                              ${c_reset}
 
     """.stripIndent()
