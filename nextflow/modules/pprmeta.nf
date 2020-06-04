@@ -28,7 +28,7 @@ process pprmetaGet {
     publishDir "${params.databases}/pprmeta", mode: 'copy', pattern: "*" 
   }
   else { 
-    storeDir "nextflow-autodownload-databases/pprmeta" 
+    storeDir "${params.databases}/pprmeta" 
   }  
 
   output:

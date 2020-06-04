@@ -641,21 +641,29 @@ def helpMSG() {
     -with-dag chart.html     generates a flowchart for the process tree
     -with-timeline time.html timeline (may cause errors)
 
-    ${c_yellow}LSF computing:${c_reset}
-    For execution of the workflow on a HPC with LSF adjust the following parameters:
-    --databases         defines the path where databases are stored [default: $params.databases]
+    ${c_yellow}HPC computing:${c_reset}
+    For execution of the workflow on a HPC (LSF, SLURM) adjust the following parameters if needed:
+    --databases         defines the path where databases are stored [default: $params.dbs]
     --workdir           defines the path where nextflow writes tmp files [default: $params.workdir]
     --cachedir          defines the path where images (singularity) are cached [default: $params.cachedir] 
 
     ${c_yellow}Profile:${c_reset}
-    You can merge different profiles for different setups, e.g. -profile local,docker or -profile lsf,singularity
+    You can merge different profiles for different setups, e.g.
+
+        -profile local,docker
+        -profile lsf,singularity
+        -profile slurm,singularity
+
     -profile                 standard (local,docker) [default]
+
                              local
+                             lsf
+                             slurm
+
                              docker
                              singularity
                              conda
-                             lsf
-                             slurm
+
                              ebi (lsf,singularity; preconfigured for the EBI cluster)
                              yoda (lsf,singularity; preconfigured for the EBI YODA cluster)
                              gcloud (use this as template for your own GCP setup)

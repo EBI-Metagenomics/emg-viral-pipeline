@@ -32,7 +32,7 @@ process metaGetDB {
     publishDir "${params.databases}/models", mode: 'copy', pattern: "additional_data_vpHMMs_${params.meta_version}.tsv" 
   }
   else { 
-    storeDir "nextflow-autodownload-databases/models" 
+    storeDir "${params.databases}/models" 
   }  
     
     output:
