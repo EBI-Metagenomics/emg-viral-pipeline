@@ -216,65 +216,85 @@ workflow download_ncbi_db {
 
 workflow download_rvdb_db {
     main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { rvdbGetDB(); db = rvdbGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.databases}/rvdb")
-      if (db_preload.exists()) { db = db_preload }
-      else  { rvdbGetDB(); db = rvdbGetDB.out } 
+    if (params.hmmextend) {
+      // local storage via storeDir
+      if (!params.cloudProcess) { rvdbGetDB(); db = rvdbGetDB.out }
+      // cloud storage via db_preload.exists()
+      if (params.cloudProcess) {
+        db_preload = file("${params.databases}/rvdb")
+        if (db_preload.exists()) { db = db_preload }
+        else  { rvdbGetDB(); db = rvdbGetDB.out } 
+      }
+    } else {
+      db = Channel.empty()
     }
   emit: db    
 }
 
 workflow download_pvogs_db {
     main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { pvogsGetDB(); db = pvogsGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.databases}/pvogs")
-      if (db_preload.exists()) { db = db_preload }
-      else  { pvogsGetDB(); db = pvogsGetDB.out } 
+    if (params.hmmextend) {
+      // local storage via storeDir
+      if (!params.cloudProcess) { pvogsGetDB(); db = pvogsGetDB.out }
+      // cloud storage via db_preload.exists()
+      if (params.cloudProcess) {
+        db_preload = file("${params.databases}/pvogs")
+        if (db_preload.exists()) { db = db_preload }
+        else  { pvogsGetDB(); db = pvogsGetDB.out } 
+      }
+    } else {
+      db = Channel.empty()
     }
   emit: db    
 }
 
 workflow download_vogdb_db {
     main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { vogdbGetDB(); db = vogdbGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.databases}/vogdb")
-      if (db_preload.exists()) { db = db_preload }
-      else  { vogdbGetDB(); db = vogdbGetDB.out } 
+    if (params.hmmextend) {
+      // local storage via storeDir
+      if (!params.cloudProcess) { vogdbGetDB(); db = vogdbGetDB.out }
+      // cloud storage via db_preload.exists()
+      if (params.cloudProcess) {
+        db_preload = file("${params.databases}/vogdb")
+        if (db_preload.exists()) { db = db_preload }
+        else  { vogdbGetDB(); db = vogdbGetDB.out } 
+      }
+    } else {
+      db = Channel.empty()
     }
   emit: db    
 }
 
 workflow download_vpf_db {
     main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { vpfGetDB(); db = vpfGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.databases}/vpf")
-      if (db_preload.exists()) { db = db_preload }
-      else  { vpfGetDB(); db = vpfGetDB.out } 
+    if (params.hmmextend) {
+      // local storage via storeDir
+      if (!params.cloudProcess) { vpfGetDB(); db = vpfGetDB.out }
+      // cloud storage via db_preload.exists()
+      if (params.cloudProcess) {
+        db_preload = file("${params.databases}/vpf")
+        if (db_preload.exists()) { db = db_preload }
+        else  { vpfGetDB(); db = vpfGetDB.out } 
+      }
+    } else {
+      db = Channel.empty()
     }
   emit: db    
 }
 
 workflow download_imgvr_db {
     main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { imgvrGetDB(); db = imgvrGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.databases}/imgvr/IMG_VR_2018-07-01_4")
-      if (db_preload.exists()) { db = db_preload }
-      else  { imgvrGetDB(); db = imgvrGetDB.out } 
+    if (params.blastextend) {
+      // local storage via storeDir
+      if (!params.cloudProcess) { imgvrGetDB(); db = imgvrGetDB.out }
+      // cloud storage via db_preload.exists()
+      if (params.cloudProcess) {
+        db_preload = file("${params.databases}/imgvr/IMG_VR_2018-07-01_4")
+        if (db_preload.exists()) { db = db_preload }
+        else  { imgvrGetDB(); db = imgvrGetDB.out } 
+      }
+    } else {
+      db = Channel.empty()
     }
   emit: db    
 }
@@ -628,7 +648,7 @@ def helpMSG() {
     --cachedir          defines the path where images (singularity) are cached [default: $params.cachedir] 
 
     ${c_yellow}Profile:${c_reset}
-    You can merge different profiles for different setups, e.g. -profile local,docker or -profile lsf,docker,singularity
+    You can merge different profiles for different setups, e.g. -profile local,docker or -profile lsf,singularity
     -profile                 standard (local,docker) [default]
                              local
                              docker
@@ -636,9 +656,9 @@ def helpMSG() {
                              conda
                              lsf
                              slurm
-                             ebi (lsf,docker,singularity; preconfigured for the EBI cluster)
-                             yoda (lsf,docker,singularity; preconfigured for the EBI YODA cluster)
-                             gcloud (googlegenomics,docker; use this as template for your own GCP setup)
+                             ebi (lsf,singularity; preconfigured for the EBI cluster)
+                             yoda (lsf,singularity; preconfigured for the EBI YODA cluster)
+                             gcloud (use this as template for your own GCP setup)
                              ${c_reset}
 
     """.stripIndent()
