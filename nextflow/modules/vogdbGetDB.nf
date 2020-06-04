@@ -1,10 +1,10 @@
 process vogdbGetDB {
   label 'noDocker'    
   if (params.cloudProcess) { 
-    publishDir "${params.cloudDatabase}/", mode: 'copy', pattern: "vogdb" 
+    publishDir "${params.databases}/", mode: 'copy', pattern: "vogdb" 
   }
   else { 
-    storeDir "nextflow-autodownload-databases/" 
+    storeDir "${params.databases}/" 
   }  
 
   output:

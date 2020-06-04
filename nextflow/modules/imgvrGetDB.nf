@@ -1,10 +1,10 @@
 process imgvrGetDB {
   label 'noDocker'    
   if (params.cloudProcess) { 
-    publishDir "${params.cloudDatabase}/imgvr/", mode: 'copy', pattern: "IMG_VR_2018-07-01_4" 
+    publishDir "${params.databases}/imgvr/", mode: 'copy', pattern: "IMG_VR_2018-07-01_4" 
   }
   else { 
-    storeDir "nextflow-autodownload-databases/imgvr/" 
+    storeDir "${params.databases}/imgvr/" 
   }  
 
   output:
