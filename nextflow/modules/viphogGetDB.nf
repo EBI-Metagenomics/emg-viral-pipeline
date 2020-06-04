@@ -1,10 +1,10 @@
 process viphogGetDB {
   label 'noDocker'    
   if (params.cloudProcess) { 
-    publishDir "${params.cloudDatabase}/", mode: 'copy', pattern: "vpHMM_database_${params.viphog_version}" 
+    publishDir "${params.databases}/", mode: 'copy', pattern: "vpHMM_database_${params.viphog_version}" 
   }
   else { 
-    storeDir "nextflow-autodownload-databases/" 
+    storeDir "${params.databases}/" 
   }  
 
   output:

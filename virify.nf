@@ -95,7 +95,7 @@ include pvogsGetDB from './nextflow/modules/pvogsGetDB'
 include vogdbGetDB from './nextflow/modules/vogdbGetDB' 
 include vpfGetDB from './nextflow/modules/vpfGetDB'
 include imgvrGetDB from './nextflow/modules/imgvrGetDB'
-//include './modules/kaijuGetDB' params(cloudProcess: params.cloudProcess, cloudDatabase: params.cloudDatabase)
+//include './modules/kaijuGetDB' params(cloudProcess: params.cloudProcess, databases: params.databases)
 
 //preprocessing
 include rename from './nextflow/modules/rename'
@@ -155,7 +155,7 @@ workflow download_pprmeta {
     if (!params.cloudProcess) { pprmetaGet(); git = pprmetaGet.out }
     // cloud storage via preload.exists()
     if (params.cloudProcess) {
-      preload = file("${params.cloudDatabase}/pprmeta")
+      preload = file("${params.databases}/pprmeta")
       if (preload.exists()) { git = preload }
       else  { pprmetaGet(); git = pprmetaGet.out } 
     }
@@ -168,7 +168,7 @@ workflow download_model_meta {
     if (!params.cloudProcess) { metaGetDB(); db = metaGetDB.out }
     // cloud storage via preload.exists()
     if (params.cloudProcess) {
-      preload = file("${params.cloudDatabase}/models/additional_data_vpHMMs_${params.meta_version}.tsv")
+      preload = file("${params.databases}/models/additional_data_vpHMMs_${params.meta_version}.tsv")
       if (preload.exists()) { db = preload }
       else  { metaGetDB(); db = metaGetDB.out } 
     }
@@ -181,7 +181,7 @@ workflow download_virsorter_db {
     if (!params.cloudProcess) { virsorterGetDB(); db = virsorterGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/virsorter/virsorter-data")
+      db_preload = file("${params.databases}/virsorter/virsorter-data")
       if (db_preload.exists()) { db = db_preload }
       else  { virsorterGetDB(); db = virsorterGetDB.out } 
     }
@@ -194,7 +194,7 @@ workflow download_viphog_db {
     if (!params.cloudProcess) { viphogGetDB(); db = viphogGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/vpHMM_database_${params.viphog_version}")
+      db_preload = file("${params.databases}/vpHMM_database_${params.viphog_version}")
       if (db_preload.exists()) { db = db_preload }
       else  { viphogGetDB(); db = viphogGetDB.out } 
     }
@@ -207,7 +207,7 @@ workflow download_ncbi_db {
     if (!params.cloudProcess) { ncbiGetDB(); db = ncbiGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/ncbi/ete3_ncbi_tax.sqlite")
+      db_preload = file("${params.databases}/ncbi/ete3_ncbi_tax.sqlite")
       if (db_preload.exists()) { db = db_preload }
       else  { ncbiGetDB(); db = ncbiGetDB.out } 
     }
@@ -220,7 +220,7 @@ workflow download_rvdb_db {
     if (!params.cloudProcess) { rvdbGetDB(); db = rvdbGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/rvdb")
+      db_preload = file("${params.databases}/rvdb")
       if (db_preload.exists()) { db = db_preload }
       else  { rvdbGetDB(); db = rvdbGetDB.out } 
     }
@@ -233,7 +233,7 @@ workflow download_pvogs_db {
     if (!params.cloudProcess) { pvogsGetDB(); db = pvogsGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/pvogs")
+      db_preload = file("${params.databases}/pvogs")
       if (db_preload.exists()) { db = db_preload }
       else  { pvogsGetDB(); db = pvogsGetDB.out } 
     }
@@ -246,7 +246,7 @@ workflow download_vogdb_db {
     if (!params.cloudProcess) { vogdbGetDB(); db = vogdbGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/vogdb")
+      db_preload = file("${params.databases}/vogdb")
       if (db_preload.exists()) { db = db_preload }
       else  { vogdbGetDB(); db = vogdbGetDB.out } 
     }
@@ -259,7 +259,7 @@ workflow download_vpf_db {
     if (!params.cloudProcess) { vpfGetDB(); db = vpfGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/vpf")
+      db_preload = file("${params.databases}/vpf")
       if (db_preload.exists()) { db = db_preload }
       else  { vpfGetDB(); db = vpfGetDB.out } 
     }
@@ -272,7 +272,7 @@ workflow download_imgvr_db {
     if (!params.cloudProcess) { imgvrGetDB(); db = imgvrGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/imgvr/IMG_VR_2018-07-01_4")
+      db_preload = file("${params.databases}/imgvr/IMG_VR_2018-07-01_4")
       if (db_preload.exists()) { db = db_preload }
       else  { imgvrGetDB(); db = imgvrGetDB.out } 
     }
@@ -286,7 +286,7 @@ workflow download_kaiju_db {
     if (!params.cloudProcess) { kaijuGetDB(); db = kaijuGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/kaiju/nr_euk")
+      db_preload = file("${params.databases}/kaiju/nr_euk")
       if (db_preload.exists()) { db = db_preload }
       else  { kaijuGetDB(); db = kaijuGetDB.out } 
     }
@@ -623,7 +623,7 @@ def helpMSG() {
 
     ${c_yellow}LSF computing:${c_reset}
     For execution of the workflow on a HPC with LSF adjust the following parameters:
-    --databases         defines the path where databases are stored [default: $params.cloudDatabase]
+    --databases         defines the path where databases are stored [default: $params.databases]
     --workdir           defines the path where nextflow writes tmp files [default: $params.workdir]
     --cachedir          defines the path where images (singularity) are cached [default: $params.cachedir] 
 
