@@ -9,9 +9,6 @@ doc: |
 
   Usage: hmmscan_format_table.py -t input_table.tsv -o output_name
 
-requirements:
-  InlineJavascriptRequirement: {}
-
 baseCommand: ["hmmscan_format_table.py"]
 
 inputs:
@@ -41,4 +38,6 @@ $schemas:
  - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
-s:copyrightHolder: "EMBL - European Bioinformatics Institute"
+s:copyrightHolder:
+    - name: "EMBL - European Bioinformatics Institute"
+    - url: "https://www.ebi.ac.uk/"

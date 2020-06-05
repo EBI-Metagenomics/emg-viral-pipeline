@@ -21,13 +21,19 @@ if __name__ == "__main__":
                         default="imgvd_hits_metadata.tsv")
     args = parser.parse_args()
 
+    # ignore empty files
+    if "empty" in args.filtered:
+        print("Empty file, ignoring and creating empty tsv")
+        open(args.outfile, "w").close()
+        exit(0)
+
     db = {}
     db_headers = []
     with open(args.db, "r") as db_file:
         reader = csv.reader(db_file, delimiter="\t")
         db_headers = next(reader)
         # first column "UViG"
-        db = {row[0]:row for row in reader}
+        db = {row[0]: row for row in reader}
 
     print(f"Loaded {len(db)} entries from the db tsv file")
 
@@ -39,7 +45,7 @@ if __name__ == "__main__":
 
         f_headers = next(filtered_reader)
         out_writer.writerow([*f_headers, *db_headers])
-        
+
         for hit_data in filtered_reader:
             hit_id = hit_data[1].replace("REF:", "")
             meta_info = db.get(hit_id, None)
@@ -47,5 +53,5 @@ if __name__ == "__main__":
                 print("Missing entry from db tsv.", file=sys.stderr)
             else:
                 out_writer.writerow([*hit_data, *meta_info])
-    
-    print(f"Completed")
+
+    print("Completed")

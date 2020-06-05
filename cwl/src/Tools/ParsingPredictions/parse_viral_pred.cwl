@@ -8,9 +8,6 @@ hints:
  DockerRequirement:
    dockerFile: Dockerfile
 
-requirements:
-  InlineJavascriptRequirement: {}
-
 baseCommand: ["parse_viral_pred.py"]
 
 inputs:
@@ -26,8 +23,9 @@ inputs:
     inputBinding:
       separate: true
       prefix: "-f"
-  virsorter_dir:
-    type: Directory
+  virsorter_fastas:
+    type: File[]
+    format: edam:format_1929
     inputBinding:
       separate: true
       prefix: "-s"
@@ -90,4 +88,6 @@ $schemas:
  - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
-s:copyrightHolder: "EMBL - European Bioinformatics Institute"
+s:copyrightHolder:
+    - name: "EMBL - European Bioinformatics Institute"
+    - url: "https://www.ebi.ac.uk/"

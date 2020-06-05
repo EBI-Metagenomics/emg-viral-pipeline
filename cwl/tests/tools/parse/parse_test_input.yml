@@ -6,10 +6,26 @@ virfinder_tsv:
   class: File
   path: virfinder_output.tsv
   format: http://edamontology.org/format_3475 
-virsorter_dir:
-  class: Directory
-  path: virsorter_results
 pprmeta_csv:
   class: File
   path: pprmeta_out.csv
-  format: http://edamontology.org/format_3752 
+  format: http://edamontology.org/format_3752
+virsorter_fastas:
+  - class: File
+    path: virsorter_results/VIRSorter_cat-1.fasta
+    format: http://edamontology.org/format_1929
+  - class: File
+    path: virsorter_results/VIRSorter_cat-2.fasta
+    format: http://edamontology.org/format_1929
+  - class: File
+    path: virsorter_results/VIRSorter_cat-3.fasta
+    format: http://edamontology.org/format_1929
+  - class: File
+    path: virsorter_results/VIRSorter_prophages_cat-4.fasta
+    format: http://edamontology.org/format_1929
+  - class: File
+    path: virsorter_results/VIRSorter_prophages_cat-5.fasta
+    format: http://edamontology.org/format_1929
+  - class: File
+    path: virsorter_results/VIRSorter_prophages_cat-6.fasta
+    format: http://edamontology.org/format_1929

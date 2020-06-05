@@ -26,7 +26,7 @@ steps:
     run: mashmap.cwl
     scatter: query
     label: run mashmap
-    when: $(inputs.query !== null)
+    when: $(inputs.query !== null && inputs.query.nameroot && !inputs.query.nameroot.includes('empty_'))
     in:
       query: input_fastas
       reference: reference
@@ -35,7 +35,14 @@ steps:
       minimum_segment_length:
         valueFrom: $(2000)  
       output_file:
-        valueFrom: $(inputs.query.nameroot + "_mashmap.out")
+        valueFrom: |
+            ${
+                if (inputs.query && inputs.query.nameroot) {
+                    return inputs.query.nameroot + "_mashmap.out";
+                } else {
+                    return "empty_mashmap.out";
+                }
+            }
     out:
       - mashmap_table
 
@@ -53,4 +60,6 @@ $schemas:
  - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
-s:copyrightHolder: "EMBL - European Bioinformatics Institute"
+s:copyrightHolder:
+    - name: "EMBL - European Bioinformatics Institute"
+    - url: "https://www.ebi.ac.uk/"

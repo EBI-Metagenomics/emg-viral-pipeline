@@ -4,6 +4,9 @@ class: CommandLineTool
 
 label: "Fasta name restore utility"
 
+requirements:
+  InlineJavascriptRequirement: {}
+
 doc: |
   Python script to restore the names on a multi-fasta using the name mapping file.
   In order to rename the multi-fasta use fasta_rename.cwl
@@ -23,7 +26,23 @@ inputs:
 
 arguments:
   - prefix: "--output"
-    valueFrom: "restored.fasta"
+    valueFrom: |
+      ${
+        if (inputs.input && inputs.input.nameroot) {
+          return inputs.input.nameroot + "_restored.fasta";
+        } else {
+          return "empty_restored.fasta";
+        }
+      }
+  - prefix: "--map"
+    valueFrom: |
+      ${
+        if (inputs.input && inputs.input.nameroot) {
+          return inputs.input.nameroot + "_map.tsv";
+        } else {
+          return "empty_map.tsv";
+        }
+      }
   - valueFrom: "restore"
     position: 3
 
@@ -32,7 +51,7 @@ outputs:
     type: File?
     format: edam:format_1929
     outputBinding:
-      glob: "restored.fasta"
+      glob: "*.fasta"
  
 stdout: stdout.txt
 stderr: stderr.txt
@@ -45,4 +64,6 @@ $schemas:
  - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
-s:copyrightHolder: "EMBL - European Bioinformatics Institute"
+s:copyrightHolder:
+    - name: "EMBL - European Bioinformatics Institute"
+    - url: "https://www.ebi.ac.uk/"

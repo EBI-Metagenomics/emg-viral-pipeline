@@ -6,9 +6,9 @@ label: virify
 requirements:
   SubworkflowFeatureRequirement: {}  
   MultipleInputFeatureRequirement: {}
-  InlineJavascriptRequirement: {}
   StepInputExpressionRequirement: {}
   ScatterFeatureRequirement: {}
+  InlineJavascriptRequirement: {}
 
 inputs:
   input_fasta_file:  # input assembly
@@ -94,7 +94,7 @@ steps:
       data_dir: virsorter_data_dir
       virome_decontamination_mode: virsorter_virome
     out:
-      - predicted_viral_seq_dir
+      - virsorter_fastas 
 
   pprmeta:
     label: PPR-Meta
@@ -111,7 +111,7 @@ steps:
     in:
       assembly: length_filter/filtered_contigs_fasta
       virfinder_tsv: virfinder/virfinder_output
-      virsorter_dir: virsorter/predicted_viral_seq_dir
+      virsorter_fastas: virsorter/virsorter_fastas
       pprmeta_csv: pprmeta/pprmeta_output
     out:
       - high_confidence_contigs
@@ -232,7 +232,7 @@ steps:
   mashmap:
     label: MashMap
     run: ./Tools/MashMap/mashmap_swf.cwl
-    when: $(inputs.mashmap_reference_file !== null)
+    when: $(inputs.reference !== undefined)
     in:
       input_fastas:
         source:
@@ -252,9 +252,9 @@ outputs:
   virfinder_output:
     outputSource: virfinder/virfinder_output
     type: File
-  virsorter_output:
-    outputSource: virsorter/predicted_viral_seq_dir
-    type: Directory
+  virsorter_output_fastas:
+    outputSource: virsorter/virsorter_fastas
+    type: File[]
   high_confidence_contigs:
     outputSource: fasta_restore_name_hc/restored_fasta
     type: File?
@@ -311,4 +311,6 @@ $schemas:
  - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
-s:copyrightHolder: "EMBL - European Bioinformatics Institute"
+s:copyrightHolder:
+    - name: "EMBL - European Bioinformatics Institute"
+    - url: "https://www.ebi.ac.uk/"

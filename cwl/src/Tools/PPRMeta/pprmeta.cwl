@@ -4,9 +4,6 @@ class: CommandLineTool
 
 label: "PPR-Meta"
 
-requirements:
-  InlineJavascriptRequirement: {}
-
 baseCommand: ["pprmeta.sh"]
 
 inputs:
@@ -24,7 +21,7 @@ inputs:
 
 arguments:
   - "-o"
-  - $( runtime.outdir + "/" + inputs.fasta_file.nameroot + "_pprmeta.csv" )
+  - $(runtime.outdir)/$(inputs.fasta_file.nameroot)_pprmeta.csv
 
 outputs:
   pprmeta_output:
@@ -41,4 +38,6 @@ $schemas:
  - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
-s:copyrightHolder: "EMBL - European Bioinformatics Institute"
+s:copyrightHolder:
+    - name: "EMBL - European Bioinformatics Institute"
+    - url: "https://www.ebi.ac.uk/"

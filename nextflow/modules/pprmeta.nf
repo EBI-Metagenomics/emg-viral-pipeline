@@ -25,10 +25,10 @@ process pprmeta {
 process pprmetaGet {
   label 'noDocker'    
   if (params.cloudProcess) { 
-    publishDir "${params.cloudDatabase}/pprmeta", mode: 'copy', pattern: "*" 
+    publishDir "${params.databases}/pprmeta", mode: 'copy', pattern: "*" 
   }
   else { 
-    storeDir "nextflow-autodownload-databases/pprmeta" 
+    storeDir "${params.databases}/pprmeta" 
   }  
 
   output:

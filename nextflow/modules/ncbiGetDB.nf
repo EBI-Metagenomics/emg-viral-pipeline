@@ -1,10 +1,10 @@
 process ncbiGetDB {
   label 'noDocker'    
   if (params.cloudProcess) { 
-    publishDir "${params.cloudDatabase}/ncbi/", mode: 'copy', pattern: "ete3_ncbi_tax.sqlite" 
+    publishDir "${params.databases}/ncbi/", mode: 'copy', pattern: "ete3_ncbi_tax.sqlite" 
   }
   else { 
-    storeDir "nextflow-autodownload-databases/ncbi/" 
+    storeDir "${params.databases}/ncbi/" 
   }  
 
   output:

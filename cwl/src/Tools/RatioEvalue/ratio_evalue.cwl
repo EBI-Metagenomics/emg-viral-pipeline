@@ -8,14 +8,11 @@ hints:
  DockerRequirement:
    dockerPull: Dockerfile
 
-requirements:
-  InlineJavascriptRequirement: {}
-
 baseCommand: ["ratio_evalue_table.py"]
 
 arguments:
   - "-o"
-  - $( inputs.hmmscan_table.nameroot + "_informative.tsv" )
+  - $(inputs.hmmscan_table.nameroot)_informative.tsv
 
 inputs:
   hmmscan_table:
@@ -49,4 +46,6 @@ $schemas:
  - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
-s:copyrightHolder: "EMBL - European Bioinformatics Institute"
+s:copyrightHolder:
+    - name: "EMBL - European Bioinformatics Institute"
+    - url: "https://www.ebi.ac.uk/"

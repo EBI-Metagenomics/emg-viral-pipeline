@@ -1,10 +1,10 @@
 process rvdbGetDB {
   label 'noDocker'    
   if (params.cloudProcess) { 
-    publishDir "${params.cloudDatabase}/", mode: 'copy', pattern: "rvdb" 
+    publishDir "${params.databases}/", mode: 'copy', pattern: "rvdb" 
   }
   else { 
-    storeDir "nextflow-autodownload-databases/" 
+    storeDir "${params.databases}/" 
   }  
 
   output:

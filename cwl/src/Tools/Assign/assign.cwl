@@ -8,9 +8,6 @@ hints:
  DockerRequirement:
    dockerFile: Dockerfile
 
-requirements:
-  InlineJavascriptRequirement: {}
-
 baseCommand: 'contig_taxonomic_assign.py'
 
 inputs:
@@ -34,6 +31,7 @@ stderr: stderr.txt
 outputs:
   assign_table:
     type: File
+    format: edam:format_3475
     outputBinding:
       glob: "*tax_assign.tsv"
 
@@ -45,4 +43,7 @@ $schemas:
  - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
-s:copyrightHolder: "EMBL - European Bioinformatics Institute"
+
+s:copyrightHolder:
+    - name: "EMBL - European Bioinformatics Institute"
+    - url: "https://www.ebi.ac.uk/"

@@ -24,7 +24,9 @@ println "\033[2mCurrent User: $workflow.userName"
 println "Nextflow-version: $nextflow.version"
 println "Starting time: $nextflow.timestamp"
 println "Workdir location:"
-println "  $workflow.workDir\u001B[0m"
+println "  $workflow.workDir"
+println "Databases location:"
+println "  $params.databases\u001B[0m"
 println " "
 if (workflow.profile == 'standard') {
   println "\033[2mCPUs to use: $params.cores"
@@ -95,7 +97,7 @@ include pvogsGetDB from './nextflow/modules/pvogsGetDB'
 include vogdbGetDB from './nextflow/modules/vogdbGetDB' 
 include vpfGetDB from './nextflow/modules/vpfGetDB'
 include imgvrGetDB from './nextflow/modules/imgvrGetDB'
-//include './modules/kaijuGetDB' params(cloudProcess: params.cloudProcess, cloudDatabase: params.cloudDatabase)
+//include './modules/kaijuGetDB' params(cloudProcess: params.cloudProcess, databases: params.databases)
 
 //preprocessing
 include rename from './nextflow/modules/rename'
@@ -155,7 +157,7 @@ workflow download_pprmeta {
     if (!params.cloudProcess) { pprmetaGet(); git = pprmetaGet.out }
     // cloud storage via preload.exists()
     if (params.cloudProcess) {
-      preload = file("${params.cloudDatabase}/pprmeta")
+      preload = file("${params.databases}/pprmeta")
       if (preload.exists()) { git = preload }
       else  { pprmetaGet(); git = pprmetaGet.out } 
     }
@@ -168,7 +170,7 @@ workflow download_model_meta {
     if (!params.cloudProcess) { metaGetDB(); db = metaGetDB.out }
     // cloud storage via preload.exists()
     if (params.cloudProcess) {
-      preload = file("${params.cloudDatabase}/models/additional_data_vpHMMs_${params.meta_version}.tsv")
+      preload = file("${params.databases}/models/additional_data_vpHMMs_${params.meta_version}.tsv")
       if (preload.exists()) { db = preload }
       else  { metaGetDB(); db = metaGetDB.out } 
     }
@@ -181,7 +183,7 @@ workflow download_virsorter_db {
     if (!params.cloudProcess) { virsorterGetDB(); db = virsorterGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/virsorter/virsorter-data")
+      db_preload = file("${params.databases}/virsorter/virsorter-data")
       if (db_preload.exists()) { db = db_preload }
       else  { virsorterGetDB(); db = virsorterGetDB.out } 
     }
@@ -194,7 +196,7 @@ workflow download_viphog_db {
     if (!params.cloudProcess) { viphogGetDB(); db = viphogGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/vpHMM_database_${params.viphog_version}")
+      db_preload = file("${params.databases}/vpHMM_database_${params.viphog_version}")
       if (db_preload.exists()) { db = db_preload }
       else  { viphogGetDB(); db = viphogGetDB.out } 
     }
@@ -207,7 +209,7 @@ workflow download_ncbi_db {
     if (!params.cloudProcess) { ncbiGetDB(); db = ncbiGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/ncbi/ete3_ncbi_tax.sqlite")
+      db_preload = file("${params.databases}/ncbi/ete3_ncbi_tax.sqlite")
       if (db_preload.exists()) { db = db_preload }
       else  { ncbiGetDB(); db = ncbiGetDB.out } 
     }
@@ -216,65 +218,85 @@ workflow download_ncbi_db {
 
 workflow download_rvdb_db {
     main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { rvdbGetDB(); db = rvdbGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/rvdb")
-      if (db_preload.exists()) { db = db_preload }
-      else  { rvdbGetDB(); db = rvdbGetDB.out } 
+    if (params.hmmextend) {
+      // local storage via storeDir
+      if (!params.cloudProcess) { rvdbGetDB(); db = rvdbGetDB.out }
+      // cloud storage via db_preload.exists()
+      if (params.cloudProcess) {
+        db_preload = file("${params.databases}/rvdb")
+        if (db_preload.exists()) { db = db_preload }
+        else  { rvdbGetDB(); db = rvdbGetDB.out } 
+      }
+    } else {
+      db = Channel.empty()
     }
   emit: db    
 }
 
 workflow download_pvogs_db {
     main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { pvogsGetDB(); db = pvogsGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/pvogs")
-      if (db_preload.exists()) { db = db_preload }
-      else  { pvogsGetDB(); db = pvogsGetDB.out } 
+    if (params.hmmextend) {
+      // local storage via storeDir
+      if (!params.cloudProcess) { pvogsGetDB(); db = pvogsGetDB.out }
+      // cloud storage via db_preload.exists()
+      if (params.cloudProcess) {
+        db_preload = file("${params.databases}/pvogs")
+        if (db_preload.exists()) { db = db_preload }
+        else  { pvogsGetDB(); db = pvogsGetDB.out } 
+      }
+    } else {
+      db = Channel.empty()
     }
   emit: db    
 }
 
 workflow download_vogdb_db {
     main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { vogdbGetDB(); db = vogdbGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/vogdb")
-      if (db_preload.exists()) { db = db_preload }
-      else  { vogdbGetDB(); db = vogdbGetDB.out } 
+    if (params.hmmextend) {
+      // local storage via storeDir
+      if (!params.cloudProcess) { vogdbGetDB(); db = vogdbGetDB.out }
+      // cloud storage via db_preload.exists()
+      if (params.cloudProcess) {
+        db_preload = file("${params.databases}/vogdb")
+        if (db_preload.exists()) { db = db_preload }
+        else  { vogdbGetDB(); db = vogdbGetDB.out } 
+      }
+    } else {
+      db = Channel.empty()
     }
   emit: db    
 }
 
 workflow download_vpf_db {
     main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { vpfGetDB(); db = vpfGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/vpf")
-      if (db_preload.exists()) { db = db_preload }
-      else  { vpfGetDB(); db = vpfGetDB.out } 
+    if (params.hmmextend) {
+      // local storage via storeDir
+      if (!params.cloudProcess) { vpfGetDB(); db = vpfGetDB.out }
+      // cloud storage via db_preload.exists()
+      if (params.cloudProcess) {
+        db_preload = file("${params.databases}/vpf")
+        if (db_preload.exists()) { db = db_preload }
+        else  { vpfGetDB(); db = vpfGetDB.out } 
+      }
+    } else {
+      db = Channel.empty()
     }
   emit: db    
 }
 
 workflow download_imgvr_db {
     main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { imgvrGetDB(); db = imgvrGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/imgvr/IMG_VR_2018-07-01_4")
-      if (db_preload.exists()) { db = db_preload }
-      else  { imgvrGetDB(); db = imgvrGetDB.out } 
+    if (params.blastextend) {
+      // local storage via storeDir
+      if (!params.cloudProcess) { imgvrGetDB(); db = imgvrGetDB.out }
+      // cloud storage via db_preload.exists()
+      if (params.cloudProcess) {
+        db_preload = file("${params.databases}/imgvr/IMG_VR_2018-07-01_4")
+        if (db_preload.exists()) { db = db_preload }
+        else  { imgvrGetDB(); db = imgvrGetDB.out } 
+      }
+    } else {
+      db = Channel.empty()
     }
   emit: db    
 }
@@ -286,7 +308,7 @@ workflow download_kaiju_db {
     if (!params.cloudProcess) { kaijuGetDB(); db = kaijuGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.cloudDatabase}/kaiju/nr_euk")
+      db_preload = file("${params.databases}/kaiju/nr_euk")
       if (db_preload.exists()) { db = db_preload }
       else  { kaijuGetDB(); db = kaijuGetDB.out } 
     }
@@ -613,7 +635,7 @@ def helpMSG() {
                         v2: --cut_ga, min score used as sequence-specific GA, 3 bit trimmed for domain-specific GA
                         v3: --cut_ga, like v2 but seq-specific GA trimmed by 3 bits if second best score is 'nan'
     --meta_version      define the metadata table version to be used [default: $params.meta_version]
-                        v1: older version of the meta data table using an outdated NCBI virus taxonomy 
+                        v1: older version of the meta data table using an outdated NCBI virus taxonomy, for reproducibility 
                         v2: 2020 version of NCBI virus taxonomy
 
     ${c_dim}Nextflow options:
@@ -621,21 +643,32 @@ def helpMSG() {
     -with-dag chart.html     generates a flowchart for the process tree
     -with-timeline time.html timeline (may cause errors)
 
-    ${c_yellow}LSF computing:${c_reset}
-    For execution of the workflow on a HPC with LSF adjust the following parameters:
-    --databases         defines the path where databases are stored [default: $params.cloudDatabase]
+    ${c_yellow}HPC computing:${c_reset}
+    For execution of the workflow on a HPC (LSF, SLURM) adjust the following parameters if needed:
+    --databases         defines the path where databases are stored [default: $params.dbs]
     --workdir           defines the path where nextflow writes tmp files [default: $params.workdir]
     --cachedir          defines the path where images (singularity) are cached [default: $params.cachedir] 
 
     ${c_yellow}Profile:${c_reset}
-    -profile                 standard (local, pure docker) [default]
+    You can merge different profiles for different setups, e.g.
+
+        -profile local,docker
+        -profile lsf,singularity
+        -profile slurm,singularity
+
+    -profile                 standard (local,docker) [default]
+
+                             local
+                             lsf
+                             slurm
+
+                             docker
+                             singularity
                              conda
-                             lsf (HPC w/ LSF, singularity/docker)
-                             slurm (HPC w/ SLURM, singularity/docker)
-                             ebi (HPC w/ LSF, singularity/docker, preconfigured for the EBI cluster)
-                             ebi_cloud (HPC w/ LSF, conda, preconfigured for the EBI cluster)
-                             yoda_cloud (HPC w/ LSF, conda, preconfigured for the EBI YODA cluster)
-                             gcloudMartin (googlegenomics and docker, use this as template for your own GCP)
+
+                             ebi (lsf,singularity; preconfigured for the EBI cluster)
+                             yoda (lsf,singularity; preconfigured for the EBI YODA cluster)
+                             gcloud (use this as template for your own GCP setup)
                              ${c_reset}
 
     """.stripIndent()

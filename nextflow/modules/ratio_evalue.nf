@@ -29,10 +29,10 @@ out PRJNA530103_small_modified_informative.tsv
 process metaGetDB {
   label 'ratio_evalue'    
   if (params.cloudProcess) { 
-    publishDir "${params.cloudDatabase}/models", mode: 'copy', pattern: "additional_data_vpHMMs_${params.meta_version}.tsv" 
+    publishDir "${params.databases}/models", mode: 'copy', pattern: "additional_data_vpHMMs_${params.meta_version}.tsv" 
   }
   else { 
-    storeDir "nextflow-autodownload-databases/models" 
+    storeDir "${params.databases}/models" 
   }  
     
     output:

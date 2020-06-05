@@ -5,7 +5,6 @@ class: Workflow
 label: "Viral contig assign"
 
 requirements:
-  InlineJavascriptRequirement: {}
   ScatterFeatureRequirement: {}
 
 inputs:
@@ -41,4 +40,6 @@ $schemas:
  - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
-s:copyrightHolder: "EMBL - European Bioinformatics Institute"
+s:copyrightHolder:
+    - name: "EMBL - European Bioinformatics Institute"
+    - url: "https://www.ebi.ac.uk/"

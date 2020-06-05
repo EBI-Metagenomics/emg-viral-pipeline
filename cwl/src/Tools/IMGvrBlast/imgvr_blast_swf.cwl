@@ -9,7 +9,6 @@ doc: Run blast against IMG/VR
 requirements:
   StepInputExpressionRequirement: {}
   ScatterFeatureRequirement: {}
-  InlineJavascriptRequirement: {}
 
 inputs:
   fasta_files:
@@ -40,7 +39,7 @@ steps:
       blast_results_filtered: blast/blast_result_filtered
       database: database
       outfile:
-        valueFrom: $(inputs.blast_results_filtered.nameroot + "_merged.tsv")
+        valueFrom: $(inputs.blast_results_filtered.nameroot)_merged.tsv
     out:
       - merged_tsv
     doc: |
@@ -65,4 +64,6 @@ $schemas:
  - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
-s:copyrightHolder: "EMBL - European Bioinformatics Institute"
+s:copyrightHolder:
+    - name: "EMBL - European Bioinformatics Institute"
+    - url: "https://www.ebi.ac.uk/"

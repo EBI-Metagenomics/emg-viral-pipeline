@@ -8,9 +8,6 @@ hints:
  DockerRequirement:
    dockerFile: Dockerfile
 
-requirements:
-  InlineJavascriptRequirement: {}
-
 baseCommand: ["wrapper_phage_contigs_sorter_iPlant.pl"]
 
 arguments:
@@ -80,12 +77,17 @@ stderr: stderr.txt
 outputs:
   stdout: stdout
   stderr: stderr
-  predicted_viral_seq_dir:
-     type: Directory
+
+  virsorter_fastas:
+     type: File[]
+     format: edam:format_1929
      outputBinding:
-        glob: virsorter-out/Predicted_viral_sequences/
-        outputEval: |
-          ${ self[0].basename = "predicted_viral_sequences"; return self; }
+        glob: virsorter-out/Predicted_viral_sequences/*.fasta
+
+  virsorter_genebanks:
+     type: File[]
+     outputBinding:
+        glob: virsorter-out/Predicted_viral_sequences/*.gb
 doc: |
   usage: wrapper_phage_contigs_sorter_iPlant.pl --fasta sequences.fa
 
@@ -127,4 +129,6 @@ $schemas:
  - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
-s:copyrightHolder: "EMBL - European Bioinformatics Institute"
+s:copyrightHolder:
+    - name: "EMBL - European Bioinformatics Institute"
+    - url: "https://www.ebi.ac.uk/"

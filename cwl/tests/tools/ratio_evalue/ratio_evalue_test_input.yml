@@ -1,6 +1,6 @@
 hmms_tsv:
   class: File
-  path: ../../../databases/additional_data_vpHMMs.tsv
+  path: ../../../databases/additional_data_vpHMMs_v1.tsv
 hmmscan_table:
   class: File
   path: hmmer_ViPhOG_modified.tbl

@@ -1,10 +1,10 @@
 process kaijuGetDB {
   label 'noDocker'    
   if (params.cloudProcess) { 
-    publishDir "${params.cloudDatabase}/kaiju/", mode: 'copy', pattern: "viruses"//pattern: "nr_euk" 
+    publishDir "${params.databases}/kaiju/", mode: 'copy', pattern: "viruses"//pattern: "nr_euk" 
   }
   else { 
-    storeDir "nextflow-autodownload-databases/kaiju/" 
+    storeDir "${params.databases}/kaiju/" 
   }  
 
   output:

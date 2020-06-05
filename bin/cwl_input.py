@@ -58,7 +58,7 @@ if __name__ == "__main__":
                 "class": "Directory",
                 "path": args.img_db
             },
-            "pprmeta_singularity_simg": {
+            "pprmeta_simg": {
                 "class": "File",
                 "path": args.pprmeta_simg
             }

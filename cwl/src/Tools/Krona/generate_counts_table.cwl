@@ -6,10 +6,6 @@ label: Convert the assing taxonomy table
 
 baseCommand: ["generate_counts_table.py"]
 
-requirements:
-  InlineJavascriptRequirement: {}
-  StepInputExpressionRequirement: {}
-
 inputs:
   assign_table:
     type: File
@@ -20,7 +16,7 @@ inputs:
 
 arguments:
   - "-o"
-  - $( inputs.assign_table.nameroot + "_tax_counts.tsv" )
+  - $(inputs.assign_table.nameroot)_tax_counts.tsv
 
 outputs:
   count_table:
@@ -36,4 +32,6 @@ $schemas:
  - https://schema.org/version/latest/schema.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
-s:copyrightHolder: "EMBL - European Bioinformatics Institute"
+s:copyrightHolder:
+    - name: "EMBL - European Bioinformatics Institute"
+    - url: "https://www.ebi.ac.uk/"

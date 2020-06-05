@@ -194,98 +194,94 @@
   short_name: virsorter.cwl
   doc: VirSorter
   output:
-      predicted_viral_seq_dir:
-        basename: predicted_viral_sequences
-        class: Directory
+    virsorter_fastas:
+      - class: File
+        basename: VIRSorter_cat-1.fasta
+        checksum: Any
         location: Any
+        path: Any  
+        size: 5448
+      - class: File
+        basename: VIRSorter_cat-2.fasta
+        checksum: Any
+        size: 37434
+        location: Any
+        path: Any    
+      - class: File
+        basename: VIRSorter_cat-3.fasta
+        checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
+        size: 0
+        location: Any
+        path: Any    
+      - class: File
+        basename: VIRSorter_prophages_cat-4.fasta
+        checksum: Any
+        size: 0
+        location: Any
+        path: Any    
+      - class: File
+        basename: VIRSorter_prophages_cat-5.fasta
+        checksum: Any
+        size: 0
+        location: Any
+        path: Any    
+      - class: File
+        basename: VIRSorter_prophages_cat-6.fasta
+        checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
+        size: 0
         path: Any
-        listing: &virsorter
-          - class: File
-            basename: VIRSorter_cat-1.fasta
-            checksum: Any
-            location: Any
-            path: Any  
-            size: 5448
-          - class: File
-            basename: VIRSorter_cat-2.fasta
-            checksum: Any
-            size: 37434
-            location: Any
-            path: Any    
-          - class: File
-            basename: VIRSorter_cat-3.fasta
-            checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
-            size: 0
-            location: Any
-            path: Any    
-          - class: File
-            basename: VIRSorter_prophages_cat-4.fasta
-            checksum: Any
-            size: 0
-            location: Any
-            path: Any    
-          - class: File
-            basename: VIRSorter_prophages_cat-5.fasta
-            checksum: Any
-            size: 0
-            location: Any
-            path: Any    
-          - class: File
-            basename: VIRSorter_prophages_cat-6.fasta
-            checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
-            size: 0
-            path: Any
-            location: Any
-          - class: File
-            basename: VIRSorter_cat-1.gb
-            checksum: Any
-            size: 13292
-            location: Any
-            path: Any    
-          - class: File
-            basename: VIRSorter_cat-2.gb
-            checksum: Any
-            location: Any
-            path: Any
-            size: 87306
-          - class: File
-            basename: VIRSorter_cat-3.gb
-            checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
-            size: 0
-            location: Any
-            path: Any
-          - class: File
-            basename: VIRSorter_prophages_cat-4.gb
-            location: Any
-            path: Any
-            checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
-            size: 0
-          - class: File
-            basename: VIRSorter_prophages_cat-5.gb
-            checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
-            size: 0
-            location: Any
-            path: Any    
-          - class: File
-            basename: VIRSorter_prophages_cat-6.gb
-            checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
-            size: 0
-            location: Any
-            path: Any    
-      stderr:
-        class: File
-        basename: stderr.txt
+        location: Any
+    virsorter_genebanks:
+      - class: File
+        basename: VIRSorter_cat-1.gb
+        checksum: Any
+        size: 13292
+        location: Any
+        path: Any    
+      - class: File
+        basename: VIRSorter_cat-2.gb
         checksum: Any
         location: Any
         path: Any
-        size: Any
-      stdout:
-        class: File
-        basename: stdout.txt
-        checksum: Any
+        size: 87306
+      - class: File
+        basename: VIRSorter_cat-3.gb
+        checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
+        size: 0
         location: Any
         path: Any
-        size: Any
+      - class: File
+        basename: VIRSorter_prophages_cat-4.gb
+        location: Any
+        path: Any
+        checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
+        size: 0
+      - class: File
+        basename: VIRSorter_prophages_cat-5.gb
+        checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
+        size: 0
+        location: Any
+        path: Any    
+      - class: File
+        basename: VIRSorter_prophages_cat-6.gb
+        checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
+        size: 0
+        location: Any
+        path: Any
+    stderr:
+      class: File
+      basename: stderr.txt
+      checksum: Any
+      location: Any
+      path: Any
+      size: Any
+    stdout:
+      class: File
+      basename: stdout.txt
+      checksum: Any
+      location: Any
+      path: Any
+      size: Any
 
 # Krona
 - job: tools/krona/krona_test_input.yml
@@ -361,7 +357,7 @@
   output:
     name_map:
       checksum: sha1$4d8875fd235f949cd21d12b531ea1db1dc7c0787
-      basename: fasta_map.tsv
+      basename: ERR575691_host_filtered_map.tsv
       location: Any
       path: Any
       class: File
@@ -369,7 +365,7 @@
       format: http://edamontology.org/format_3475  
     renamed_fasta:
       checksum: sha1$8f562c5b5152140f4a4891d74a13df4bb7313a51
-      basename: renamed.fasta 
+      basename: ERR575691_host_filtered_renamed.fasta 
       location: Any
       path: Any
       class: File 
@@ -385,7 +381,7 @@
   output:
     restored_fasta:
       checksum: sha1$952b544cb61be6576e18c129fddab1d3f3d881e6 
-      basename: restored.fasta 
+      basename: ERR575691_host_filtered_renamed_restored.fasta 
       location: Any
       path: Any
       class: File
