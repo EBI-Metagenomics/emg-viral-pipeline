@@ -11,12 +11,14 @@ process plot_contig_map {
     
     script:
     """
-  	# get only contig IDs that have at least one annotation hit 
-	  IDS=\$(awk 'BEGIN{FS="\\t"};{if(\$6!="No hit"){print \$1}}' ${tab} | sort | uniq | grep -v Contig)
+  	# get only contig IDs that have at least one annotation hit
+    cat ${tab} | sed 's/|/VIRIFY/g' > tmp 
+	  IDS=\$(awk 'BEGIN{FS="\\t"};{if(\$6!="No hit"){print \$1}}' tmp | sort | uniq | grep -v Contig)
 	  head -1 ${tab} > ${set_name}_prot_ann_table_filtered.tsv
 	  for ID in \$IDS; do
-		  awk -v id="\$ID" '{if(id==\$1){print \$0}}' ${tab} >> ${set_name}_prot_ann_table_filtered.tsv
+		  awk -v id="\$ID" '{if(id==\$1){print \$0}}' tmp >> ${set_name}_prot_ann_table_filtered.tsv
 	  done
+    sed -i 's/VIRIFY/|/g' ${set_name}_prot_ann_table_filtered.tsv
     mkdir -p ${set_name}_mapping_results
     cp ${set_name}_prot_ann_table_filtered.tsv ${set_name}_mapping_results/
     make_viral_contig_map.R -o ${set_name}_mapping_results -t ${set_name}_prot_ann_table_filtered.tsv
