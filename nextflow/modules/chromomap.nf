@@ -36,7 +36,7 @@ process chromomap {
       tuple val(name), val(set_name), file(contigs), file(annotations)
     
     output:
-      tuple val(name), val(set_name), file("*.html")
+      tuple val(name), val(set_name), file("*.html") optional true
     
     script:
     id = set_name
