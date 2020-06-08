@@ -80,9 +80,14 @@ Get help:
 nextflow run EBI-Metagenomics/emg-viral-pipeline --help
 ```
 
-Run annotation for a small assembly file (takes approximately 30min + time for database download; ~19 GB):
+Pull and run a certain release:
 ```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta"
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.1 --help
+```
+
+Run annotation for a small assembly file (10 contigs, 0.78 Mbp) on your local machine (`--cores 4`; takes approximately 10min + time for database download; ~19 GB on a 8 core i7 laptop):
+```bash
+nextflow run EBI-Metagenomics/emg-viral-pipeline --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" --cores 4 -profile local,docker
 ```
 
 EBI cluster:
