@@ -25,6 +25,12 @@ inputs:
     type: Directory
     doc: |
       VirSorter supporting database files.
+  virfinder_model:
+    type: File
+    doc: |
+        VirFinder model for predicting prokaryotic phages and eukaryotic viruses.
+        Download: 
+        - ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virfinder/VF.modEPV_k8.rda
   add_hmms_tsv:
     type: File
     format: edam:format_3475
@@ -83,6 +89,7 @@ steps:
     run: ./Tools/VirFinder/virfinder.cwl
     in:
       fasta_file: length_filter/filtered_contigs_fasta
+      model: virfinder_model
     out:
       - virfinder_output
 
@@ -255,6 +262,9 @@ outputs:
   virsorter_output_fastas:
     outputSource: virsorter/virsorter_fastas
     type: File[]
+  pprmeta_file:
+    outputSource: pprmeta/pprmeta_output
+    type: File
   high_confidence_contigs:
     outputSource: fasta_restore_name_hc/restored_fasta
     type: File?

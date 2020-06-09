@@ -14,12 +14,10 @@ process virfinder {
     
     script:
       """
-      #Rscript /usr/local/bin/run_virfinder.Rscript ${fasta} ${name}.txt
-      
-      #run_virfinder_non_parallel.Rscript ${fasta} ${name}.txt
+      wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virfinder/VF.modEPV_k8.rda
 
-      wget https://github.com/jessieren/VirFinder/raw/master/EPV/VF.modEPV_k8.rda
-      run_virfinder_modEPV.Rscript VF.modEPV_k8.rda ${fasta} .
-      awk '{print \$1"\\t"\$2"\\t"\$3"\\t"\$4}' ${name}*.txt > ${name}.txt
+      run_virfinder.Rscript VF.modEPV_k8.rda ${fasta} .
+
+      awk '{print \$1"\\t"\$2"\\t"\$3"\\t"\$4}' ${name}*.tsv > ${name}.txt
       """
 }

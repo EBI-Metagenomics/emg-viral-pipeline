@@ -11,6 +11,8 @@ if __name__ == "__main__":
                         required=True, help="Import contigs fasta file")
     parser.add_argument("-s", dest="virsorter_dir",
                         required=True, help="VirSorter data")
+    parser.add_argument("-f", dest="virfinder_model",
+                        required=True, help="VirFinder model")
     parser.add_argument("-a", dest="add_hmms_tsv",
                         required=True, help="additiona_hmms_metadata.tsv")
     parser.add_argument("-j", dest="hmmscan_db",
@@ -40,6 +42,11 @@ if __name__ == "__main__":
             "virsorter_data_dir": {
                 "class": "Directory",
                 "path": args.virsorter_dir
+            },
+            "virfinder_model": {
+                "class": "File",
+                "format": "http://edamontology.org/format_2330",
+                "path": args.virfinder_model
             },
             "add_hmms_tsv": {
                 "class": "File",
