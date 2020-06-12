@@ -6,13 +6,13 @@ label: Restore contig names
 
 inputs:
   high_confidence_contigs:
-    type: File
+    type: File?
     format: edam:format_1929
   low_confidence_contigs:
-    type: File
+    type: File?
     format: edam:format_1929
   prophages_contigs:
-    type: File
+    type: File?
     format: edam:format_1929  
   name_map:
     type: File
@@ -46,15 +46,15 @@ steps:
 
 outputs:
   high_confidence_contigs_resnames:
-    type: File
+    type: File?
     format: edam:format_1929
     outputSource: rename_hc/restored_fasta
   low_confidence_contigs_resnames:
-    type: File
+    type: File?
     format: edam:format_1929
     outputSource: rename_lc/restored_fasta
   prophages_contigs_resnames:
-    type: File
+    type: File?
     format: edam:format_1929
     outputSource: rename_p/restored_fasta
 
