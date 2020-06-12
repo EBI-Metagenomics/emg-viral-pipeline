@@ -668,6 +668,7 @@ def helpMSG() {
 
                              ebi (lsf,singularity; preconfigured for the EBI cluster)
                              yoda (lsf,singularity; preconfigured for the EBI YODA cluster)
+                             nih (slurm,singularity; preconfigured for the NIH cluster)
                              gcloud (use this as template for your own GCP setup)
                              ${c_reset}
 
