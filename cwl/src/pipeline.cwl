@@ -29,8 +29,7 @@ inputs:
     type: File
     doc: |
         VirFinder model for predicting prokaryotic phages and eukaryotic viruses.
-        Download: 
-        - ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virfinder/VF.modEPV_k8.rda
+        Download: ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virfinder/VF.modEPV_k8.rda
   add_hmms_tsv:
     type: File
     format: edam:format_3475
@@ -125,13 +124,27 @@ steps:
       - low_confidence_contigs
       - prophages_contigs
 
-  prodigal:
-    label: Prodigal
-    run: ./Tools/Prodigal/prodigal_swf.cwl
+  # Restore names
+  restore_contig_names:
+    label: Restore contig names
+    run: ./Tools/FastaRename/fasta_restore_swf.cwl
     in:
       high_confidence_contigs: parse_pred_contigs/high_confidence_contigs
       low_confidence_contigs: parse_pred_contigs/low_confidence_contigs
       prophages_contigs: parse_pred_contigs/prophages_contigs
+      name_map: fasta_rename/name_map
+    out:
+      - high_confidence_contigs_resnames
+      - low_confidence_contigs_resnames
+      - prophages_contigs_resnames
+
+  prodigal:
+    label: Prodigal
+    run: ./Tools/Prodigal/prodigal_swf.cwl
+    in:
+      high_confidence_contigs: restore_contig_names/high_confidence_contigs_resnames
+      low_confidence_contigs: restore_contig_names/low_confidence_contigs_resnames
+      prophages_contigs: restore_contig_names/prophages_contigs_resnames
     out:
       - high_confidence_contigs_genes
       - low_confidence_contigs_genes
@@ -193,42 +206,15 @@ steps:
       - krona_htmls
       - krona_all_html
 
-  fasta_restore_name_hc:
-    label: Restore fasta names
-    run: ./Tools/FastaRename/fasta_restore.cwl
-    in:
-      input: parse_pred_contigs/high_confidence_contigs
-      name_map: fasta_rename/name_map
-    out:
-      - restored_fasta
-
-  fasta_restore_name_lc:
-    label: Restore fasta names
-    run: ./Tools/FastaRename/fasta_restore.cwl
-    in:
-      input: parse_pred_contigs/low_confidence_contigs
-      name_map: fasta_rename/name_map
-    out:
-      - restored_fasta
-
-  fasta_restore_name_pp:
-    label: Restore fasta names
-    run: ./Tools/FastaRename/fasta_restore.cwl
-    in:
-      input: parse_pred_contigs/prophages_contigs
-      name_map: fasta_rename/name_map
-    out:
-      - restored_fasta
-
   imgvr_blast:
     label: Blast in a database of viral sequences including metagenomes
     run: ./Tools/IMGvrBlast/imgvr_blast_swf.cwl
     in:
       fasta_files:
         source:
-          - parse_pred_contigs/high_confidence_contigs
-          - parse_pred_contigs/low_confidence_contigs
-          - parse_pred_contigs/prophages_contigs
+          - restore_contig_names/high_confidence_contigs_resnames
+          - restore_contig_names/low_confidence_contigs_resnames
+          - restore_contig_names/prophages_contigs_resnames
         linkMerge: merge_flattened
       database: img_blast_database_dir
     out:
@@ -243,9 +229,9 @@ steps:
     in:
       input_fastas:
         source:
-          - parse_pred_contigs/high_confidence_contigs
-          - parse_pred_contigs/low_confidence_contigs
-          - parse_pred_contigs/prophages_contigs
+          - restore_contig_names/high_confidence_contigs_resnames
+          - restore_contig_names/low_confidence_contigs_resnames
+          - restore_contig_names/prophages_contigs_resnames
         linkMerge: merge_flattened
       reference: mashmap_reference_file
     out:
@@ -266,13 +252,13 @@ outputs:
     outputSource: pprmeta/pprmeta_output
     type: File
   high_confidence_contigs:
-    outputSource: fasta_restore_name_hc/restored_fasta
+    outputSource: restore_contig_names/high_confidence_contigs_resnames
     type: File?
   low_confidence_contigs:
-    outputSource: fasta_restore_name_lc/restored_fasta
+    outputSource: restore_contig_names/low_confidence_contigs_resnames
     type: File?
   parse_prophages_contigs:
-    outputSource: fasta_restore_name_pp/restored_fasta
+    outputSource: restore_contig_names/prophages_contigs_resnames
     type: File?
   high_confidence_faa:
     outputSource: prodigal/high_confidence_contigs_genes

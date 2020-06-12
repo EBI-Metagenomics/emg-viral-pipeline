@@ -398,6 +398,37 @@
   output:
     restored_fasta: null 
 
+# Fasta rename contigs
+- job: tools/fasta_contig_restore/fasta_rename_test_input.yml
+  tool: ../src/Tools/FastaRename/fasta_restore_swf.cwl
+  short_name: fasta_restore_swf.cwl
+  doc: Fasta restore contigs
+  output:
+    high_confidence_contigs_resnames:
+      location: Any
+      basename: high_conf_restored.fasta
+      class: File
+      checksum: sha1$cbad11c9ebb0f68d4c48a8ae6be40f9af78c2d44
+      size: 7981
+      format: http://edamontology.org/format_1929
+      path: Any
+    low_confidence_contigs_resnames:
+      location: Any
+      basename: low_conf_restored.fasta
+      class: File
+      checksum: sha1$df069f03c6e14e96318ba7d3b4763b292db2edd6
+      size: 787
+      format: http://edamontology.org/format_1929
+      path: Any
+    prophages_contigs_resnames:
+      location: Any
+      basename: prophages_restored.fasta
+      class: File
+      checksum: sha1$b1d6834cb956930cebd99d472a9cd55770644d1c
+      size: 2807
+      format: http://edamontology.org/format_1929
+      path: Any
+
 # PPR-Meta
 - job: tools/pprmeta/pprmeta_test_input.yml
   tool: ../src/Tools/PPRMeta/pprmeta.cwl
