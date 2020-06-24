@@ -28,7 +28,7 @@ process generate_chromomap_table {
 }
 
 process chromomap {
-    errorStrategy { task.exitStatus = 1 ? 'ignore' :  'terminate' }
+//    errorStrategy { task.exitStatus = 1 ? 'ignore' :  'terminate' }
     publishDir "${params.output}/${name}/${params.finaldir}/chromomap/", mode: 'copy', pattern: "*.html"
     label 'chromomap'
 
@@ -36,7 +36,7 @@ process chromomap {
       tuple val(name), val(set_name), file(contigs), file(annotations)
     
     output:
-      tuple val(name), val(set_name), file("*.html")
+      tuple val(name), val(set_name), file("*.html") optional true
     
     script:
     id = set_name
@@ -56,6 +56,12 @@ process chromomap {
     for (k in 1:length(contigs)){
       c = contigs[k]
       a = annos[k]
+
+      # check if a file is empty
+      if (file.info(c)\$size == 0 || file.info(a)\$size == 0) {
+        next
+      }
+
       p <-  chromoMap(c, a,
         data_based_color_map = T,
         data_type = "categorical",

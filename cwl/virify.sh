@@ -15,7 +15,8 @@ usage () {
     echo "      . HMMSCAN_DATABASE_DIRECTORY"
     echo "      . NCBI_TAX_DB_FILE"
     echo "      . IMGVR_BLAST_DB"
-    echo "      - PPRMETA_SIMG"
+    echo "      . PPRMETA_SIMG"
+    echo "      . VIRFINDER_MODEL"
     echo "-n the name for the job *a timestamp will be added to folder* [mandatory]"
     echo "-j toil job store folder path [mandatory]"
     echo "-o output folder [mandatory]"
@@ -216,6 +217,7 @@ then
         -n "${NCBI_TAX_DB_FILE}"
         -b "${IMGVR_BLAST_DB}"
         -p "${PPRMETA_SIMG}"
+        -f "${VIRFINDER_MODEL}"
         -o "${YML_INPUT}"
     )
 

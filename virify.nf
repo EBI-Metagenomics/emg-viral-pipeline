@@ -111,7 +111,7 @@ include spades from './nextflow/modules/spades'
 
 //detection
 include virsorter from './nextflow/modules/virsorter' 
-include virfinder from './nextflow/modules/virfinder' 
+include {virfinder; virfinderGetDB} from './nextflow/modules/virfinder' 
 include pprmeta from './nextflow/modules/pprmeta'
 include length_filtering from './nextflow/modules/length_filtering' 
 include parse from './nextflow/modules/parse' 
@@ -186,6 +186,19 @@ workflow download_virsorter_db {
       db_preload = file("${params.databases}/virsorter/virsorter-data")
       if (db_preload.exists()) { db = db_preload }
       else  { virsorterGetDB(); db = virsorterGetDB.out } 
+    }
+  emit: db    
+}
+
+workflow download_virfinder_db {
+    main:
+    // local storage via storeDir
+    if (!params.cloudProcess) { virfinderGetDB(); db = virfinderGetDB.out }
+    // cloud storage via db_preload.exists()
+    if (params.cloudProcess) {
+      db_preload = file("${params.databases}/virfinder/VF.modEPV_k8.rda")
+      if (db_preload.exists()) { db = db_preload }
+      else  { virfinderGetDB(); db = virfinderGetDB.out } 
     }
   emit: db    
 }
@@ -353,6 +366,7 @@ workflow postprocess {
 workflow detect {
     take:   assembly_renamed_length_filtered
             virsorter_db  
+            virfinder_db
             pprmeta_git  
 
     main:
@@ -361,7 +375,7 @@ workflow detect {
 
         // virus detection --> VirSorter, VirFinder and PPR-Meta
         virsorter(length_filtered_ch, virsorter_db)     
-        virfinder(length_filtered_ch)
+        virfinder(length_filtered_ch, virfinder_db)
         pprmeta(length_filtered_ch, pprmeta_git)
 
         // parsing predictions
@@ -507,6 +521,9 @@ workflow {
     if (params.virsorter) { virsorter_db = file(params.virsorter)} 
     else { download_virsorter_db(); virsorter_db = download_virsorter_db.out }
 
+    if (params.virfinder) { virfinder_db = file(params.virfinder)} 
+    else { download_virfinder_db(); virfinder_db = download_virfinder_db.out }
+
     if (params.meta) { additional_model_data = file(params.meta) }
     else { additional_model_data = download_model_meta() }
 
@@ -553,7 +570,7 @@ workflow {
             postprocess(
                 detect(
                     preprocess(fasta_input_ch),
-                    virsorter_db, pprmeta_git
+                    virsorter_db, virfinder_db, pprmeta_git
                 )
             ), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data
           )
@@ -566,7 +583,7 @@ workflow {
       assemble_illumina(illumina_input_ch)    
       plot(
         annotate(
-          postprocess(detect(preprocess(assemble_illumina.out), virsorter_db, pprmeta_git)), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data)
+          postprocess(detect(preprocess(assemble_illumina.out), virsorter_db, virfinder_db, pprmeta_git)), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data)
       )
     }
 }
@@ -600,6 +617,7 @@ def helpMSG() {
 
     ${c_yellow}Databases:${c_reset}
     --virsorter         a virsorter database provided as 'virsorter/virsorter-data' [default: $params.virsorter]
+    --virfinder         a virfinder model [default: $params.virfinder]
     --viphog            the ViPhOG database, hmmpress'ed [default: $params.viphog]
     --rvdb              the RVDB, hmmpress'ed [default: $params.rvdb]
     --pvogs             the pVOGS, hmmpress'ed [default: $params.pvogs]
@@ -668,6 +686,7 @@ def helpMSG() {
 
                              ebi (lsf,singularity; preconfigured for the EBI cluster)
                              yoda (lsf,singularity; preconfigured for the EBI YODA cluster)
+                             nih (slurm,singularity; preconfigured for the NIH cluster)
                              gcloud (use this as template for your own GCP setup)
                              ${c_reset}
 

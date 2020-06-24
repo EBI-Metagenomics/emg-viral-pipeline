@@ -11,17 +11,23 @@ hints:
 baseCommand: ["run_virfinder.Rscript"]
 
 inputs:
+  model:
+    type: File
+    format: edam:format_2330
+    inputBinding:
+      separate: true
+      position: 0
   fasta_file:
     type: File
     format: edam:format_1929
     inputBinding:
       separate: true
-      position: 0
+      position: 1
 
 arguments:
-  - valueFrom: virfinder_output.tsv
+  - valueFrom: $(runtime.outdir)
     position: 2
-
+  
 stdout: stdout.txt
 stderr: stderr.txt
 
@@ -30,11 +36,11 @@ outputs:
     type: File
     format: edam:format_3475
     outputBinding:
-      glob: virfinder_output.tsv
+      glob: "*_virfinder_all.tsv"
 
 doc: |
   VirFinder is a method for finding viral contigs from de novo assemblies.
-  usage: Rscript run_virfinder.Rscript <input.fasta> <output.tsv>
+  usage: Rscript run_virfinder.Rscript <model.rda> <input.fasta> <output.tsv>
 
 
 $namespaces:

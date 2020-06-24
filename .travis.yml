@@ -19,7 +19,7 @@ script:
   # CWL tests
   - cd $TRAVIS_BUILD_DIR/cwl/tests
   # NOTE: run only tests that do not require DBs or files from the FTP server
-  - bash cwltest.sh --test tests.yml -j 4 --verbose -n 1,4,5,6,10,11,12,13,19
+  - bash cwltest.sh --test tests.yml -j 4 --verbose -n 1,4,5,6,10,11,12,13,14,20
   # Python tests
   - cd $TRAVIS_BUILD_DIR/
   - python -m unittest discover tests

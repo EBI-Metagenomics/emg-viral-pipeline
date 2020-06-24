@@ -2,3 +2,7 @@ fasta_file:
   class: File
   path: ERR575691_host_filtered_filt300bp.fasta
   format: http://edamontology.org/format_1929 
+model:
+  class: File
+  path: ../../../databases/virfinder/VF.modEPV_k8.rda
+  format: http://edamontology.org/format_2330

@@ -5,6 +5,7 @@ process virfinder {
     
     input:
       tuple val(name), file(fasta), val(contig_number)
+      path model
     
     when: 
       contig_number.toInteger() > 0 
@@ -14,12 +15,25 @@ process virfinder {
     
     script:
       """
-      #Rscript /usr/local/bin/run_virfinder.Rscript ${fasta} ${name}.txt
-      
-      #run_virfinder_non_parallel.Rscript ${fasta} ${name}.txt
-
-      wget https://github.com/jessieren/VirFinder/raw/master/EPV/VF.modEPV_k8.rda
-      run_virfinder_modEPV.Rscript VF.modEPV_k8.rda ${fasta} .
-      awk '{print \$1"\\t"\$2"\\t"\$3"\\t"\$4}' ${name}*.txt > ${name}.txt
+      run_virfinder.Rscript ${model} ${fasta} .
+      awk '{print \$1"\\t"\$2"\\t"\$3"\\t"\$4}' ${name}*.tsv > ${name}.txt
       """
+}
+
+process virfinderGetDB {
+  label 'noDocker'    
+  if (params.cloudProcess) { 
+    publishDir "${params.databases}/virfinder/", mode: 'copy', pattern: "VF.modEPV_k8.rda" 
+  }
+  else { 
+    storeDir "${params.databases}/virfinder/" 
+  }  
+
+  output:
+    path "VF.modEPV_k8.rda"
+  
+  script:
+    """
+    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virfinder/VF.modEPV_k8.rda
+    """
 }

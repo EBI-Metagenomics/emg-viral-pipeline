@@ -91,11 +91,12 @@
       size: 117206
     low_confidence_contigs:
       basename: low_confidence_putative_viral_contigs.fna
-      checksum: sha1$ca3af35d5448fe41e6d2b5d371f3e36c8536b44e
+      checksum: sha1$85233dd04864b33e70eb548865db1d22ed3049b9
+      format: http://edamontology.org/format_1929
       class: File
       location: Any
       path: Any
-      size: 11427
+      size: 13034
     prophages_contigs:
       basename: putative_prophages.fna
       checksum: sha1$12db65b245d0cad3538ebab1762b50ed3b313f17
@@ -112,7 +113,7 @@
       size: 0
     stdout:
       basename: stdout.txt
-      checksum: sha1$48d5fa70a9d78532f03623074809ec8c6befc928
+      checksum: sha1$29000d241581ac23e002071faccdfbbe90f87897
       class: File
       location: Any
       path: Any
@@ -182,11 +183,12 @@
   output:
     virfinder_output:
       class: File
-      basename: virfinder_output.tsv
+      basename: ERR575691_host_filtered_filt300bp_virfinder_all.tsv
       location: Any
       path: Any
-      checksum: sha1$8a81b6d8c4876c8d91d16dd82c6f2fc26e50cc41
-      size: 104
+      checksum: sha1$f62466b7e2e9e59eeb5c083c3d88adc44dbb95d7
+      format: http://edamontology.org/format_3475
+      size: 136
 
 # VirSorter
 - job: tools/virsorter/virsorter_test_input.yml
@@ -395,6 +397,37 @@
   doc: Fasta name restore (empty)
   output:
     restored_fasta: null 
+
+# Fasta rename contigs
+- job: tools/fasta_contig_restore/fasta_rename_test_input.yml
+  tool: ../src/Tools/FastaRename/fasta_restore_swf.cwl
+  short_name: fasta_restore_swf.cwl
+  doc: Fasta restore contigs
+  output:
+    high_confidence_contigs_resnames:
+      location: Any
+      basename: high_conf_restored.fasta
+      class: File
+      checksum: sha1$cbad11c9ebb0f68d4c48a8ae6be40f9af78c2d44
+      size: 7981
+      format: http://edamontology.org/format_1929
+      path: Any
+    low_confidence_contigs_resnames:
+      location: Any
+      basename: low_conf_restored.fasta
+      class: File
+      checksum: sha1$df069f03c6e14e96318ba7d3b4763b292db2edd6
+      size: 787
+      format: http://edamontology.org/format_1929
+      path: Any
+    prophages_contigs_resnames:
+      location: Any
+      basename: prophages_restored.fasta
+      class: File
+      checksum: sha1$b1d6834cb956930cebd99d472a9cd55770644d1c
+      size: 2807
+      format: http://edamontology.org/format_1929
+      path: Any
 
 # PPR-Meta
 - job: tools/pprmeta/pprmeta_test_input.yml
