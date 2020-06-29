@@ -1,0 +1,16 @@
+high_confidence_contigs:
+  path: high_conf.fasta
+  class: File
+  format: http://edamontology.org/format_1929
+low_confidence_contigs:
+  path: low_conf.fasta
+  class: File
+  format: http://edamontology.org/format_1929
+prophages_contigs:
+  path: prophages.fasta
+  class: File
+  format: http://edamontology.org/format_1929
+name_map:
+  path: name_map.tsv
+  class: File
+  format: http://edamontology.org/format_3475
