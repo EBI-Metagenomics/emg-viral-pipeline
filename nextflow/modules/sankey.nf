@@ -16,7 +16,7 @@ process generate_sankey_table {
     # select the top ${params.sankey} hits with highest count because otherwise sankey gets messy
     sort -k1,1nr ${set_name}.sankey.tsv | head -${params.sankey} > ${set_name}.sankey.filtered.tsv
 
-    tsv2json.rb ${set_name}.sankey.tsv ${set_name}.sankey.filtered-${params.sankey}.json
+    tsv2json.rb ${set_name}.sankey.filtered.tsv ${set_name}.sankey.filtered-${params.sankey}.json
     """
 }
 
