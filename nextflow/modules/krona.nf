@@ -12,8 +12,9 @@ process generate_krona_table {
     script:
     """
     if [[ "${set_name}" == "all" ]]; then
-      grep contig_ID *.tsv | awk 'BEGIN{FS=":"};{print \$2}' | uniq > ${name}.tsv
-      grep -v "contig_ID" *.tsv | awk 'BEGIN{FS=":"};{print \$2}' | uniq >> ${name}.tsv
+      grep contig_ID *.tsv | awk 'BEGIN{FS=":"};{print \$2}' | uniq > ${name}.tmp
+      grep -v "contig_ID" *.tsv | awk 'BEGIN{FS=":"};{print \$2}' | uniq >> ${name}.tmp
+      cp ${name}.tmp ${name}.tsv
       generate_counts_table.py -f ${name}.tsv -o ${name}.krona.tsv
     else
       generate_counts_table.py -f ${tbl} -o ${set_name}.krona.tsv
