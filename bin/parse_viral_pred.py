@@ -5,7 +5,7 @@ import re
 import sys
 import csv
 from copy import copy
-from os.path import join
+from os.path import join, isfile
 
 from Bio import SeqIO
 
@@ -119,7 +119,7 @@ def parse_virus_sorter(sorter_files):
     prophages = dict()
 
     for file in sorter_files:
-        if ".fasta" not in file:
+        if ".fasta" not in file or not isfile(file):
             continue
         for record in SeqIO.parse(file, "fasta"):
             category = record.id[-1:]
