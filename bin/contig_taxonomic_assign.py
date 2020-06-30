@@ -51,7 +51,7 @@ def contig_tax(annot_df, ncbi_db, min_prot, prop_annot, tax_thres):
                             else:
                                 tax_hits[column["Label"]] += 1
                             rank_total += 1
-                    if len(tax_hits) < 1 or rank_total < 2:
+                    if len(tax_hits) < 1 or rank_total < min_prot:
                         assigned_taxa.append("")
                     else:
                         annot_ratio = max(tax_hits.items(), key=operator.itemgetter(1))[
@@ -96,7 +96,7 @@ def contig_tax(annot_df, ncbi_db, min_prot, prop_annot, tax_thres):
                             except:
                                 continue
 
-                    if len(tax_hits) < 1 or rank_total < 2:
+                    if len(tax_hits) < 1 or rank_total < min_prot:
                         assigned_taxa.append("")
                     else:
                         annot_ratio = max(tax_hits.items(), key=operator.itemgetter(1))[
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--input", dest="input_file",
                         help="Annotation table generated with script viral_contig_maps.py", required=True)
     parser.add_argument("--minprot", dest="min_prot", type=int,
-                        help="Minimum number of proteins with ViPhOG annotations required for taxonomic assignment (used when --percent is lower than this value, default: 3)", default=3)
+                        help="Minimum number of proteins with ViPhOG annotations at each taxonomic level, required for taxonomic assignment (default: 2)", default=2)
     parser.add_argument("--prop", dest="prot_prop", type=float,
                         help="Minimum proportion of proteins in a contig that must have a ViPhOG annotation in order to provide a taxonomic assignment (default: 0.1)", default=0.1)
     parser.add_argument("--taxthres", dest="tax_thres", type=float,
