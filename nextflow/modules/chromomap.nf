@@ -62,10 +62,37 @@ process chromomap {
         next
       }
 
+      # check how many categories we have
+      categories <- c("limegreen", "orange","grey")
+      df <- read.table(a, sep = "\\t")
+      set <- unique(df\$V5)
+      if ( length(set) == 2 ) {
+        if ( set[1] == 'High confidence' && set[2] == 'Low confidence') {
+          categories <- c("limegreen", "orange")
+        }
+        if ( set[1] == 'High confidence' && set[2] == 'No hit') {
+          categories <- c("limegreen", "grey")
+        }
+        if ( set[1] == 'Low confidence' && set[2] == 'No hit') {
+          categories <- c("orange", "grey")
+        }
+      }
+      if ( length(set) == 1 ) {
+        if ( set[1] == 'High confidence') {
+          categories <- c("limegreen")
+        }
+        if ( set[1] == 'Low confidence') {
+          categories <- c("orange")
+        }
+        if ( set[1] == 'No hit') {
+          categories <- c("grey")
+        }
+      }
+
       p <-  chromoMap(c, a,
         data_based_color_map = T,
         data_type = "categorical",
-        data_colors = list(c("limegreen", "orange","grey")),
+        data_colors = list(categories),
         legend = T, lg_y = 400, lg_x = 100, segment_annotation = T,
         left_margin = 100, canvas_width = 1000, chr_length = 8, ch_gap = 6)
       htmlwidgets::saveWidget(as_widget(p), paste("${id}.chromomap-", k, ".html", sep=''))
