@@ -23,6 +23,7 @@ usage () {
     echo "-c number of cores for the job [mandatory]"
     echo "-m memory in *megabytes* [mandatory]"
     echo "-i intput fasta contigs [mandatory]"
+    echo "-f Length threshold in kb of selected sequences [default: 1.0]"
     echo "-v virome mode for virsorter (default if OFF)"
     echo "-s mashmap reference file fasta or fastq (.gz) (optional)"
     echo "-r Restart workdir path. "
@@ -47,10 +48,11 @@ INPUT_FASTA=""
 VIROME=""
 MASHMAP_REFERENCE=""
 ENV_SCRIPT=""
+LEN_FILTER="1.0"
 RESTART=""
 MODE="EBI"
 
-while getopts "e:n:j:o:c:m:i:vs:r:lh" opt; do
+while getopts "e:n:j:o:c:m:i:vs:r:f:lh" opt; do
   case $opt in
     e)
         ENV_SCRIPT="$OPTARG"
@@ -133,6 +135,9 @@ while getopts "e:n:j:o:c:m:i:vs:r:lh" opt; do
         usage;
         exit 0
         ;;
+    f)
+        LEN_FILTER="${OPTARG}"
+        ;;
     r)
         RESTART="${OPTARG}"
         ;;
@@ -211,13 +216,14 @@ then
 
     CWL_PARAMS=(
         -i "${INPUT_FASTA}"
+        -f "${LEN_FILTER}"
         -s "${VIRSORTER_DATA}"
         -a "${ADDITIONAL_HMMS_DATA}"
         -j "${HMMSCAN_DATABASE_DIRECTORY}"
         -n "${NCBI_TAX_DB_FILE}"
         -b "${IMGVR_BLAST_DB}"
         -p "${PPRMETA_SIMG}"
-        -f "${VIRFINDER_MODEL}"
+        -d "${VIRFINDER_MODEL}"
         -o "${YML_INPUT}"
     )
 
