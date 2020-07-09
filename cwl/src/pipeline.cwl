@@ -226,6 +226,10 @@ steps:
     label: MashMap
     run: ./Tools/MashMap/mashmap_swf.cwl
     when: $(inputs.reference !== undefined)
+    requirements:
+        ResourceRequirement:    # overrides the ResourceRequirements in first-step.cwl
+            coresMin: 4
+            ramMin: 3814
     in:
       input_fastas:
         source:

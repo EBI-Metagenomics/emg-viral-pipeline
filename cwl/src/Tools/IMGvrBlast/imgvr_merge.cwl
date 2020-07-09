@@ -6,7 +6,17 @@ label: merge blast with IMG/VR db
 
 doc: Combine the filtered blast results with meta information from the IMG/VR database.
 
-baseCommand: ["imgvr_merge.py"]
+hints:
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
+
+requirements:
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/imgvr_merge.py
+
+baseCommand: ["python", "imgvr_merge.py"]
 
 inputs:
   blast_results_filtered:

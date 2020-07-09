@@ -5,8 +5,8 @@ class: CommandLineTool
 label: VirSorter
 
 hints:
- DockerRequirement:
-   dockerFile: Dockerfile
+  DockerRequirement:
+    dockerPull: "quay.io/biocontainers/virsorter:1.0.6--pl526h516909a_1"
 
 baseCommand: ["wrapper_phage_contigs_sorter_iPlant.pl"]
 

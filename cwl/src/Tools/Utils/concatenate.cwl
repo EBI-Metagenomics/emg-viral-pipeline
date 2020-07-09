@@ -16,7 +16,7 @@ inputs:
     inputBinding:
       position: 1
 
-baseCommand: cat
+baseCommand: ["cat"]
 
 stdout: result
 

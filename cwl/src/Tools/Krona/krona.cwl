@@ -4,10 +4,9 @@ class: CommandLineTool
 
 label: Krona
 
-#edited from ebi-metagenomics-cwl/tools/krona.cwl
-#hints:
-#  DockerRequirement:
-#    dockerPull: kronav2.7.1:1.0
+hints:
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/krona:v2.7.1"
 
 baseCommand: ["ktImportText"]
 

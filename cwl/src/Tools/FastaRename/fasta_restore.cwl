@@ -4,14 +4,22 @@ class: CommandLineTool
 
 label: "Fasta name restore utility"
 
+hints:
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
+
 requirements:
   InlineJavascriptRequirement: {}
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/rename_fasta.py
 
 doc: |
   Python script to restore the names on a multi-fasta using the name mapping file.
   In order to rename the multi-fasta use fasta_rename.cwl
 
-baseCommand: ["rename_fasta.py"]
+baseCommand: ["python", "rename_fasta.py"]
 
 inputs:
   input:

@@ -5,10 +5,16 @@ class: CommandLineTool
 label: "Ratio Evalue table"
 
 hints:
- DockerRequirement:
-   dockerPull: Dockerfile
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
 
-baseCommand: ["ratio_evalue_table.py"]
+requirements:
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/ratio_evalue_table.py
+
+baseCommand: ["python", "ratio_evalue_table.py"]
 
 arguments:
   - "-o"
@@ -22,6 +28,7 @@ inputs:
       prefix: "-i"
   hmms_tsv:
     type: File
+    format: edam:format_3475
     inputBinding:
       separate: true
       prefix: "-t"

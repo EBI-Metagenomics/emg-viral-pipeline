@@ -7,13 +7,22 @@ label: Prodigal
 doc: Protein-coding gene prediction for prokaryotic genomes
 
 hints:
- DockerRequirement:
-   dockerFile: Dockerfile 
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/prodigal:v2.6.3"
+  SoftwareRequirement:
+    packages:
+      mashmap:
+        specs: [ "https://github.com/hyattpd/Prodigal" ]
+        version: [ "2.6.3" ]
 
 requirements:
   InlineJavascriptRequirement: {}
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/prodigal_wrapper.sh 
 
-baseCommand: ["prodigal_wrapper.sh"]
+baseCommand: ["bash", "prodigal_wrapper.sh"]
 
 inputs:
   input_fasta:

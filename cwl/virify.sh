@@ -251,7 +251,7 @@ TOIL_PARAMS=(
 if [ "${MODE}" = "EBI" ];
 then
     TOIL_PARAMS+=(
-        --no-container
+        --singularity
         --batchSystem LSF
         --disableCaching
     )

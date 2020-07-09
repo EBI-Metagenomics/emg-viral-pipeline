@@ -6,9 +6,15 @@ label: hmmscan wrapper
 
 hints:
  DockerRequirement:
-   dockerFile: Dockerfile
+   dockerPull: "docker.io/microbiomeinformatics/hmmer:v3.1b2"
 
-baseCommand: ["hmmscan_wrapper.sh"]
+requirements:
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/hmmscan_wrapper.sh
+
+baseCommand: ["bash", "hmmscan_wrapper.sh"]
 
 inputs:
   database:

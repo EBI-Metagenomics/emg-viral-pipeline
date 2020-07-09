@@ -5,10 +5,17 @@ class: CommandLineTool
 label: "Viral contig annotation"
 
 hints:
- DockerRequirement:
-   dockerFile: Dockerfile
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
 
-baseCommand: "viral_contigs_annotation.py"
+requirements:
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/viral_contigs_annotation.py
+
+baseCommand: ["python", "viral_contigs_annotation.py"]
+
 arguments: ["-o", $(runtime.outdir)]
 
 inputs:

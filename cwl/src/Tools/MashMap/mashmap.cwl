@@ -14,11 +14,8 @@ hints:
       mashmap:
         specs: [ "https://github.com/marbl/MashMap" ]
         version: [ "2.0" ]
-  ResourceRequirement:
-    coresMin: 4
-    ramMin: 3814
 
-baseCommand: mashmap
+baseCommand: ["mashmap"]
 
 inputs:
   query:

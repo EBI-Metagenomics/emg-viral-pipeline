@@ -4,10 +4,18 @@ class: CommandLineTool
 
 label: blast against IMG/VR
 
+hints:
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/blast:v2.9.0"
+
 requirements:
   InlineJavascriptRequirement: {}
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/imgvr_blast.sh
 
-baseCommand: "imgvr_blast.sh"
+baseCommand: ["bash", "imgvr_blast.sh"]
 
 inputs:
   database:

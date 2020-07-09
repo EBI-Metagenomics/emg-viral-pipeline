@@ -5,10 +5,16 @@ class: CommandLineTool
 label: "Viral contig assign"
 
 hints:
- DockerRequirement:
-   dockerFile: Dockerfile
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
 
-baseCommand: 'contig_taxonomic_assign.py'
+requirements:
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/contig_taxonomic_assign.py
+
+baseCommand: ["python", "contig_taxonomic_assign.py"]
 
 inputs:
   input_table:
