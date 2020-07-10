@@ -14,6 +14,9 @@ inputs:
   input_fasta_file:  # input assembly
     type: File
     format: edam:format_1929
+  fasta_length_filter:
+    type: float
+    default: 1.0
   virsorter_virome:
     type: boolean
     default: false
@@ -78,8 +81,7 @@ steps:
     doc: Default lenght 1kb https://github.com/EBI-Metagenomics/emg-virify-scripts/issues/6
     in:
       fasta_file: fasta_rename/renamed_fasta
-      length:
-        default: 1.0
+      length: fasta_length_filter
     out:
       - filtered_contigs_fasta
 
@@ -225,11 +227,11 @@ steps:
   mashmap:
     label: MashMap
     run: ./Tools/MashMap/mashmap_swf.cwl
-    when: $(inputs.reference !== undefined)
     requirements:
         ResourceRequirement:    # overrides the ResourceRequirements in first-step.cwl
             coresMin: 4
             ramMin: 3814
+    when: $(inputs.reference !== undefined && inputs.reference !== null)
     in:
       input_fastas:
         source:
