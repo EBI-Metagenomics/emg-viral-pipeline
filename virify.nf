@@ -667,28 +667,26 @@ def helpMSG() {
     --workdir           defines the path where nextflow writes tmp files [default: $params.workdir]
     --cachedir          defines the path where images (singularity) are cached [default: $params.cachedir] 
 
-    ${c_yellow}Profile:${c_reset}
-    You can merge different profiles for different setups, e.g.
+    ${c_yellow}Profiles: Execution/Engine:${c_reset}
+     VIRify supports profiles to run via different ${c_green}Executers${c_reset} and ${c_blue}Engines${c_reset} e.g.:
+         -profile ${c_green}local${c_reset},${c_blue}docker${c_reset} 
 
-        -profile local,docker
-        -profile lsf,singularity
-        -profile slurm,singularity
+      ${c_green}Executer${c_reset} (choose one):
+        local
+        slurm
+        lsf
+      ${c_blue}Engines${c_reset} (choose one):
+        docker
+        singularity
+        conda
 
-    -profile                 standard (local,docker) [default]
-
-                             local
-                             lsf
-                             slurm
-
-                             docker
-                             singularity
-                             conda
-
-                             ebi (lsf,singularity; preconfigured for the EBI cluster)
-                             yoda (lsf,singularity; preconfigured for the EBI YODA cluster)
-                             nih (slurm,singularity; preconfigured for the NIH cluster)
-                             gcloud (use this as template for your own GCP setup)
-                             ${c_reset}
+      Or use a ${c_yellow}pre-configured${c_reset} setup instead:
+        standard (local,docker) [default]
+        ebi (lsf,singularity; preconfigured for the EBI cluster)
+        yoda (lsf,singularity; preconfigured for the EBI YODA cluster)
+        nih (slurm,singularity; preconfigured for the NIH cluster)
+        gcloud (use this as template for your own GCP setup)
+      ${c_reset}
 
     """.stripIndent()
 }

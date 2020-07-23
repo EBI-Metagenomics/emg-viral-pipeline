@@ -108,7 +108,7 @@ cd $DIR
 
 ## Profiles
 
-The Nextflow uses the merged profile handling system so you have to define an executor (`local`, `lsf`, `slurm`) and an engine (`docker`, `singularity`, `conda` is not working at the moment except you have an working installation of PPR-Meta). 
+The Nextflow uses the merged profile handling system so you have to define an executor (`local`, `lsf`, `slurm`) and an engine (`docker`, `singularity`, `conda`). 
 
 Per default, the workflow is run with Docker-support. When you execute the workflow on a HPC you can switch to 
 * SLURM (``-profile slurm,singularity``)
@@ -118,7 +118,7 @@ and then you should also define the parameters
 * `--databases` (here your databases will be saved and the workflow checks if they are already available)
 * `--cachedir` (here Docker/Singularity containers will be cached)
 
-The `-profile conda` is not working at the moment until there is a conda recipe for PPR-Meta. Sorry. Use Docker. Please. 
+The engine `conda` is not working at the moment until there is a conda recipe for PPR-Meta. Sorry. Use Docker. Please. Or install PPR-Meta by yourself.  
 
 ## DAG chart
 

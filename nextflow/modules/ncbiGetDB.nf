@@ -12,6 +12,7 @@ process ncbiGetDB {
 
   script:
     """
-    wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/ete3_ncbi_tax.sqlite.gz && gunzip -f ete3_ncbi_tax.sqlite.gz
+    wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/2020-07-01_ete3_ncbi_tax.sqlite.gz && gunzip -f 2020-07-01_ete3_ncbi_tax.sqlite.gz
+    cp 2020-07-01_ete3_ncbi_tax.sqlite ete3_ncbi_tax.sqlite
     """
 }
