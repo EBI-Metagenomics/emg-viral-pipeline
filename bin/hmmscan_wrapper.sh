@@ -11,4 +11,4 @@ then
   exit 0
 fi
 
-hmmscan "$@"
+hmmscan "$@" > /dev/null 2> /dev/null

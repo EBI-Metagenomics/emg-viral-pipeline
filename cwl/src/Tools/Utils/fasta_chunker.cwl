@@ -2,9 +2,9 @@
 cwlVersion: v1.0
 class: CommandLineTool
 
-label: merge blast with IMG/VR db
+label: fasta chunker
 
-doc: Combine the filtered blast results with meta information from the IMG/VR database.
+doc: split FASTA by number of records
 
 hints:
   DockerRequirement:
@@ -14,41 +14,38 @@ requirements:
   InitialWorkDirRequirement:
     listing:
         - class: File
-          location: ../../../../bin/imgvr_merge.py
+          location: ../../../../bin/fasta_chunker.py
 
-baseCommand: ["python", "imgvr_merge.py"]
+baseCommand: [ "python", "fasta_chunker.py" ]
 
 inputs:
-  blast_results_filtered:
+  fasta_file:
     type: File
-    format: edam:format_3475
     inputBinding:
-      prefix: "-f"
-  database:
-    type: Directory
+      prefix: -i
+    format: edam:format_1929
+  chunk_size:
+    type: int
+    default: 1000
     inputBinding:
-      prefix: "-d"
-      valueFrom:
-        $(self.path)/IMGVR_all_Sequence_information.tsv
-  outfile:
-    type: string
+      prefix: -s
+  file_format:
+    type: string?
     inputBinding:
-      prefix: "-o"
-
-stdout: stdout
-stderr: stderr 
+      prefix: -f
 
 outputs:
-  merged_tsv:
-    type: File
-    format: edam:format_3475
+  fasta_chunks:
+    format: edam:format_1929 # FASTA
+    type: File[]
     outputBinding:
-      glob: "*.tsv"
+      glob: "*_*.faa"
 
 $namespaces:
- s: http://schema.org/
  edam: http://edamontology.org/
+ s: http://schema.org/
 $schemas:
+ - http://edamontology.org/EDAM_1.16.owl
  - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
