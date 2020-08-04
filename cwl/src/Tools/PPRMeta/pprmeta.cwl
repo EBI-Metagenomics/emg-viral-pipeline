@@ -4,12 +4,17 @@ class: CommandLineTool
 
 label: "PPR-Meta"
 
-baseCommand: ["pprmeta.sh"]
+baseCommand: [ "bash", "pprmeta.sh"]
+
+hints:
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/pprmeta:v1.1"
 
 inputs:
   singularity_image:
-    type: File
+    type: File?
     label: pprmeta.simg
+    doc: "This is required if executed outside docker"
     inputBinding:
       prefix: "-i"
   fasta_file:

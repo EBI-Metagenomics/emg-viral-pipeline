@@ -60,7 +60,7 @@ inputs:
       MashMap Reference file. Use MashMap to 
   # == singularity containers == #
   pprmeta_simg:
-    type: File
+    type: File?
     doc: |
       PPR-Meta singularity simg file
 

@@ -11,7 +11,7 @@ hints:
     dockerPull: "docker.io/microbiomeinformatics/prodigal:v2.6.3"
   SoftwareRequirement:
     packages:
-      mashmap:
+      prodigal:
         specs: [ "https://github.com/hyattpd/Prodigal" ]
         version: [ "2.6.3" ]
 
