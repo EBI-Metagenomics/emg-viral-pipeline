@@ -7,7 +7,7 @@ html5lib==1.0.1
 numpy==1.17.0
 pandas==0.25.3
 pyflakes==2.2.0
-pyyaml==5.3
+ruamel.yaml==0.16.10
 rdflib==4.2.2
 toil[cwl]==4.1.0
 schema-salad==5.0.20200416112825

@@ -39,5 +39,3 @@ ENV PATH /virfinder_exec/:$PATH
 RUN apt-get clean all && apt-get remove -y git && apt-get -y autoremove && \
     apt-get purge && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-# RUN mkdir /scratch

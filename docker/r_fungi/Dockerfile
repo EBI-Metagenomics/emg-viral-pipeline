@@ -11,8 +11,6 @@ LABEL software.version="3.15"
 
 LABEL maintainer="MGnify team <https://www.ebi.ac.uk/support/metagenomics>"
 
-RUN apt update && apt install -y procps wget gzip && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
 RUN Rscript -e "install.packages('chromoMap', repos = 'http://cran.us.r-project.org')" && \
     Rscript -e "install.packages('ggplot2', repos = 'http://cran.us.r-project.org')" && \ 
     Rscript -e "install.packages('plotly', repos = 'http://cran.us.r-project.org')" && \  

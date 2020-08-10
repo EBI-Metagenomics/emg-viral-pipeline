@@ -9,7 +9,18 @@ doc: |
 
   Usage: hmmscan_format_table.py -t input_table.tsv -o output_name
 
-baseCommand: ["hmmscan_format_table.py"]
+hints:
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
+
+requirements:
+  InlineJavascriptRequirement: {}
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/hmmscan_format_table.py
+
+baseCommand: [ "python", "hmmscan_format_table.py" ]
 
 inputs:
   input_table:

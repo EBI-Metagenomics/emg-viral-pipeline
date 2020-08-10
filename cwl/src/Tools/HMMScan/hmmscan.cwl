@@ -37,6 +37,9 @@ arguments:
     position: 4
   - valueFrom: --noali
     position: 1
+  - prefix: --cpu
+    valueFrom: $(runtime.cores)
+    position: 2
 
 outputs:
   output_table:
