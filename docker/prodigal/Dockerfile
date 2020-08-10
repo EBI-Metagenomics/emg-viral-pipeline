@@ -31,6 +31,8 @@ LABEL maintainer="MGnify team <https://www.ebi.ac.uk/support/metagenomics>"
 
 COPY --from=build /Prodigal /Prodigal
 
+RUN apk add --no-cache bash
+
 ENV PATH="/Prodigal:${PATH}"
 
 CMD ["prodigal"]
