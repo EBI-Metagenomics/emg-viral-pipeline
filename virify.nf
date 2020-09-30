@@ -611,7 +611,8 @@ def helpMSG() {
     ${c_dim}  ..change above input to csv:${c_reset} ${c_green}--list ${c_reset}            
 
     ${c_yellow}Options:${c_reset}
-    --cores             max cores for local use [default: $params.cores]
+    --cores             max cores per process for local use [default: $params.cores]
+    --max_cores         max cores per machine for local use [default: $params.max_cores]
     --memory            max memory for local use [default: $params.memory]
     --output            name of the result folder [default: $params.output]
 
