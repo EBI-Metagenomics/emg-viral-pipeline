@@ -6,9 +6,8 @@ process imgvrGetDB {
   else { 
     storeDir "${params.databases}/imgvr/" 
   }  
-
   output:
-    file("IMG_VR_2018-07-01_4")
+    path("IMG_VR_2018-07-01_4", type: 'dir')
 
   script:
     """

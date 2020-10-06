@@ -9,7 +9,7 @@ process kaijuGetDB {
 
   output:
     //file("nr_euk")
-    file("viruses")
+    path("viruses", type: 'dir')
 
   script:
     """
