@@ -117,7 +117,8 @@ include {length_filtering} from './nextflow/modules/length_filtering'
 include {parse} from './nextflow/modules/parse' 
 include {prodigal} from './nextflow/modules/prodigal'
 //include phanotate from './modules/phanotate' 
-include {hmmscan as hmmscan_viphogs} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.viphog_version)
+include {hmmscan as hmmscan_viphogs_evalued} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.viphog_version)
+include {hmmscan_bitscored as hmmscan_viphogs_bitscored} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.viphog_version)
 include {hmmscan as hmmscan_rvdb} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'rvdb', version: params.viphog_version)
 include {hmmscan as hmmscan_pvogs} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'pvogs', version: params.viphog_version)
 include {hmmscan as hmmscan_vogdb} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vogdb', version: params.viphog_version)
@@ -407,8 +408,9 @@ workflow annotate {
         //phanotate(predicted_contigs)
 
         // annotation --> hmmer
-        hmmscan_viphogs(prodigal.out, viphog_db)
-        hmm_postprocessing(hmmscan_viphogs.out)
+        hmmscan_viphogs_evalued(prodigal.out, viphog_db)
+        hmmscan_viphogs_bitscored(prodigal.out, viphog_db)
+        hmm_postprocessing(hmmscan_viphogs_evalued.out.join(hmmscan_viphogs_bitscored.out))
 
         // calculate hit qual per protein
         ratio_evalue(hmm_postprocessing.out, additional_model_data)
