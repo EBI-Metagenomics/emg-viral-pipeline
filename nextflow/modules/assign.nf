@@ -1,6 +1,6 @@
 process assign {
-      publishDir "${params.output}/${name}/${params.taxdir}", mode: 'copy', pattern: "*tax_assign.tsv"
-      publishDir "${params.output}/${name}/${params.finaldir}/taxonomy", mode: 'copy', pattern: "*tax_assign.tsv"
+      publishDir "${params.output}/${name}/${params.taxdir}", mode: 'copy', pattern: "${set_name}_prodigal_prot_ann_table_tax_assign.tsv"
+      publishDir "${params.output}/${name}/${params.finaldir}/taxonomy", mode: 'copy', pattern: "${set_name}_prodigal_prot_ann_table_tax_assign.tsv"
       label 'assign'
 
     input:
@@ -8,11 +8,12 @@ process assign {
       file(db)
     
     output:
-      tuple val(name), val(set_name), file("*tax_assign.tsv")
+      tuple val(name), val(set_name), file("${set_name}_prodigal_prot_ann_table_tax_assign.tsv")
     
     script:
     """
     contig_taxonomic_assign.py -i ${tab} -d ${db} --prop ${params.prop} --taxthres ${params.taxthres}
+    cp *tax_assign.tsv tmp && rm *tax_assign.tsv && cp tmp ${set_name}_prodigal_prot_ann_table_tax_assign.tsv
     """
 }
 

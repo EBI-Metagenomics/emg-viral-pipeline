@@ -12,10 +12,22 @@ process generate_krona_table {
     script:
     """
     if [[ "${set_name}" == "all" ]]; then
-      grep contig_ID *.tsv | awk 'BEGIN{FS=":"};{print \$2}' | uniq > ${name}.tmp
-      grep -v "contig_ID" *.tsv | awk 'BEGIN{FS=":"};{print \$2}' | uniq >> ${name}.tmp
-      cp ${name}.tmp ${name}.tsv
-      generate_counts_table.py -f ${name}.tsv -o ${name}.krona.tsv
+      # separate between _bitscored and _evalued result files
+
+      for TSV in *.tsv; do
+      
+        SUFFIX="_evalued"
+        if [[ \$TSV == *_bitscored* ]]; then 
+          SUFFIX="_bitscored"
+        fi
+
+        grep contig_ID \$TSV | awk 'BEGIN{FS=":"};{print \$2}' | uniq > ${name}.tmp
+        grep -v "contig_ID" \$TSV | awk 'BEGIN{FS=":"};{print \$2}' | uniq >> ${name}.tmp
+        cp ${name}.tmp ${name}\$SUFFIX.tsv
+        generate_counts_table.py -f ${name}\$SUFFIX.tsv -o ${name}\$(echo \$SUFFIX | sed 's/_/\\./'g).krona.tsv
+
+      done
+
     else
       generate_counts_table.py -f ${tbl} -o ${set_name}.krona.tsv
     fi
@@ -33,7 +45,9 @@ process krona {
   script:
     """
     if [[ ${set_name} == "all" ]]; then
-      ktImportText -o ${name}.krona.html ${krona_file}
+      for TSV in \$(ls *.krona.tsv); do
+        ktImportText -o \$(basename \${TSV} .tsv).html \${TSV}
+      done
     else
       ktImportText -o ${set_name}.krona.html ${krona_file}
     fi

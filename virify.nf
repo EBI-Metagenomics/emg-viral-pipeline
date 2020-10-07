@@ -409,8 +409,8 @@ workflow annotate {
 
         // annotation --> hmmer
         hmmscan_viphogs_evalued(prodigal.out, viphog_db)
-        hmmscan_viphogs_bitscored(prodigal.out, viphog_db)
-        hmm_postprocessing(hmmscan_viphogs_evalued.out.join(hmmscan_viphogs_bitscored.out))
+        hmmscan_viphogs_bitscored(prodigal.out, viphog_db)      
+        hmm_postprocessing(hmmscan_viphogs_evalued.out.concat(hmmscan_viphogs_bitscored.out))
 
         // calculate hit qual per protein
         ratio_evalue(hmm_postprocessing.out, additional_model_data)
@@ -464,15 +464,15 @@ workflow plot {
         // krona
         combined_assigned_lineages_ch = assigned_lineages_ch.groupTuple().map { tuple(it[0], 'all', it[2]) }.concat(assigned_lineages_ch)
         //combined_assigned_lineages_ch.view()
-        krona(
-          generate_krona_table(combined_assigned_lineages_ch)
-        )
+        //krona(
+          generate_krona_table(combined_assigned_lineages_ch).view()
+        //)
 
         // sankey
         if (workflow.profile != 'conda') {
-          sankey(
+          //sankey(
             generate_sankey_table(generate_krona_table.out)
-         )
+         //)
         }
 
         // chromomap
