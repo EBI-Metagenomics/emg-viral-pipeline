@@ -6,7 +6,8 @@ import operator
 import os
 import re
 import sys
-
+import csv
+from collections import Counter
 import pandas as pd
 from ete3 import NCBITaxa
 
@@ -17,105 +18,37 @@ def contig_tax(annot_df, ncbi_db, min_prot, prop_annot, tax_thres):
 
     ncbi = NCBITaxa(dbfile=ncbi_db)
     tax_rank_order = ["genus", "subfamily", "family", "order"]
-    contig_list = list(annot_df["Contig"].value_counts().index)
-    df_rows = []
+    contig_set = set(annot_df['Contig'])
 
-    def get_tax_rank(label):
-        try:
-            tax_id = ncbi.get_name_translator([label])[label]
-            tax_rank = ncbi.get_rank(tax_id)[tax_id[0]]
-        except:
-            tax_rank = ""
-        return tax_rank
-
-    for contig in contig_list:
-        assigned_taxa = []
-        assigned_taxa.append(contig)
-        contig_df = annot_df[annot_df["Contig"] == contig]
-        filtered_df = contig_df[contig_df["Label"].notnull()]
-        filtered_df = filtered_df.reset_index(drop=True)
-        total_annot_prot = len(filtered_df)
-##        if total_annot_prot < max(min_prot, prop_annot * len(contig_df)):
-        if total_annot_prot < prop_annot * len(contig_df):
-            assigned_taxa.extend([""]*4)
+    for contig in contig_set:
+        contig_lineage = [contig]
+        contig_df = annot_df[annot_df['Contig'] == contig]
+        total_prot = len(contig_df)
+        annot_prot = sum(contig_df['Best_hit'] != 'No hit')
+        if annot_prot < prop_annot * total_prot:
+            contig_lineage.extend([""]*4)
         else:
-            filtered_df["Rank"] = filtered_df["Label"].apply(get_tax_rank)
-            for item in tax_rank_order:
-                tax_hits = {}
-                rank_total = 0
-                if item == "genus":
-                    for row, column in filtered_df.iterrows():
-                        if column["Rank"] == item:
-                            if column["Label"] not in tax_hits.keys():
-                                tax_hits[column["Label"]] = 1
-                            else:
-                                tax_hits[column["Label"]] += 1
-                            rank_total += 1
-                    if len(tax_hits) < 1 or rank_total < min_prot:
-                        assigned_taxa.append("")
-                    else:
-                        annot_ratio = max(tax_hits.items(), key=operator.itemgetter(1))[
-                            1]/rank_total
-                        if annot_ratio < tax_thres:
-                            assigned_taxa.append(str(annot_ratio))
-                        else:
-                            max_tax = []
-                            for key, value in tax_hits.items():
-                                if value == max(tax_hits.items(), key=operator.itemgetter(1))[1]:
-                                    max_tax.append(key)
-                            if len(max_tax) > 1:
-                                assigned_taxa.append("-".join(max_tax))
-                            else:
-                                assigned_taxa.append(max_tax[0])
+            contig_hits = contig_df[pd.notnull(contig_df['Label'])]['Label'].values
+            taxid_list = [ncbi.get_name_translator([item])[item][0] for item in contig_hits]
+            hit_lineages = [{y:x for x,y in ncbi.get_rank(ncbi.get_lineage(item)).items() if y in tax_rank_order} for item in taxid_list]
+            for rank in tax_rank_order:
+                taxon_list = [item.get(rank) for item in hit_lineages]
+                total_hits = sum(pd.notnull(taxon_list))
+                if total_hits < min_prot:
+                    contig_lineage.append("")
+                    continue
                 else:
-                    for row, column in filtered_df.iterrows():
-                        if column["Rank"] == item:
-                            if column["Label"] not in tax_hits.keys():
-                                tax_hits[column["Label"]] = 1
-                            else:
-                                tax_hits[column["Label"]] += 1
-                            rank_total += 1
-                        else:
-                            try:
-                                name2taxid = ncbi.get_name_translator(
-                                    [column["Label"]])
-                                label_lineage = ncbi.get_lineage(
-                                    name2taxid[column["Label"]][0])
-                                lineage_names = ncbi.get_taxid_translator(
-                                    label_lineage)
-                                lineage_ranks = ncbi.get_rank(label_lineage)
-                                if item in lineage_ranks.values():
-                                    for x, y in lineage_ranks.items():
-                                        if y == item:
-                                            if lineage_names[x] not in tax_hits.keys():
-                                                tax_hits[lineage_names[x]] = 1
-                                            else:
-                                                tax_hits[lineage_names[x]] += 1
-                                            rank_total += 1
-                                            break
-                            except:
-                                continue
-
-                    if len(tax_hits) < 1 or rank_total < min_prot:
-                        assigned_taxa.append("")
+                    count_hits = Counter([item for item in taxon_list if pd.notnull(item)])
+                    best_hit = sorted([(x,y) for x,y in count_hits.items()], key=lambda x: x[1], reverse = True )[0]
+                    prop_hits = best_hit[1]/total_hits
+                    if prop_hits < tax_thres:
+                        contig_lineage.append(prop_hits)
+                        continue
                     else:
-                        annot_ratio = max(tax_hits.items(), key=operator.itemgetter(1))[
-                            1]/rank_total
-                        if annot_ratio < tax_thres:
-                            assigned_taxa.append(str(annot_ratio))
-                        else:
-                            max_tax = []
-                            for key, value in tax_hits.items():
-                                if value == max(tax_hits.items(), key=operator.itemgetter(1))[1]:
-                                    max_tax.append(key)
-                            if len(max_tax) > 1:
-                                assigned_taxa.append("-".join(max_tax))
-                            else:
-                                assigned_taxa.append(max_tax[0])
-        df_rows.append(assigned_taxa)
-    final_df = pd.DataFrame(
-        df_rows, columns=["contig_ID", "genus", "subfamily", "family", "order"])
-    return final_df
+                        best_lineage = ncbi.get_lineage(best_hit[0])
+                        contig_lineage.extend([ncbi.get_taxid_translator([key])[key] if pd.notnull(key) else "" for key in [{y:x for x,y in ncbi.get_rank(best_lineage).items()}.get(item) for item in tax_rank_order[tax_rank_order.index(rank):]]])
+                        break
+        yield contig_lineage
 
 
 if __name__ == "__main__":
@@ -139,8 +72,13 @@ if __name__ == "__main__":
     else:
         args = parser.parse_args()
         input_df = pd.read_csv(args.input_file, sep="\t")
-        output_df = contig_tax(input_df, args.ncbi_db, args.min_prot,
+        file_header = ["contig_ID", "genus", "subfamily", "family", "order"]
+        output_gen = contig_tax(input_df, args.ncbi_db, args.min_prot,
                                args.prot_prop, args.tax_thres)
         print(args.input_file)
         out_file = re.split(r"\.[a-z]+$", os.path.basename(args.input_file))[0]
-        output_df.to_csv(os.path.join(args.outdir, out_file + "_tax_assign.tsv"), sep="\t", index=False)
+        with open(os.path.join(args.outdir, out_file + "_tax_assign.tsv"), 'w', newline = '') as output_file:
+            tsv_writer = csv.writer(output_file, delimiter = '\t', quoting = csv.QUOTE_MINIMAL)
+            tsv_writer.writerow(file_header)
+            for item in output_gen:
+                tsv_writer.writerow(item)
