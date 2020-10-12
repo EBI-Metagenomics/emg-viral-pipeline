@@ -151,7 +151,7 @@ include chromomap from './nextflow/modules/chromomap'
 The Database Section is designed to "auto-get" pre prepared databases.
 It is written for local use and cloud use.*/
 
-workflow download_pprmeta {
+/*workflow download_pprmeta {
     main:
     // local storage via storeDir
     if (!params.cloudProcess) { pprmetaGet(); git = pprmetaGet.out }
@@ -162,7 +162,7 @@ workflow download_pprmeta {
       else  { pprmetaGet(); git = pprmetaGet.out } 
     }
   emit: git
-}
+}*/
 
 workflow download_model_meta {
     main:
@@ -367,7 +367,7 @@ workflow detect {
     take:   assembly_renamed_length_filtered
             virsorter_db  
             virfinder_db
-            pprmeta_git  
+            //pprmeta_git  
 
     main:
         renamed_ch = assembly_renamed_length_filtered.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, renamed_fasta, map)}
@@ -376,10 +376,10 @@ workflow detect {
         // virus detection --> VirSorter, VirFinder and PPR-Meta
         virsorter(length_filtered_ch, virsorter_db)     
         virfinder(length_filtered_ch, virfinder_db)
-        pprmeta(length_filtered_ch, pprmeta_git)
+        //pprmeta(length_filtered_ch, pprmeta_git)
 
         // parsing predictions
-        parse(length_filtered_ch.join(virfinder.out).join(virsorter.out).join(pprmeta.out))
+        parse(length_filtered_ch.join(virfinder.out).join(virsorter.out))
 
     emit:
         parse.out.join(renamed_ch).transpose().map{name, fasta, vs_meta, log, renamed_fasta, map -> tuple (name, fasta, map)}
@@ -515,8 +515,8 @@ workflow {
     /**************************************************************/
     // check/ download all databases
     
-    if (params.pprmeta) { pprmeta_git = file(params.pprmeta) }
-    else { pprmeta_git = download_pprmeta() }
+    //if (params.pprmeta) { pprmeta_git = file(params.pprmeta) }
+    //else { pprmeta_git = download_pprmeta() }
     
     if (params.virsorter) { virsorter_db = file(params.virsorter)} 
     else { download_virsorter_db(); virsorter_db = download_virsorter_db.out }
@@ -570,7 +570,7 @@ workflow {
             postprocess(
                 detect(
                     preprocess(fasta_input_ch),
-                    virsorter_db, virfinder_db, pprmeta_git
+                    virsorter_db, virfinder_db//, pprmeta_git
                 )
             ), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data
           )
@@ -583,7 +583,7 @@ workflow {
       assemble_illumina(illumina_input_ch)    
       plot(
         annotate(
-          postprocess(detect(preprocess(assemble_illumina.out), virsorter_db, virfinder_db, pprmeta_git)), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data)
+          postprocess(detect(preprocess(assemble_illumina.out), virsorter_db, virfinder_db)), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data)
       )
     }
 }
@@ -625,7 +625,6 @@ def helpMSG() {
     --vpf               the VPF from IMG/VR, hmmpress'ed [default: $params.vpf]
     --ncbi              a NCBI taxonomy database, from ete3 import NCBITaxa, named ete3_ncbi_tax.sqlite [default: $params.ncbi]
     --imgvr             the IMG/VR, viral (meta)genome sequences [default: $params.imgvr]
-    --pprmeta           the PPR-Meta github [default: $params.pprmeta]
     --meta              the tsv dictionary w/ meta information about ViPhOG models [default: $params.meta]
     Important! If you provide your own hmmer database follow this format:
         rvdb/rvdb.hmm --> <folder>/<name>.hmm && 'folder' == 'name'
