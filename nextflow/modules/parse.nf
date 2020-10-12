@@ -6,7 +6,7 @@ process parse {
       label 'python3'
 
     input:
-      tuple val(name), file(fasta), val(contig_number), file(virfinder), file(virsorter), file(pprmeta)
+      tuple val(name), file(fasta), val(contig_number), file(virfinder), file(virsorter)
 
     when: 
       contig_number.toInteger() > 0 
@@ -17,7 +17,8 @@ process parse {
     script:
     """
     touch virsorter_metadata.tsv
-    parse_viral_pred.py -a ${fasta} -f ${virfinder} -p ${pprmeta} -s ${virsorter}/Predicted_viral_sequences/*.fasta &> ${name}_virus_predictions.log
+    echo "Header,Length,phage_score,chromosome_score,plasmid_score,Possible_source" > pprmeta.txt 
+    parse_viral_pred.py -a ${fasta} -f ${virfinder} -p pprmeta.txt -s ${virsorter}/Predicted_viral_sequences/*.fasta &> ${name}_virus_predictions.log
     """
 }
 
