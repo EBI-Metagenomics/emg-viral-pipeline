@@ -55,11 +55,14 @@ class Record:
 def parse_pprmeta(file_name):
     """Extract phage hits from PPR-Meta.
     """
-    result_df = pd.read_csv(file_name, sep=",")
+    lc_ids = set()
 
-    lc_ids = set(result_df[
-        (result_df["Possible_source"] == "phage")
-    ]["Header"].values)
+    if isfile(file_name):
+        result_df = pd.read_csv(file_name, sep=",")
+
+        lc_ids = set(result_df[
+            (result_df["Possible_source"] == "phage")
+        ]["Header"].values)
 
     print(f"PPR-Meta found {len(lc_ids)} low confidence contigs.")
 
@@ -69,21 +72,25 @@ def parse_pprmeta(file_name):
 def parse_virus_finder(file_name):
     """Extract high and low confidence contigs from virus finder results.
     """
-    result_df = pd.read_csv(file_name, sep="\t")
+    hc_ids = set()
+    lc_ids = set()
 
-    hc_ids = set(
-        result_df[(result_df["pvalue"] < 0.05) &
-                  (result_df["score"] >= 0.90)]["name"].values)
+    if isfile(file_name):
+        result_df = pd.read_csv(file_name, sep="\t")
+
+        hc_ids = set(
+            result_df[(result_df["pvalue"] < 0.05) &
+                      (result_df["score"] >= 0.90)]["name"].values)
+
+        lc_ids = set(result_df[
+            (result_df["pvalue"] < 0.05) &
+            (result_df["score"] >= 0.70) &
+            (result_df["score"] < 0.9)
+        ]["name"].values)
 
     print(f"Virus Finder found {len(hc_ids)} high confidence contigs.")
-
-    lc_ids = set(result_df[
-        (result_df["pvalue"] < 0.05) &
-        (result_df["score"] >= 0.70) &
-        (result_df["score"] < 0.9)
-    ]["name"].values)
-
     print(f"Virus Finder found {len(lc_ids)} low confidence contigs.")
+
     return hc_ids, lc_ids
 
 
@@ -118,7 +125,7 @@ def parse_virus_sorter(sorter_files):
     low_confidence = dict()
     prophages = dict()
 
-    for file in sorter_files:
+    for file in sorter_files or []:
         if ".fasta" not in file or not isfile(file):
             continue
         for record in SeqIO.parse(file, "fasta"):
@@ -241,13 +248,13 @@ if __name__ == "__main__":
                         help="Metagenomic assembly fasta file", required=True)
     parser.add_argument("-f", "--vfout", dest="finder", help="Absolute or "
                         "relative path to VirFinder output file",
-                        required=True)
+                        required=False)
     parser.add_argument("-s", "--vsfiles", dest="sorter", nargs='+',
                         help="VirSorter .fasta files (i.e. VIRSorter_cat-1.fasta)"
-                        " VirSorter output", required=True)
+                        " VirSorter output", required=False)
     parser.add_argument("-p", "--pmout", dest="pprmeta",
                         help="Absolute or relative path to PPR-Meta output file"
-                        " PPR-Meta output", required=True)
+                        " PPR-Meta output", required=False)
     parser.add_argument("-o", "--outdir", dest="outdir",
                         help="Absolute or relative path of directory where output"
                         " _viral prediction files should be stored (default: cwd)",

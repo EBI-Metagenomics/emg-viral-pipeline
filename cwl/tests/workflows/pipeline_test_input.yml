@@ -1,18 +1,28 @@
-virsorter_data_dir:
-  class: Directory
-  path: ../../databases/virsorter_data
 input_fasta_file:
   class: File
-  path: ERR575691_host_filtered.fasta
-hmms_serialized_file:
-  class: File
-  path: ../../databases/vphmm_2020-01-29.pickle
-hmmscan_database_directory:
+  path: input_test.fa
+  format: http://edamontology.org/format_1929
+fasta_length_filter: 0.2
+virsorter_data_dir:
   class: Directory
-  path: ../../databases/vpHMM
+  path: ../../databases/virsorter-data
+virfinder_model:
+  class: File
+  path: ../../databases/virfinder/VF.modEPV_k8.rda
+  format: http://edamontology.org/format_2330
+add_hmms_tsv:
+  class: File
+  path: ../../databases/additional_data_vpHMMs_v1.tsv
+  format: http://edamontology.org/format_3475
+hmmscan_database_dir:
+  class: Directory
+  path: ../../databases/vpHMM_database
 ncbi_tax_db_file:
   class: File
   path: ../../databases/ete3_ncbi_tax.sqlite
-blast_database_dir:
+img_blast_database_dir:
   class: Directory
   path: ../../databases/IMG_VR_2018-07-01_4
+pprmeta_simg:
+  class: File
+  path: ../../simgs/pprmeta.simg
