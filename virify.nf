@@ -409,9 +409,13 @@ workflow annotate {
 
         // annotation --> hmmer
         hmmscan_viphogs_evalued(prodigal.out, viphog_db)
-        hmmscan_viphogs_bitscored(prodigal.out, viphog_db)      
-        hmm_postprocessing(hmmscan_viphogs_evalued.out.concat(hmmscan_viphogs_bitscored.out))
-
+        if (params.bitscored) {
+          hmmscan_viphogs_bitscored(prodigal.out, viphog_db)    
+          hmm_postprocessing(hmmscan_viphogs_evalued.out.concat(hmmscan_viphogs_bitscored.out))
+        } else { 
+          hmm_postprocessing(hmmscan_viphogs_evalued.out)
+        }
+        
         // calculate hit qual per protein
         ratio_evalue(hmm_postprocessing.out, additional_model_data)
 
@@ -636,6 +640,7 @@ def helpMSG() {
         --rvdb /path/to/your/rvdb
 
     ${c_yellow}Parameters:${c_reset}
+    --bitscored         Use an additional bitscore filter for ViPhOG hmmscan hits [default: $params.hmmextend]
     --evalue            E-value used to filter ViPhOG hits in the ratio_evalue step [default: $params.evalue]
     --prop              Minimum proportion of proteins with ViPhOG annotations to provide a taxonomic assignment [default: $params.prop]
     --taxthres          Minimum proportion of annotated genes required for taxonomic assignment [default: $params.taxthres]
