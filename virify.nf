@@ -474,9 +474,10 @@ workflow plot {
 
         // sankey
         if (workflow.profile != 'conda') {
-          //sankey(
             generate_sankey_table(generate_krona_table.out)
-         //)
+            if (params.generate_sankey) {
+              sankey(generate_sankey_table.out)
+            }
         }
 
         // chromomap
@@ -641,6 +642,7 @@ def helpMSG() {
 
     ${c_yellow}Parameters:${c_reset}
     --bitscored         Use an additional bitscore filter for ViPhOG hmmscan hits [default: $params.hmmextend]
+    --generate_sankey   Generate Sankey plot [default: $params.generate_sankey]
     --evalue            E-value used to filter ViPhOG hits in the ratio_evalue step [default: $params.evalue]
     --prop              Minimum proportion of proteins with ViPhOG annotations to provide a taxonomic assignment [default: $params.prop]
     --taxthres          Minimum proportion of annotated genes required for taxonomic assignment [default: $params.taxthres]

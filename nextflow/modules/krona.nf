@@ -12,21 +12,28 @@ process generate_krona_table {
     script:
     """
     if [[ "${set_name}" == "all" ]]; then
+      grep contig_ID *.tsv | awk 'BEGIN{FS=":"};{print \$2}' | uniq > ${name}.tmp
+      grep -v "contig_ID" *.tsv | awk 'BEGIN{FS=":"};{print \$2}' | uniq >> ${name}.tmp
+      cp ${name}.tmp ${name}.tsv
+      generate_counts_table.py -f ${name}.tsv -o ${name}.krona.tsv
+
+    #### this is not working correctly, but was anyway not used for the annotation evaluation that I run in the cloud
+    #if [[ "${set_name}" == "all" ]]; then
       # separate between _bitscored and _evalued result files
 
-      for TSV in *.tsv; do
+    #  for TSV in *.tsv; do
       
-        SUFFIX="_evalued"
-        if [[ \$TSV == *_bitscored* ]]; then 
-          SUFFIX="_bitscored"
-        fi
+    #    SUFFIX="_evalued"
+    #    if [[ \$TSV == *_bitscored* ]]; then 
+    #      SUFFIX="_bitscored"
+    #    fi
 
-        grep contig_ID \$TSV | awk 'BEGIN{FS=":"};{print \$2}' | uniq > ${name}.tmp
-        grep -v "contig_ID" \$TSV | awk 'BEGIN{FS=":"};{print \$2}' | uniq >> ${name}.tmp
-        cp ${name}.tmp ${name}\$SUFFIX.tsv
-        generate_counts_table.py -f ${name}\$SUFFIX.tsv -o ${name}\$(echo \$SUFFIX | sed 's/_/\\./'g).krona.tsv
+    #    grep contig_ID \$TSV | awk 'BEGIN{FS=":"};{print \$2}' | uniq > ${name}.tmp
+    #    grep -v "contig_ID" \$TSV | awk 'BEGIN{FS=":"};{print \$2}' | uniq >> ${name}.tmp
+    #    cp ${name}.tmp ${name}\$SUFFIX.tsv
+    #    generate_counts_table.py -f ${name}\$SUFFIX.tsv -o ${name}\$(echo \$SUFFIX | sed 's/_/\\./'g).krona.tsv
 
-      done
+    #  done
 
     else
       generate_counts_table.py -f ${tbl} -o ${set_name}.krona.tsv
