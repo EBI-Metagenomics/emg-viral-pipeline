@@ -61,7 +61,7 @@ def parse_pprmeta(file_name):
         result_df = pd.read_csv(file_name, sep=",")
 
         lc_ids = set(result_df[
-            (result_df["Possible_source"] == "phage")
+            (result_df["Possible_source"] == "phage") & (result_df["phage_score"] > 0.7)
         ]["Header"].values)
 
     print(f"PPR-Meta found {len(lc_ids)} low confidence contigs.")
@@ -157,7 +157,7 @@ def merge_annotations(pprmeta, finder, sorter, assembly):
     Low confidence viral contigs:
     - VirFinder reported p < 0.05 and score >= 0.9
     - OR ( VirFinder reported p < 0.05 and 0.7 <= score < 0.9 AND
-      ( VirSorter reported as category 3 or PPR-Meta reported as phage)) )
+      ( VirSorter reported as category 3 or PPR-Meta reported as phage and score > 0.7)) )
     Putative prophages are prophages:
     - VirSorter reported as categories 4 and 5
       (which correspond to VirSorter confidence categories 1 and 2).
@@ -236,7 +236,7 @@ def main(pprmeta, finder, sorter, assembly, outdir):
 
 
 if __name__ == "__main__":
-    """Merge and convert VIRSorter and VIRFinder output contigs into:
+    """Merge and convert VirSorter and VirFinder and PPR-Meta output contigs into:
     - high confidence viral contigs
     - low confidence viral contigs
     - putative prophages
