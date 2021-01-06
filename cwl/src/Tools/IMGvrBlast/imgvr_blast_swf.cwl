@@ -49,7 +49,7 @@ outputs:
   blast_results:
     type: File[]
     outputSource: blast/blast_result  
-  blast_result_filtereds:
+  blast_result_filtered:
     type: File[]
     outputSource: blast/blast_result_filtered
   merged_tsvs:

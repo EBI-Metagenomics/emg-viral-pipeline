@@ -1,8 +1,6 @@
 FROM perl:latest
 
-LABEL maintainer="MGnify team <https://www.ebi.ac.uk/support/metagenomics>"
-
-LABEL about.summary="This container was taken from VirSorter Dockerfile, that file is maintained by Ken Youens-Clark <kyclark@email.arizona.edu>"
+MAINTAINER Ken Youens-Clark <kyclark@email.arizona.edu>
 
 COPY Generic_ref_file.refs /data/
 

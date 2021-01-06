@@ -10,7 +10,7 @@ LABEL about.home="https://github.com/marbl/Krona"
 LABEL about.documentation="https://github.com/marbl/Krona/wiki"
 LABEL about.license_file="https://github.com/marbl/Krona/blob/master/KronaTools/LICENSE.txt"
 LABEL about.license="BSD"
-LABEL about.tags="visualization, taxnomy"
+LABEL about.tags="visualization, taxonomy"
 
 LABEL maintainer="MGnify team <https://www.ebi.ac.uk/support/metagenomics>"
 

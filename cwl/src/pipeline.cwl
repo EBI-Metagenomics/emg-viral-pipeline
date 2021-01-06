@@ -220,7 +220,7 @@ steps:
       database: img_blast_database_dir
     out:
       - blast_results
-      - blast_result_filtereds
+      - blast_result_filtered
       - merged_tsvs
   
   mashmap:
@@ -290,8 +290,8 @@ outputs:
   blast_results:
     outputSource: imgvr_blast/blast_results
     type: File[]
-  blast_result_filtereds:
-    outputSource: imgvr_blast/blast_result_filtereds
+  blast_result_filtered:
+    outputSource: imgvr_blast/blast_result_filtered
     type: File[]
   blast_merged_tsvs:
     outputSource: imgvr_blast/merged_tsvs
