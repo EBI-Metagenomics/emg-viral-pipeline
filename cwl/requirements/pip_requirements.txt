@@ -1,6 +1,5 @@
 biopython==1.74
 cwltest==2.0.20200626112502
-cwltool==3.0.20200324120055
 ete3==3.1.1
 flake8==3.8.2
 html5lib==1.0.1
