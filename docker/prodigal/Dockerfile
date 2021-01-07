@@ -1,6 +1,6 @@
 FROM ubuntu:latest as build
 
-LABEL base_image="alpine:3.7"
+LABEL base_image="ubuntu:latest"
 LABEL version="1" 
 LABEL about.summary="Protein-coding gene prediction for prokaryotic genomes"
 LABEL about.license="SPDX:GPL-3.0-or-later"

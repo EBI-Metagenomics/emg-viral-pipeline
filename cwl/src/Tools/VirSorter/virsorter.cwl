@@ -6,7 +6,7 @@ label: VirSorter
 
 hints:
   DockerRequirement:
-    dockerPull: "quay.io/biocontainers/virsorter:1.0.6--pl526h516909a_1"
+    dockerPull: "docker.io/microbiomeinformatics/virsorter:1.0.6"
 
 baseCommand: ["wrapper_phage_contigs_sorter_iPlant.pl"]
 

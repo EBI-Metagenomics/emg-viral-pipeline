@@ -1,21 +1,21 @@
-FROM perl:latest
+FROM continuumio/miniconda3
 
-LABEL maintainer="MGnify team <https://www.ebi.ac.uk/support/metagenomics>"
+LABEL base_image="continuumio/miniconda3"
+LABEL version="1"
+LABEL about.summary="VirSorter: mining viral signal from microbial genomic data"
+LABEL about.license="SPDX:GPL-2.0-only"
+LABEL about.tags="virus"
+LABEL about.home="https://github.com/simroux/VirSorter"
+LABEL software="VirSorter"
+LABEL software.version="1.0.6"
 
-LABEL about.summary="This container was taken from VirSorter Dockerfile, that file is maintained by Ken Youens-Clark <kyclark@email.arizona.edu>"
+ENV VERSION 1.0.6
 
-COPY Generic_ref_file.refs /data/
+RUN conda install -c bioconda --yes --freeze-installed \
+    perl-bioperl virsorter=$VERSION && \
+    conda clean -afy && \
+    find /opt/conda/ -follow -type f -name '*.a' -delete && \
+    find /opt/conda/ -follow -type f -name '*.pyc' -delete
 
-COPY PFAM_27 /data/PFAM_27
-
-COPY Phage_gene_catalog /data/Phage_gene_catalog
-
-COPY Phage_gene_catalog_plus_viromes /data/Phage_gene_catalog_plus_viromes
-
-COPY SUP05_SAGs_with_viruses.fna /data/
-
-COPY VirSorter_Readme.txt /data/
-
-COPY VirSorter_Readme_viromes.txt /data/
-
-VOLUME ["/data"]
+ENV PATH=/opt/conda/bin:${PATH}
+ENV PERL5LIB=/opt/conda/lib/perl5/site_perl/5.22.0/:${PERL5LIB}

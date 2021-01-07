@@ -14,13 +14,16 @@ LABEL about.tags="visualization, taxonomy"
 
 LABEL maintainer="MGnify team <https://www.ebi.ac.uk/support/metagenomics>"
 
-RUN apt-get update && apt install -y procps curl make && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apt-get update && \
+    apt install -y procps curl make && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN conda config --add channels conda-forge && \
-    conda config --add channels bioconda && \
-    conda config --add channels default
-
-RUN conda install krona=$VERSION && conda clean -a
+RUN conda install -c bioconda --yes --freeze-installed \
+    krona=$VERSION && \
+    conda clean -afy && \
+    find /opt/conda/ -follow -type f -name '*.a' -delete && \
+    find /opt/conda/ -follow -type f -name '*.pyc' -delete
 
 # setup taxonomic index
 RUN cd /opt/conda/opt/krona && bash updateTaxonomy.sh

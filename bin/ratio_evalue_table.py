@@ -130,9 +130,9 @@ if __name__ == "__main__":
 
     output_df = ratio_evalue(input_df, taxa_dict, float(evalue))
 
-    if not output_df.empty:
-        with open(output_file, "w") as of_handle:
-            output_df.to_csv(of_handle, sep="\t", index=False)
-    else:
+    if output_df is None or output_df.empty:
         print("No informative hits against the ViPhOG database "
               "were obtained for the contigs provided")
+    else:
+        with open(output_file, "w") as of_handle:
+            output_df.to_csv(of_handle, sep="\t", index=False)

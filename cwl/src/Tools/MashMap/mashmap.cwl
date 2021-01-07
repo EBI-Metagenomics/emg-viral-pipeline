@@ -8,7 +8,7 @@ label: MashMap
 
 hints:
   DockerRequirement:
-    dockerPull: "quay.io/biocontainers/mashmap:2.0--gsl2.2_1"
+    dockerPull: "docker.io/microbiomeinformatics/mashmap:2.0"
   SoftwareRequirement:
     packages:
       mashmap:
