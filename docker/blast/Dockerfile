@@ -13,10 +13,8 @@ LABEL about.license_file="https://www.ncbi.nlm.nih.gov/IEB/ToolBox/CPP_DOC/lxr/s
 LABEL about.license="SPDX:MIT"
 LABEL about.tags="genomics"
 
-RUN apt update && apt install -y procps wget gzip && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-RUN conda config --add channels conda-forge && \
-    conda config --add channels bioconda && \
-    conda config --add channels default
-
-RUN conda install -y $TOOL=$VERSION && conda clean -a
+RUN conda install -c bioconda --yes --freeze-installed \
+    $TOOL=$VERSION && \
+    conda clean -afy && \
+    find /opt/conda/ -follow -type f -name '*.a' -delete && \
+    find /opt/conda/ -follow -type f -name '*.pyc' -delete
