@@ -54,13 +54,12 @@
   short_name: hmmscan_swf.cwl
   doc: "HMMScan"
   output:
-    output_table: &hmmscan
+    output_table:
       class: File 
       basename: hmmer_table.tsv
-      checksum: Any
+      checksum: sha1$b74e7278479d445527daac06bc95cdead5cbcc02
       location: Any
-      path: Any
-      size: Any
+      size: 50985
 
 # Length Filtering
 - job: tools/length_filtering/length_filtering_test_input.yml
@@ -591,10 +590,10 @@
         path": Any
         size: 81
 
-# # Pipeline
-# - job: workflows/pipeline_test_input.yml
-#   tool: ../src/pipeline.cwl
-#   short_name: pipeline.cwl
-#   doc: Whole pipeline
-#   output:
+# Pipeline
+- job: workflows/pipeline_test_input.yml
+  tool: ../src/pipeline.cwl
+  short_name: pipeline.cwl
+  doc: Whole pipeline
+  output:
     

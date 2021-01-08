@@ -33,6 +33,7 @@ steps:
       - fasta_chunks
 
   hmmscan_swf:
+   
     scatter: fasta_files
     in: 
       fasta_files: chunk_fasta/fasta_chunks

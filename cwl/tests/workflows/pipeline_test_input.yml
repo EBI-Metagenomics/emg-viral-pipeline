@@ -1,6 +1,6 @@
 input_fasta_file:
   class: File
-  path: kleiner_2015.fasta 
+  path: pipeline_test_input.fasta
   format: http://edamontology.org/format_1929
 fasta_length_filter: 0.2
 virsorter_data_dir:

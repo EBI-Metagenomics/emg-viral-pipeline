@@ -9,19 +9,21 @@ hints:
    dockerPull: "docker.io/microbiomeinformatics/hmmer:v3.1b2"
 
 requirements:
+  InlineJavascriptRequirement: {}
   InitialWorkDirRequirement:
-    listing:
-        - class: File
-          location: ../../../../bin/hmmscan_wrapper.sh
+    listing: | 
+      ${
+        return inputs.database.listing;
+      }
 
-baseCommand: ["bash", "hmmscan_wrapper.sh"]
+baseCommand: ["hmmscan_wrapper.sh"]
 
 inputs:
   database:
     type: Directory
   aa_fasta_file:
     type: File
-    format: edam:format_1929    
+    format: edam:format_1929
     inputBinding:
       position: 5
       separate: true
@@ -33,13 +35,17 @@ arguments:
   - prefix: --domtblout
     valueFrom: $(inputs.aa_fasta_file.nameroot)_hmmscan.tbl
     position: 3
-  - valueFrom: $(inputs.database.path)/vpHMM_database
+  - valueFrom: $(runtime.outdir)/vpHMM_database.hmm
     position: 4
   - valueFrom: --noali
     position: 1
   - prefix: --cpu
     valueFrom: $(runtime.cores)
     position: 2
+
+# TODO: remove before production as HMMER is very verbose
+stdout: hmmer_stdout.txt
+stderr: hmmer_stderr.txt
 
 outputs:
   output_table:

@@ -20,6 +20,12 @@ RUN wget http://eddylab.org/software/hmmer/hmmer-$VERSION.tar.gz \
    && cd hmmer-$VERSION \
    && ./configure && make && make install
 
-ENV PATH="/hmmer-$VERSION:${PATH}"
+RUN mkdir /scripts
+
+COPY hmmscan_wrapper.sh /scripts
+
+RUN chmod +x /scripts/hmmscan_wrapper.sh
+
+ENV PATH="/hmmer-$VERSION:/scripts:${PATH}"
 
 CMD ["bash"]
