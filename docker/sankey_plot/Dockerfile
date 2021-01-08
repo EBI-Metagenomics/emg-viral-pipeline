@@ -17,3 +17,7 @@ LABEL maintainer="MGnify team <https://www.ebi.ac.uk/support/metagenomics>"
 RUN R -e "install.packages('devtools')"
 
 RUN R -e 'devtools::install_github("fbreitwieser/sankeyD3")'
+
+RUN apt-get update && apt install -y --no-install-recommends pandoc && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
