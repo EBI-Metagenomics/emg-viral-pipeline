@@ -8,7 +8,8 @@ process virsorterGetDB {
   }  
 
   output:
-    file("virsorter-data")
+    path("virsorter-data", type: 'dir')
+    
   script:
     """
     wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virsorter-data-v2.tar.gz 

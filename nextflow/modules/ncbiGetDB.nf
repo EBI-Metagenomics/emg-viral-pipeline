@@ -8,7 +8,7 @@ process ncbiGetDB {
   }  
 
   output:
-    file("ete3_ncbi_tax.sqlite")
+    path("ete3_ncbi_tax.sqlite")
 
   script:
     """

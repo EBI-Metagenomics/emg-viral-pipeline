@@ -8,7 +8,7 @@ process rvdbGetDB {
   }  
 
   output:
-    file("rvdb")
+    path("rvdb", type: 'dir')
 
   script:
     """
