@@ -7,7 +7,6 @@ requirements:
   SubworkflowFeatureRequirement: {}  
   MultipleInputFeatureRequirement: {}
   StepInputExpressionRequirement: {}
-  ScatterFeatureRequirement: {}
   InlineJavascriptRequirement: {}
 
 inputs:
@@ -61,7 +60,7 @@ inputs:
       MashMap Reference file. Use MashMap to 
   # == singularity containers == #
   pprmeta_simg:
-    type: File
+    type: File?
     doc: |
       PPR-Meta singularity simg file
 
@@ -221,12 +220,16 @@ steps:
       database: img_blast_database_dir
     out:
       - blast_results
-      - blast_result_filtereds
+      - blast_result_filtered
       - merged_tsvs
   
   mashmap:
     label: MashMap
     run: ./Tools/MashMap/mashmap_swf.cwl
+    requirements:
+        ResourceRequirement:    # overrides the ResourceRequirements in first-step.cwl
+            coresMin: 4
+            ramMin: 3814
     when: $(inputs.reference !== undefined && inputs.reference !== null)
     in:
       input_fastas:
@@ -287,8 +290,8 @@ outputs:
   blast_results:
     outputSource: imgvr_blast/blast_results
     type: File[]
-  blast_result_filtereds:
-    outputSource: imgvr_blast/blast_result_filtereds
+  blast_result_filtered:
+    outputSource: imgvr_blast/blast_result_filtered
     type: File[]
   blast_merged_tsvs:
     outputSource: imgvr_blast/merged_tsvs
@@ -306,7 +309,7 @@ $namespaces:
  s: http://schema.org/
 $schemas:
  - http://edamontology.org/EDAM_1.16.owl
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

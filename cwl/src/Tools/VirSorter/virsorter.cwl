@@ -5,8 +5,8 @@ class: CommandLineTool
 label: VirSorter
 
 hints:
- DockerRequirement:
-   dockerFile: Dockerfile
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/virsorter:1.0.6"
 
 baseCommand: ["wrapper_phage_contigs_sorter_iPlant.pl"]
 
@@ -126,7 +126,7 @@ $namespaces:
  s: http://schema.org/
  edam: http://edamontology.org/
 $schemas:
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

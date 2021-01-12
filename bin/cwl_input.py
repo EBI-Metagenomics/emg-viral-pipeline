@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import yaml
 import argparse
+from ruamel.yaml import YAML
 
 
 def main(args):
@@ -51,6 +51,8 @@ def main(args):
             }
         if args.virome:
             file_content["virsorter_virome"] = True
+
+        yaml = YAML()
         yaml.dump(file_content, file)
 
 

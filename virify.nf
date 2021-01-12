@@ -88,7 +88,7 @@ if (params.illumina == '' &&  params.fasta == '' ) {
 
 //db
 include {pprmetaGet} from './nextflow/modules/pprmeta' 
-include {metaGetDB} from './nextflow/modules/ratio_evalue'
+include {metaGetDB} from './nextflow/modules/metaGetDB'
 include {virsorterGetDB} from './nextflow/modules/virsorterGetDB' 
 include {viphogGetDB} from './nextflow/modules/viphogGetDB' 
 include {ncbiGetDB} from './nextflow/modules/ncbiGetDB' 

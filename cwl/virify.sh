@@ -66,7 +66,7 @@ while getopts "e:n:j:o:c:m:i:vs:r:f:lh" opt; do
         ;;
     n)
         NAME_RUN="$OPTARG"
-        if [ ! -n "$NAME_RUN" ];
+        if [ -z "$NAME_RUN" ];
         then
             echo ""
             echo "ERROR -n cannot be empty." >&2
@@ -79,7 +79,7 @@ while getopts "e:n:j:o:c:m:i:vs:r:f:lh" opt; do
         ;;
     o)
         OUT_DIR="$OPTARG"
-        if [ ! -n "$OUT_DIR" ];
+        if [ -z "$OUT_DIR" ];
         then
             echo ""
             echo "ERROR -o cannot be empty." >&2
@@ -110,7 +110,7 @@ while getopts "e:n:j:o:c:m:i:vs:r:f:lh" opt; do
         ;;
     i)
         INPUT_FASTA="${OPTARG}"
-        if [ ! -n "${INPUT_FASTA}" ];
+        if [ -z "${INPUT_FASTA}" ];
         then
             echo ""
             echo "ERROR -i cannot be empty." >&2
@@ -122,7 +122,7 @@ while getopts "e:n:j:o:c:m:i:vs:r:f:lh" opt; do
         VIROME="-v true"
         ;;
     s)
-        if [ ! -n "${OPTARG}" ];
+        if [ -z "${OPTARG}" ];
         then
             echo ""
             echo "ERROR mashmap (-s) cannot be empty." >&2
@@ -227,12 +227,12 @@ then
         -o "${YML_INPUT}"
     )
 
-    if [ ! -z "${MASHMAP_REFERENCE}" ];
+    if [ -n "${MASHMAP_REFERENCE}" ];
     then
         CWL_PARAMS+=(-m "${MASHMAP_REFERENCE}")
     fi
 
-    if [ ! -z "${VIROME}" ];
+    if [ -n "${VIROME}" ];
     then
         CWL_PARAMS+=("${VIROME}")
     fi
@@ -257,7 +257,7 @@ TOIL_PARAMS=(
 if [ "${MODE}" = "EBI" ];
 then
     TOIL_PARAMS+=(
-        --no-container
+        --singularity
         --batchSystem LSF
         --disableCaching
     )

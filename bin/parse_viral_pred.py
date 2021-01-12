@@ -126,7 +126,7 @@ def parse_virus_sorter(sorter_files):
     prophages = dict()
 
     for file in sorter_files or []:
-        if ".fasta" not in file or not isfile(file):
+        if not isfile(file) or ".fasta" not in file:
             continue
         for record in SeqIO.parse(file, "fasta"):
             category = record.id[-1:]

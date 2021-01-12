@@ -4,7 +4,17 @@ class: CommandLineTool
 
 label: Convert the assing taxonomy table
 
-baseCommand: ["generate_counts_table.py"]
+hints:
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
+
+requirements:
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/generate_counts_table.py
+
+baseCommand: ["python", "generate_counts_table.py"]
 
 inputs:
   assign_table:
@@ -29,7 +39,7 @@ $namespaces:
  s: http://schema.org/
  edam: http://edamontology.org/
 $schemas:
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

@@ -8,17 +8,14 @@ label: MashMap
 
 hints:
   DockerRequirement:
-    dockerPull: "quay.io/biocontainers/mashmap:2.0--gsl2.2_1"
+    dockerPull: "docker.io/microbiomeinformatics/mashmap:2.0"
   SoftwareRequirement:
     packages:
       mashmap:
         specs: [ "https://github.com/marbl/MashMap" ]
         version: [ "2.0" ]
-  ResourceRequirement:
-    coresMin: 4
-    ramMin: 3814
 
-baseCommand: mashmap
+baseCommand: ["mashmap"]
 
 inputs:
   query:
@@ -132,7 +129,7 @@ $namespaces:
  s: http://schema.org/
  edam: http://edamontology.org/
 $schemas:
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

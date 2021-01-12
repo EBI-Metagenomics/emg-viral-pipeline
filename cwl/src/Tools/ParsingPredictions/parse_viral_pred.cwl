@@ -5,10 +5,16 @@ class: CommandLineTool
 label: "Parse predictions"
 
 hints:
- DockerRequirement:
-   dockerFile: Dockerfile
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
 
-baseCommand: ["parse_viral_pred.py"]
+requirements:
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/parse_viral_pred.py
+
+baseCommand: ["python", "parse_viral_pred.py"]
 
 inputs:
   assembly:
@@ -85,7 +91,7 @@ $namespaces:
  s: http://schema.org/
  edam: http://edamontology.org/
 $schemas:
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

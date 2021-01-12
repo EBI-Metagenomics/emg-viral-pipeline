@@ -4,15 +4,23 @@ class: CommandLineTool
 
 label: "Fasta rename utility"
 
+hints:
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
+
 requirements:
   InlineJavascriptRequirement: {}
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/rename_fasta.py
 
 doc: |
   Small python script to rename a multi-fasta sequences, it's also possible to
   restore the names using the generated map file.
   In order to restore the multi-fasta use fasta_name_restore.cwl.
 
-baseCommand: ["rename_fasta.py"]
+baseCommand: ["python", "rename_fasta.py"]
 
 inputs:
   input:
@@ -63,7 +71,7 @@ $namespaces:
  s: http://schema.org/
 $schemas:
  - http://edamontology.org/EDAM_1.16.owl
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:
