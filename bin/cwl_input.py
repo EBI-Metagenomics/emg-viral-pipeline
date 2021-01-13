@@ -37,12 +37,7 @@ def main(args):
             "img_blast_database_dir": {
                 "class": "Directory",
                 "path": args.img_db
-            },
-            "pprmeta_simg": {
-                "class": "File",
-                "path": args.pprmeta_simg
-            },
-            "fasta_length_filter": args.len_filter
+            }
         }
         if args.mashmap_ref:
             file_content["mashmap_reference_file"] = {
@@ -54,6 +49,10 @@ def main(args):
 
         yaml = YAML()
         yaml.dump(file_content, file)
+
+        # int as str issue
+        file.write("\n")
+        file.write("fasta_length_filter: " + str(args.len_filter))
 
 
 if __name__ == "__main__":

@@ -35,7 +35,7 @@ arguments:
   - prefix: --domtblout
     valueFrom: $(inputs.aa_fasta_file.nameroot)_hmmscan.tbl
     position: 3
-  - valueFrom: $(runtime.outdir)/vpHMM_database.hmm
+  - valueFrom: $(runtime.outdir)/vpHMM_database_v3.hmm
     position: 4
   - valueFrom: --noali
     position: 1

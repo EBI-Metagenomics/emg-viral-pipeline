@@ -11,12 +11,6 @@ hints:
     dockerPull: "docker.io/microbiomeinformatics/pprmeta:v1.1"
 
 inputs:
-  singularity_image:
-    type: File?
-    label: pprmeta.simg
-    doc: "This is required if executed outside docker"
-    inputBinding:
-      prefix: "-i"
   fasta_file:
     type: File
     label: contigs

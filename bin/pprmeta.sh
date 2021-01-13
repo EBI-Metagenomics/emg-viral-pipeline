@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# DEPRECATED
+
 # PPR-Meta docker runtime wrapper
 
 set -e

@@ -107,7 +107,6 @@ steps:
     label: PPR-Meta
     run: ./Tools/PPRMeta/pprmeta.cwl
     in:
-      singularity_image: pprmeta_simg
       fasta_file: length_filter/filtered_contigs_fasta
     out:
       - pprmeta_output
