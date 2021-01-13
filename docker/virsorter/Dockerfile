@@ -12,7 +12,7 @@ LABEL software.version="1.0.6"
 ENV VERSION 1.0.6
 
 RUN conda install -c bioconda --yes --freeze-installed \
-    perl-bioperl virsorter=$VERSION && \
+    perl-bioperl-core=1.007002 virsorter=$VERSION && \
     conda clean -afy && \
     find /opt/conda/ -follow -type f -name '*.a' -delete && \
     find /opt/conda/ -follow -type f -name '*.pyc' -delete

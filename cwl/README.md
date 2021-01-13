@@ -47,5 +47,5 @@ CWL tests are executed with [cwltest](https://github.com/common-workflow-languag
 Run:
 ```bash
 cd tests
-./cwltest.sh --test tests.yml
+./cwltest.sh
 ```
