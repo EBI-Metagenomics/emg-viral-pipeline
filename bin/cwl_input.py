@@ -75,8 +75,6 @@ if __name__ == "__main__":
                         required=True, help="NCBI Taxonomy database")
     parser.add_argument("-b", dest="img_db",
                         required=True, help="IMG/VR database directory")
-    parser.add_argument("-p", dest="pprmeta_simg",
-                        required=True, help="PPR-Meta singularity image")
     parser.add_argument("-v", dest="virome",
                         required=False, type=bool, default=False,
                         help="Virome mode for virsorter")
