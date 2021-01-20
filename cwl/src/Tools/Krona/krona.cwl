@@ -4,10 +4,9 @@ class: CommandLineTool
 
 label: Krona
 
-#edited from ebi-metagenomics-cwl/tools/krona.cwl
-#hints:
-#  DockerRequirement:
-#    dockerPull: kronav2.7.1:1.0
+hints:
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/krona:v2.7.1"
 
 baseCommand: ["ktImportText"]
 
@@ -35,7 +34,7 @@ $namespaces:
  s: http://schema.org/
 $schemas:
  - http://edamontology.org/EDAM_1.16.owl
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

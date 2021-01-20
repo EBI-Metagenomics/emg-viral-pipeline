@@ -6,7 +6,15 @@ label: hmmscan wrapper
 
 hints:
  DockerRequirement:
-   dockerFile: Dockerfile
+   dockerPull: "docker.io/microbiomeinformatics/hmmer:v3.1b2"
+
+requirements:
+  InlineJavascriptRequirement: {}
+  InitialWorkDirRequirement:
+    listing: | 
+      ${
+        return inputs.database.listing;
+      }
 
 baseCommand: ["hmmscan_wrapper.sh"]
 
@@ -14,8 +22,8 @@ inputs:
   database:
     type: Directory
   aa_fasta_file:
-    type: File?
-    format: edam:format_1929    
+    type: File
+    format: edam:format_1929
     inputBinding:
       position: 5
       separate: true
@@ -27,18 +35,23 @@ arguments:
   - prefix: --domtblout
     valueFrom: $(inputs.aa_fasta_file.nameroot)_hmmscan.tbl
     position: 3
-  - valueFrom: $(inputs.database.path)/vpHMM_database
+  - valueFrom: $(runtime.outdir)/vpHMM_database_v3.hmm
     position: 4
   - valueFrom: --noali
     position: 1
+  - prefix: --cpu
+    valueFrom: $(runtime.cores)
+    position: 2
+
+# TODO: remove before production as HMMER is very verbose
+stdout: hmmer_stdout.txt
+stderr: hmmer_stderr.txt
 
 outputs:
   output_table:
     type: File
     outputBinding:
       glob: "*hmmscan.tbl"
-
-stdout: stdout.txt
 
 doc: Biosequence analysis using profile hidden Markov models
 
@@ -47,7 +60,7 @@ $namespaces:
  s: http://schema.org/
 $schemas:
  - http://edamontology.org/EDAM_1.16.owl
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

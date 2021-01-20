@@ -5,10 +5,16 @@ class: CommandLineTool
 label: Length Filter
 
 hints:
- DockerRequirement:
-   dockerFile: Dockerfile
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
 
-baseCommand: ["filter_contigs_len.py"]
+requirements:
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/filter_contigs_len.py
+
+baseCommand: ["python", "filter_contigs_len.py"]
 
 inputs:
   fasta_file:
@@ -58,7 +64,7 @@ $namespaces:
  s: http://schema.org/
  edam: http://edamontology.org/
 $schemas:
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

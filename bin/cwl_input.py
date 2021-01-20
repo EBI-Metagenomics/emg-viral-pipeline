@@ -1,37 +1,10 @@
 #!/usr/bin/env python
 
-import yaml
 import argparse
+from ruamel.yaml import YAML
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Generate the input.yaml for the CWL pipeline")
-    parser.add_argument("-i", dest="input_fasta",
-                        required=True, help="Import contigs fasta file")
-    parser.add_argument("-s", dest="virsorter_dir",
-                        required=True, help="VirSorter data")
-    parser.add_argument("-f", dest="virfinder_model",
-                        required=True, help="VirFinder model")
-    parser.add_argument("-a", dest="add_hmms_tsv",
-                        required=True, help="additiona_hmms_metadata.tsv")
-    parser.add_argument("-j", dest="hmmscan_db",
-                        required=True, help="HMMSCAN database directory")
-    parser.add_argument("-n", dest="ncbi_db",
-                        required=True, help="NCBI Taxonomy database")
-    parser.add_argument("-b", dest="img_db",
-                        required=True, help="IMG/VR database directory")
-    parser.add_argument("-p", dest="pprmeta_simg",
-                        required=True, help="PPR-Meta singularity image")
-    parser.add_argument("-v", dest="virome",
-                        required=False,
-                        help="Virome mode for virsorter")
-    parser.add_argument("-m", dest="mashmap_ref",
-                        required=False, help="Mashmap reference file")
-    parser.add_argument("-o", dest="output_file",
-                        required=True, help="Input yaml to generate.")
-    args = parser.parse_args()
-
+def main(args):
     with open(args.output_file, 'w') as file:
         file_content = {
             "input_fasta_file": {
@@ -64,10 +37,6 @@ if __name__ == "__main__":
             "img_blast_database_dir": {
                 "class": "Directory",
                 "path": args.img_db
-            },
-            "pprmeta_simg": {
-                "class": "File",
-                "path": args.pprmeta_simg
             }
         }
         if args.mashmap_ref:
@@ -77,4 +46,42 @@ if __name__ == "__main__":
             }
         if args.virome:
             file_content["virsorter_virome"] = True
+
+        yaml = YAML()
         yaml.dump(file_content, file)
+
+        # int as str issue
+        file.write("\n")
+        file.write("fasta_length_filter: " + str(args.len_filter))
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Generate the input.yaml for the CWL pipeline")
+    parser.add_argument("-i", dest="input_fasta",
+                        required=True, help="Import contigs fasta file")
+    parser.add_argument("-f", dest="len_filter",
+                        required=False, default=1.0,
+                        help="Length filter")
+    parser.add_argument("-s", dest="virsorter_dir",
+                        required=True, help="VirSorter data")
+    parser.add_argument("-d", dest="virfinder_model",
+                        required=True, help="VirFinder model")
+    parser.add_argument("-a", dest="add_hmms_tsv",
+                        required=True, help="additiona_hmms_metadata.tsv")
+    parser.add_argument("-j", dest="hmmscan_db",
+                        required=True, help="HMMSCAN database directory")
+    parser.add_argument("-n", dest="ncbi_db",
+                        required=True, help="NCBI Taxonomy database")
+    parser.add_argument("-b", dest="img_db",
+                        required=True, help="IMG/VR database directory")
+    parser.add_argument("-v", dest="virome",
+                        required=False, type=bool, default=False,
+                        help="Virome mode for virsorter")
+    parser.add_argument("-m", dest="mashmap_ref",
+                        required=False, help="Mashmap reference file")
+    parser.add_argument("-o", dest="output_file",
+                        required=True, help="Input yaml to generate.")
+    args = parser.parse_args()
+
+    main(args)

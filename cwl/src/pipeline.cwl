@@ -7,13 +7,15 @@ requirements:
   SubworkflowFeatureRequirement: {}  
   MultipleInputFeatureRequirement: {}
   StepInputExpressionRequirement: {}
-  ScatterFeatureRequirement: {}
   InlineJavascriptRequirement: {}
 
 inputs:
   input_fasta_file:  # input assembly
     type: File
     format: edam:format_1929
+  fasta_length_filter:
+    type: float
+    default: 1.0
   virsorter_virome:
     type: boolean
     default: false
@@ -58,7 +60,7 @@ inputs:
       MashMap Reference file. Use MashMap to 
   # == singularity containers == #
   pprmeta_simg:
-    type: File
+    type: File?
     doc: |
       PPR-Meta singularity simg file
 
@@ -78,8 +80,7 @@ steps:
     doc: Default lenght 1kb https://github.com/EBI-Metagenomics/emg-virify-scripts/issues/6
     in:
       fasta_file: fasta_rename/renamed_fasta
-      length:
-        default: 1.0
+      length: fasta_length_filter
     out:
       - filtered_contigs_fasta
 
@@ -106,7 +107,6 @@ steps:
     label: PPR-Meta
     run: ./Tools/PPRMeta/pprmeta.cwl
     in:
-      singularity_image: pprmeta_simg
       fasta_file: length_filter/filtered_contigs_fasta
     out:
       - pprmeta_output
@@ -219,13 +219,17 @@ steps:
       database: img_blast_database_dir
     out:
       - blast_results
-      - blast_result_filtereds
+      - blast_result_filtered
       - merged_tsvs
   
   mashmap:
     label: MashMap
     run: ./Tools/MashMap/mashmap_swf.cwl
-    when: $(inputs.reference !== undefined)
+    requirements:
+        ResourceRequirement:    # overrides the ResourceRequirements in first-step.cwl
+            coresMin: 4
+            ramMin: 3814
+    when: $(inputs.reference !== undefined && inputs.reference !== null)
     in:
       input_fastas:
         source:
@@ -285,8 +289,8 @@ outputs:
   blast_results:
     outputSource: imgvr_blast/blast_results
     type: File[]
-  blast_result_filtereds:
-    outputSource: imgvr_blast/blast_result_filtereds
+  blast_result_filtered:
+    outputSource: imgvr_blast/blast_result_filtered
     type: File[]
   blast_merged_tsvs:
     outputSource: imgvr_blast/merged_tsvs
@@ -304,7 +308,7 @@ $namespaces:
  s: http://schema.org/
 $schemas:
  - http://edamontology.org/EDAM_1.16.owl
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

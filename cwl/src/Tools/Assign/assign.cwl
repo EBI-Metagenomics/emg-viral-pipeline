@@ -5,10 +5,16 @@ class: CommandLineTool
 label: "Viral contig assign"
 
 hints:
- DockerRequirement:
-   dockerFile: Dockerfile
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
 
-baseCommand: 'contig_taxonomic_assign.py'
+requirements:
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/contig_taxonomic_assign.py
+
+baseCommand: ["python", "contig_taxonomic_assign.py"]
 
 inputs:
   input_table:
@@ -40,7 +46,7 @@ $namespaces:
  s: http://schema.org/
 $schemas:
  - http://edamontology.org/EDAM_1.16.owl
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 

@@ -5,10 +5,17 @@ class: CommandLineTool
 label: "Viral contig annotation"
 
 hints:
- DockerRequirement:
-   dockerFile: Dockerfile
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
 
-baseCommand: "viral_contigs_annotation.py"
+requirements:
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/viral_contigs_annotation.py
+
+baseCommand: ["python", "viral_contigs_annotation.py"]
+
 arguments: ["-o", $(runtime.outdir)]
 
 inputs:
@@ -37,7 +44,7 @@ $namespaces:
  s: http://schema.org/
 $schemas:
  - http://edamontology.org/EDAM_1.16.owl
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

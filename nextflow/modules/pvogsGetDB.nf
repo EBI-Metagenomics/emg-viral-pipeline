@@ -8,7 +8,7 @@ process pvogsGetDB {
   }  
 
   output:
-    file("pvogs")
+    path("pvogs", type: 'dir')
 
   script:
     """

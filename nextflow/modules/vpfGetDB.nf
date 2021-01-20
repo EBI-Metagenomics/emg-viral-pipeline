@@ -8,7 +8,7 @@ process vpfGetDB {
   }  
 
   output:
-    file("vpf")
+    path("vpf", type: 'dir')
 
   script:
     """

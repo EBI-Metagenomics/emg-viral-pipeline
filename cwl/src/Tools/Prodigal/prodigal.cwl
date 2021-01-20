@@ -7,13 +7,22 @@ label: Prodigal
 doc: Protein-coding gene prediction for prokaryotic genomes
 
 hints:
- DockerRequirement:
-   dockerFile: Dockerfile 
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/prodigal:v2.6.3"
+  SoftwareRequirement:
+    packages:
+      prodigal:
+        specs: [ "https://github.com/hyattpd/Prodigal" ]
+        version: [ "2.6.3" ]
 
 requirements:
   InlineJavascriptRequirement: {}
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/prodigal_wrapper.sh 
 
-baseCommand: ["prodigal_wrapper.sh"]
+baseCommand: ["bash", "prodigal_wrapper.sh"]
 
 inputs:
   input_fasta:
@@ -55,7 +64,7 @@ $namespaces:
  s: http://schema.org/
  edam: http://edamontology.org/
 $schemas:
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

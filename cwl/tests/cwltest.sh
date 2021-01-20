@@ -4,4 +4,4 @@
 SCRIPTS_PATHS=$(readlink -f "../../bin")
 PATH="$SCRIPTS_PATHS":$PATH
 
-cwltest "$@" --tool cwltool -- --enable-dev --no-container
+cwltest --test tests.yml "$@" --tool toil-cwl-runner -- --enable-dev --disableProgress

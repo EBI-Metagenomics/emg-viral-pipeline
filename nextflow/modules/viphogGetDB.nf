@@ -8,7 +8,7 @@ process viphogGetDB {
   }  
 
   output:
-    file("vpHMM_database_${params.viphog_version}")
+    path("vpHMM_database_${params.viphog_version}", type: 'dir')
 
   script:
     """

@@ -1,5 +1,5 @@
 #!/usr/bin/env nextflow
-nextflow.preview.dsl=2
+nextflow.enable.dsl=2
 
 /*
 * Nextflow -- Virus Analysis Pipeline
@@ -87,48 +87,48 @@ if (params.illumina == '' &&  params.fasta == '' ) {
 /* Comment section: */
 
 //db
-include pprmetaGet from './nextflow/modules/pprmeta' 
-include metaGetDB from './nextflow/modules/ratio_evalue'
-include virsorterGetDB from './nextflow/modules/virsorterGetDB' 
-include viphogGetDB from './nextflow/modules/viphogGetDB' 
-include ncbiGetDB from './nextflow/modules/ncbiGetDB' 
-include rvdbGetDB from './nextflow/modules/rvdbGetDB' 
-include pvogsGetDB from './nextflow/modules/pvogsGetDB' 
-include vogdbGetDB from './nextflow/modules/vogdbGetDB' 
-include vpfGetDB from './nextflow/modules/vpfGetDB'
-include imgvrGetDB from './nextflow/modules/imgvrGetDB'
+include {pprmetaGet} from './nextflow/modules/pprmeta' 
+include {metaGetDB} from './nextflow/modules/metaGetDB'
+include {virsorterGetDB} from './nextflow/modules/virsorterGetDB' 
+include {viphogGetDB} from './nextflow/modules/viphogGetDB' 
+include {ncbiGetDB} from './nextflow/modules/ncbiGetDB' 
+include {rvdbGetDB} from './nextflow/modules/rvdbGetDB' 
+include {pvogsGetDB} from './nextflow/modules/pvogsGetDB' 
+include {vogdbGetDB} from './nextflow/modules/vogdbGetDB' 
+include {vpfGetDB} from './nextflow/modules/vpfGetDB'
+include {imgvrGetDB} from './nextflow/modules/imgvrGetDB'
 //include './modules/kaijuGetDB' params(cloudProcess: params.cloudProcess, databases: params.databases)
 
 //preprocessing
-include rename from './nextflow/modules/rename'
-include restore from './nextflow/modules/restore'
+include {rename} from './nextflow/modules/rename'
+include {restore} from './nextflow/modules/restore'
 
 //assembly (optional)
-include fastp from './nextflow/modules/fastp'
-include fastqc from './nextflow/modules/fastqc'
-include multiqc from './nextflow/modules/multiqc' 
-include spades from './nextflow/modules/spades' 
+include {fastp} from './nextflow/modules/fastp'
+include {fastqc} from './nextflow/modules/fastqc'
+include {multiqc} from './nextflow/modules/multiqc' 
+include {spades} from './nextflow/modules/spades' 
 
 //detection
-include virsorter from './nextflow/modules/virsorter' 
+include {virsorter} from './nextflow/modules/virsorter' 
 include {virfinder; virfinderGetDB} from './nextflow/modules/virfinder' 
-include pprmeta from './nextflow/modules/pprmeta'
-include length_filtering from './nextflow/modules/length_filtering' 
-include parse from './nextflow/modules/parse' 
-include prodigal from './nextflow/modules/prodigal'
+include {pprmeta} from './nextflow/modules/pprmeta'
+include {length_filtering} from './nextflow/modules/length_filtering' 
+include {parse} from './nextflow/modules/parse' 
+include {prodigal} from './nextflow/modules/prodigal'
 //include phanotate from './modules/phanotate' 
-include hmmscan as hmmscan_viphogs from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.viphog_version)
-include hmmscan as hmmscan_rvdb from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'rvdb', version: params.viphog_version)
-include hmmscan as hmmscan_pvogs from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'pvogs', version: params.viphog_version)
-include hmmscan as hmmscan_vogdb from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vogdb', version: params.viphog_version)
-include hmmscan as hmmscan_vpf from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vpf', version: params.viphog_version)
-include hmm_postprocessing from './nextflow/modules/hmm_postprocessing'
-include ratio_evalue from './nextflow/modules/ratio_evalue' 
-include annotation from './nextflow/modules/annotation' 
-include assign from './nextflow/modules/assign' 
-include blast from './nextflow/modules/blast' 
-include blast_filter from './nextflow/modules/blast_filter'
-include mashmap from './nextflow/modules/mashmap'
+include {hmmscan as hmmscan_viphogs} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.viphog_version)
+include {hmmscan as hmmscan_rvdb} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'rvdb', version: params.viphog_version)
+include {hmmscan as hmmscan_pvogs} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'pvogs', version: params.viphog_version)
+include {hmmscan as hmmscan_vogdb} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vogdb', version: params.viphog_version)
+include {hmmscan as hmmscan_vpf} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vpf', version: params.viphog_version)
+include {hmm_postprocessing} from './nextflow/modules/hmm_postprocessing'
+include {ratio_evalue} from './nextflow/modules/ratio_evalue' 
+include {annotation} from './nextflow/modules/annotation' 
+include {assign} from './nextflow/modules/assign' 
+include {blast} from './nextflow/modules/blast' 
+include {blast_filter} from './nextflow/modules/blast_filter'
+include {mashmap} from './nextflow/modules/mashmap'
 
 //visuals
 include plot_contig_map from './nextflow/modules/plot_contig_map' 
@@ -615,7 +615,8 @@ def helpMSG() {
     ${c_dim}  ..change above input to csv:${c_reset} ${c_green}--list ${c_reset}            
 
     ${c_yellow}Options:${c_reset}
-    --cores             max cores for local use [default: $params.cores]
+    --cores             max cores per process for local use [default: $params.cores]
+    --max_cores         max cores per machine for local use [default: $params.max_cores]
     --memory            max memory for local use [default: $params.memory]
     --output            name of the result folder [default: $params.output]
 
@@ -647,7 +648,7 @@ def helpMSG() {
     --length            Initial length filter in kb [default: $params.length]
     --sankey            select the x taxa with highest count for sankey plot, try and error to change plot [default: $params.sankey]
     --chunk             WIP: chunk FASTA files into smaller pieces for parallel calculation [default: $params.chunk]
-    --onlyannotate      Only annotate the input FASTA (no virus prediction, only contig length filtering) [default: $params.only_annotate]
+    --onlyannotate      Only annotate the input FASTA (no virus prediction, only contig length filtering) [default: $params.onlyannotate]
     --mashmap           Map the viral contigs against the provided reference ((fasta/fastq)[.gz]) with mashmap [default: $params.mashmap]
     --mashmap_len       Mashmap mapping segment length, shorter sequences will be ignored [default: $params.mashmap_len]
 

@@ -8,7 +8,7 @@ process vogdbGetDB {
   }  
 
   output:
-    file("vogdb")
+    path("vogdb", type: 'dir')
 
   script:
     """

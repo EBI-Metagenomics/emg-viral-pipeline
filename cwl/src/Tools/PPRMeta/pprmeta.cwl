@@ -4,14 +4,13 @@ class: CommandLineTool
 
 label: "PPR-Meta"
 
-baseCommand: ["pprmeta.sh"]
+baseCommand: [ "bash", "pprmeta.sh"]
+
+hints:
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/pprmeta:v1.1"
 
 inputs:
-  singularity_image:
-    type: File
-    label: pprmeta.simg
-    inputBinding:
-      prefix: "-i"
   fasta_file:
     type: File
     label: contigs
@@ -35,7 +34,7 @@ $namespaces:
  s: http://schema.org/
 $schemas:
  - http://edamontology.org/EDAM_1.16.owl
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

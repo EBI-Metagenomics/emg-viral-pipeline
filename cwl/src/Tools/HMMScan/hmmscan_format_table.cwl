@@ -9,7 +9,18 @@ doc: |
 
   Usage: hmmscan_format_table.py -t input_table.tsv -o output_name
 
-baseCommand: ["hmmscan_format_table.py"]
+hints:
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
+
+requirements:
+  InlineJavascriptRequirement: {}
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/hmmscan_format_table.py
+
+baseCommand: [ "python", "hmmscan_format_table.py" ]
 
 inputs:
   input_table:
@@ -35,7 +46,7 @@ $namespaces:
  s: http://schema.org/
 $schemas:
  - http://edamontology.org/EDAM_1.16.owl
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:

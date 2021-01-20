@@ -5,10 +5,16 @@ class: CommandLineTool
 label: VirFinder
 
 hints:
- DockerRequirement:
-   dockerFile: Dockerfile
+  DockerRequirement:
+    dockerPull: "docker.io/microbiomeinformatics/virfinder:v1.1__eb8032e"
 
-baseCommand: ["run_virfinder.Rscript"]
+requirements:
+  InitialWorkDirRequirement:
+    listing:
+        - class: File
+          location: ../../../../bin/run_virfinder.Rscript
+
+baseCommand: ["Rscript", "run_virfinder.Rscript"]
 
 inputs:
   model:
@@ -47,7 +53,7 @@ $namespaces:
  s: http://schema.org/
  edam: http://edamontology.org/
 $schemas:
- - https://schema.org/version/latest/schema.rdf
+ - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:
