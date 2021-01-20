@@ -1,0 +1,9 @@
+name: balloon
+channels:
+  - conda-forge
+  - r
+dependencies:
+  - r-ggplot2=3.1.1 
+  - r-dplyr=0.8.0.1
+  - r-tidyr=0.8.3
+  - r-svglite=1.2.3
