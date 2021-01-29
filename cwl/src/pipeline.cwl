@@ -66,7 +66,7 @@ inputs:
 
 steps:
   fasta_rename:
-    label: Filter contigs
+    label: Rename contigs
     run: ./Tools/FastaRename/fasta_rename.cwl
     in:
       input: input_fasta_file
