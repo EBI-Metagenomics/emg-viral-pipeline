@@ -1,5 +1,5 @@
 #!/usr/bin/env cwl-runner
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 
 label: blast against IMG/VR
@@ -64,5 +64,6 @@ $schemas:
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:
-    - name: "EMBL - European Bioinformatics Institute"
-    - url: "https://www.ebi.ac.uk/"
+  - class: s:Organization
+    s:name: "EMBL - European Bioinformatics Institute"
+    s:url: "https://www.ebi.ac.uk"

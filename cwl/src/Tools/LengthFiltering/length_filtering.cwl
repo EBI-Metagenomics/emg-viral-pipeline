@@ -1,5 +1,5 @@
 #!/usr/bin/env cwl-runner
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 
 label: Length Filter
@@ -38,6 +38,9 @@ inputs:
       separate: true
       prefix: "-i"
 
+stderr: len_filter_stderr.txt
+stdout: len_filter_stdout.txt
+
 outputs:
   filtered_contigs_fasta:
     type: File
@@ -68,5 +71,6 @@ $schemas:
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:
-    - name: "EMBL - European Bioinformatics Institute"
-    - url: "https://www.ebi.ac.uk/"
+  - class: s:Organization
+    s:name: "EMBL - European Bioinformatics Institute"
+    s:url: "https://www.ebi.ac.uk"
