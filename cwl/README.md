@@ -36,9 +36,7 @@ $ ./virify.sh -h
 
 ## Structure of pipeline
 
-https://view.commonwl.org/workflows/github.com/EBI-Metagenomics/emg-virify-pipeline/blob/dev/CWL/pipeline.cwl
-
-![pipeline diagram](https://view.commonwl.org/graph/png/github.com/EBI-Metagenomics/emg-virify-pipeline/blob/master/CWL/pipeline.cwl)
+![Diagram](img/pipeline.png)
 
 # Tests
 

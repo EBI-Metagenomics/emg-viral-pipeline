@@ -1,5 +1,5 @@
 #!/usr/bin/env cwl-runner
-cwlVersion: v1.0
+cwlVersion: v1.2
 class: CommandLineTool
 
 label: VirSorter
@@ -53,7 +53,7 @@ inputs:
       separate: true
       prefix: "--virome"
     doc: |
-      This is needed when providing VirSorter with an input file which is mostly (in your case entirely) viral. The reason is that VirSorter was initially designed for microbial single-cell genomes and metagenomes, i.e. in its default mode, VirSorter will first evaluate the different gene content features (i.e. % of viral genes, % of genes without PFAM affiliation, etc) on the whole dataset, and then look for contigs and or regions that are "more viral than average" (roughly). The "--virome" option bypasses this and forces the use of pre-computed features (based on microbial genomes from RefSeq).  
+      This is needed when providing VirSorter with an input file which is mostly (in your case entirely) viral. The reason is that VirSorter was initially designed for microbial single-cell genomes and metagenomes, i.e. in its default mode, VirSorter will first evaluate the different gene content features (i.e. % of viral genes, % of genes without PFAM affiliation, etc) on the whole dataset, and then look for contigs and or regions that are "more viral than average" (roughly). The "--virome" option bypasses this and forces the use of pre-computed features (based on microbial genomes from RefSeq).
   diamond:
     type: null?
     inputBinding:
@@ -70,7 +70,6 @@ inputs:
       separate: true
       prefix: "--no_c"
 
-
 stdout: stdout.txt
 stderr: stderr.txt
 
@@ -79,15 +78,15 @@ outputs:
   stderr: stderr
 
   virsorter_fastas:
-     type: File[]
-     format: edam:format_1929
-     outputBinding:
-        glob: virsorter-out/Predicted_viral_sequences/*.fasta
+    type: File[]
+    format: edam:format_1929
+    outputBinding:
+      glob: virsorter-out/Predicted_viral_sequences/*.fasta
 
   virsorter_genebanks:
-     type: File[]
-     outputBinding:
-        glob: virsorter-out/Predicted_viral_sequences/*.gb
+    type: File[]
+    outputBinding:
+      glob: virsorter-out/Predicted_viral_sequences/*.gb
 doc: |
   usage: wrapper_phage_contigs_sorter_iPlant.pl --fasta sequences.fa
 
@@ -123,12 +122,12 @@ doc: |
       --help         Show help and exit
 
 $namespaces:
- s: http://schema.org/
- edam: http://edamontology.org/
+  s: http://schema.org/
+  edam: http://edamontology.org/
 $schemas:
- - https://schema.org/version/latest/schemaorg-current-http.rdf
+  - https://schema.org/version/latest/schemaorg-current-http.rdf
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:
-    - name: "EMBL - European Bioinformatics Institute"
-    - url: "https://www.ebi.ac.uk/"
+  - name: "EMBL - European Bioinformatics Institute"
+  - url: "https://www.ebi.ac.uk/"

@@ -1,5 +1,5 @@
 #!/usr/bin/env cwl-runner
-cwlVersion: v1.2.0-dev2
+cwlVersion: v1.2
 class: Workflow
 label: virify
 
@@ -66,7 +66,7 @@ inputs:
 
 steps:
   fasta_rename:
-    label: Filter contigs
+    label: Rename contigs
     run: ./Tools/FastaRename/fasta_rename.cwl
     in:
       input: input_fasta_file
@@ -312,5 +312,6 @@ $schemas:
 
 s:license: "https://www.apache.org/licenses/LICENSE-2.0"
 s:copyrightHolder:
-    - name: "EMBL - European Bioinformatics Institute"
-    - url: "https://www.ebi.ac.uk/"
+  - class: s:Organization
+    s:name: "EMBL - European Bioinformatics Institute"
+    s:url: "https://www.ebi.ac.uk"
