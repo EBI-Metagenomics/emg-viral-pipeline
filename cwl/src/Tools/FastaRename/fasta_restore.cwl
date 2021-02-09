@@ -31,7 +31,11 @@ inputs:
     type: File
     inputBinding:
       prefix: "--map"
-
+  proteins_rename:
+    type: boolean?
+    inputBinding:
+      prefix: "--proteins"
+      
 arguments:
   - prefix: "--output"
     valueFrom: |
