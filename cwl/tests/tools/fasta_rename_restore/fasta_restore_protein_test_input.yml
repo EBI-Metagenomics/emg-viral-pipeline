@@ -1,0 +1,9 @@
+input:
+  class: File
+  path: protein_rename.test.fasta
+  format: http://edamontology.org/format_1929
+name_map:
+  class: File
+  path: protein_rename.map.tsv
+  format: http://edamontology.org/format_3475
+proteins_rename: true

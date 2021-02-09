@@ -49,7 +49,7 @@ inputs:
 
 steps:
   chunk_fasta:
-    run: ../Utils/fasta_chunker.cwl
+    run: ../utils/fasta_chunker.cwl
     scatter: fasta_file
     in:
       fasta_file: aa_fasta_files
@@ -106,7 +106,7 @@ steps:
           out:
             - output_table
         concatenate:
-          run: ../Utils/concatenate.cwl
+          run: ../utils/concatenate.cwl
           label: CAT the tables
           in:
             files: hmmscan/output_table
@@ -120,7 +120,7 @@ steps:
           outputSource: concatenate/result
 
   concatenate:
-    run: ../Utils/concatenate.cwl
+    run: ../utils/concatenate.cwl
     label: CAT the tables
     in:
       files: hmmscan_swf/output_files

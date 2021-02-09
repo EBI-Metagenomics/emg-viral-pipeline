@@ -1,0 +1,12 @@
+high_confidence_contigs_cds:
+  class: File
+  path: high_confidence_contigs_cds.faa
+  format: http://edamontology.org/format_1929
+low_confidence_contigs_cds:
+  class: File
+  path: low_confidence_contigs_cds.faa 
+  format: http://edamontology.org/format_1929
+mgyp_mapping:
+  class: File
+  path: mgyps_protein_map.tsv
+  format: http://edamontology.org/format_3475

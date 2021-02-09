@@ -353,6 +353,21 @@
   output:
     restored_fasta: null
 
+# Fasta restore protein MGYPs
+- job: tools/fasta_rename_restore/fasta_restore_protein_test_input.yml
+  tool: ../src/Tools/FastaRename/fasta_restore.cwl
+  short_name: fasta_restore.cwl
+  doc: Fasta restore protein MGYPs
+  output:
+    restored_fasta: 
+      location: Any
+      basename: "protein_rename.test_restored.fasta"
+      class: File
+      checksum: sha1$b8142a1f9353ec20a4ab94d259069a0c5cbcbdda
+      size: 1545
+      format: http://edamontology.org/format_1929
+      path: Any
+
 # Fasta rename contigs
 - job: tools/fasta_contig_restore/fasta_rename_test_input.yml
   tool: ../src/Tools/FastaRename/fasta_restore_swf.cwl
@@ -576,6 +591,27 @@
         checksum: sha1$f3b34e645d3134eb616b18b974a35fb0943f7605
         size: 67034
         format: http://edamontology.org/format_1929
+        path: Any
+
+# Assign MGYP
+- job: tools/assign_mgyps/assign_mgyps.yml
+  tool: ../src/Tools/utils/assign_mgyps.cwl
+  short_name: assign_mgyps.cwl
+  doc: Assign MGYP accession to a set of protein files
+  output:
+    high_confidence_contigs_cds_mgyps:
+        location: Any
+        basename: high_confidence_contigs_cds_mgyps.faa
+        class: File
+        checksum: sha1$3608bf090ed5fd582c2a8ffb71d660b8af5492ea
+        size: 16217
+        path: Any
+    low_confidence_contigs_cds_mgyps:
+        location: Any
+        basename: low_confidence_contigs_cds_mgyps.faa
+        class: File
+        checksum: sha1$596b5ec92d306650e56abf0379c412a0129bcfb3
+        size: 16774
         path: Any
 
 # MashMap

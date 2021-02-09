@@ -35,7 +35,7 @@ steps:
     out:
       - krona_html
   concatenate:
-    run: ../Utils/concatenate.cwl
+    run: ../utils/concatenate.cwl
     label: CAT the tables
     in:
       files: convert_table/count_table

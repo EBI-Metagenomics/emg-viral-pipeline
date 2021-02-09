@@ -33,7 +33,7 @@ inputs:
     type: File
     inputBinding:
       prefix: "--map"
-
+      
 arguments:
   - prefix: "--output"
     valueFrom: |

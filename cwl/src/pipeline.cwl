@@ -10,9 +10,10 @@ requirements:
   InlineJavascriptRequirement: {}
 
 inputs:
-  input_fasta_file:  # input assembly
+  input_fasta_file:
     type: File
     format: edam:format_1929
+    doc: Input assembly contigs
   fasta_length_filter:
     type: float
     default: 1.0
@@ -82,14 +83,21 @@ inputs:
   mashmap_reference_file:
     type: File?
     doc: |
-      MashMap Reference file. Use MashMap to 
+      MashMap Reference file
+  # MGnify specific field
+  mgyp_mapping: 
+    type: File?
+    format: edam:format_3475
+    doc: |
+      MGYP accessions mapping for the assembly. It contains
+      a mapping between the mgyp accessions and the protein digest.
 
 steps:
   fasta_rename:
     label: Rename contigs
     doc: |
       Rename contigs in fasta, this is required because some tools
-      don't handle long names properly
+      does not handle long names properly
     run: ./Tools/FastaRename/fasta_rename.cwl
     in:
       input: input_fasta_file
@@ -170,23 +178,24 @@ steps:
       high_confidence_contigs: restore_contig_names/high_confidence_contigs_resnames
       low_confidence_contigs: restore_contig_names/low_confidence_contigs_resnames
       prophages_contigs: restore_contig_names/prophages_contigs_resnames
+      mgyp_mapping: mgyp_mapping
     out:
-      - high_confidence_contigs_genes
-      - low_confidence_contigs_genes
-      - prophages_contigs_genes
+      - high_confidence_contigs_cds
+      - low_confidence_contigs_cds
+      - prophages_contigs_cds
 
   hmmscan:
     label: hmmscan
     run: ./Tools/HMMScan/hmmscan_swf.cwl
     in:
       output_name:
-        source: input_fasta_file
+        source: fasta_rename/renamed_fasta
         valueFrom: $(self.nameroot)
       aa_fasta_files:
         source: 
-          - prodigal/high_confidence_contigs_genes
-          - prodigal/low_confidence_contigs_genes
-          - prodigal/prophages_contigs_genes
+          - prodigal/high_confidence_contigs_cds
+          - prodigal/low_confidence_contigs_cds
+          - prodigal/prophages_contigs_cds
         linkMerge: merge_flattened
       hmmdb: hmmdb
       h3m: h3m
@@ -212,15 +221,15 @@ steps:
     in:
       input_fastas:
         source:
-          - prodigal/high_confidence_contigs_genes
-          - prodigal/low_confidence_contigs_genes
-          - prodigal/prophages_contigs_genes
+          - prodigal/high_confidence_contigs_cds
+          - prodigal/low_confidence_contigs_cds
+          - prodigal/prophages_contigs_cds
         linkMerge: merge_flattened
       hmmer_table: ratio_evalue/informative_table
     out:
       - annotation_tables
 
-  assign:
+  assign_taxonomy:
     label: Taxonomic assign
     run: ./Tools/Assign/assign_swf.cwl
     in:
@@ -233,7 +242,7 @@ steps:
     label: krona plots
     run: ./Tools/Krona/krona_swf.cwl
     in:
-      assign_tables: assign/assign_tables
+      assign_tables: assign_taxonomy/assign_tables
       combined_output_name:
         source: input_fasta_file
         valueFrom: $(self.nameroot)_combined_taxonomy_counts.tsv
@@ -344,13 +353,13 @@ outputs:
     outputSource: restore_contig_names/prophages_contigs_resnames
     type: File?
   high_confidence_faa:
-    outputSource: prodigal/high_confidence_contigs_genes
+    outputSource: prodigal/high_confidence_contigs_cds
     type: File?
   low_confidence_faa:
-    outputSource: prodigal/low_confidence_contigs_genes
+    outputSource: prodigal/low_confidence_contigs_cds
     type: File?
   prophages_faa:
-    outputSource: prodigal/prophages_contigs_genes
+    outputSource: prodigal/prophages_contigs_cds
     type: File?
   ViPhOG_annotations:
     outputSource: annotation/annotation_tables
@@ -358,7 +367,7 @@ outputs:
       type: array
       items: File
   taxonomy_assignations:
-    outputSource: assign/assign_tables
+    outputSource: assign_taxonomy/assign_tables
     type:
       type: array
       items: File

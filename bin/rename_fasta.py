@@ -2,9 +2,17 @@
 
 import argparse
 import csv
-import sys
-import re
+import hashlib
 import os
+import re
+import sys
+
+from Bio import SeqIO
+
+
+def create_digest(seq):
+    digest = hashlib.sha256(str(seq).encode('utf-8')).hexdigest()
+    return digest
 
 
 def _parse_name(seq):
@@ -62,23 +70,41 @@ def restore(args):
     print("Restoring " + args.input)
     mapping = {}
     with open(args.map, "r") as map_tsv:
-        for m in csv.DictReader(map_tsv, delimiter="\t"):
-            mapping[m["renamed"]] = m["original"]
-
-    with open(args.input, "r") as fasta_in:
-        with open(args.output, "w") as fasta_out:
-            for line in fasta_in:
-                if line.startswith(">"):
-                    mod, *metadata = _parse_name(line)
-                    # prophage metada removal
-                    original = mapping.get(mod, None)
-                    if not original:
-                        print(f"Missing sequence in mapping for {mod}. Header: {line}",
-                              file=sys.stderr)
-                        original = mod
-                    fasta_out.write(f">{original} {''.join(metadata)}\n")
-                else:
-                    fasta_out.write(line)
+        if args.proteins:
+            for m in csv.DictReader(map_tsv, delimiter="\t"):
+                mapping[m["digest"]] = m["name"]
+        else:
+            for m in csv.DictReader(map_tsv, delimiter="\t"):
+                mapping[m["renamed"]] = m["original"]
+ 
+    with open(args.output, "w") as fasta_out:
+        if args.proteins:
+            print("renaming proteins")
+            for record in SeqIO.parse(args.input, "fasta"):
+                digest = create_digest(record.seq)
+                description = record.description
+                mgyp = mapping.get(digest, None)
+                if not mgyp:
+                    print(f"Missing sequence in mapping for {digest}. Header: {description}",
+                          file=sys.stderr)
+                    mgyp = description
+                record.description = mgyp
+                record.id = mgyp
+                SeqIO.write(record, fasta_out, "fasta")
+        else:
+            with open(args.input, "r") as fasta_in:
+                for line in fasta_in:
+                    if line.startswith(">"):
+                        mod, *metadata = _parse_name(line)
+                        # prophage metada removal
+                        original = mapping.get(mod, None)
+                        if not original:
+                            print(f"Missing sequence in mapping for {mod}. Header: {line}",
+                                  file=sys.stderr)
+                            original = mod
+                        fasta_out.write(f">{original} {''.join(metadata)}\n")
+                    else:
+                        fasta_out.write(line)
 
 
 def main():
@@ -92,6 +118,8 @@ def main():
         default="fasta_map.tsv")
     parser.add_argument(
         "-o", "--output", help="indicate output FASTA file", required=True)
+    parser.add_argument("--proteins", help="Turn on rename for MGYP", 
+                        default='False', action='store_true')
     subparser = parser.add_subparsers()
 
     rename_parser = subparser.add_parser("rename")
