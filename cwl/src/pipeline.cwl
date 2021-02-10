@@ -63,7 +63,9 @@ inputs:
     type: File?
     doc: |
       PPR-Meta singularity simg file
-  use_mgyp_from_assembly_pipeline: boolean  # flag to rename Prodigal prediction headers to MGYPs
+  use_mgyp_from_assembly_pipeline: 
+    type: boolean  
+    default: false  # flag to rename Prodigal prediction headers to MGYPs
   mapfile_from_assembly_pipeline: File?
     
 
