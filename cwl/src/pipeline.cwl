@@ -1,5 +1,5 @@
 #!/usr/bin/env cwl-runner
-cwlVersion: v1.2
+cwlVersion: v1.2.0
 class: Workflow
 label: virify
 
@@ -148,26 +148,12 @@ steps:
       high_confidence_contigs: restore_contig_names/high_confidence_contigs_resnames
       low_confidence_contigs: restore_contig_names/low_confidence_contigs_resnames
       prophages_contigs: restore_contig_names/prophages_contigs_resnames
+      use_mgyp_from_assembly_pipeline: use_mgyp_from_assembly_pipeline
+      mapfile_from_assembly_pipeline: mapfile_from_assembly_pipeline
     out:
       - high_confidence_contigs_genes
       - low_confidence_contigs_genes
       - prophages_contigs_genes
-
-  assign_mgyp:
-    label: Assign MGYPs to annotated proteins
-    when: $(inputs.condition_flag)
-    run: ./Tools/FastaRename/fasta_restore_swf.cwl
-    in:
-      condition_flag: use_mgyp_from_assembly_pipeline
-      high_confidence_contigs: parse_pred_contigs/high_confidence_contigs
-      low_confidence_contigs: parse_pred_contigs/low_confidence_contigs
-      prophages_contigs: parse_pred_contigs/prophages_contigs
-      name_map: mapfile_from_assembly_pipeline
-      proteins_rename_flag: { default: true }
-    out:
-      - high_confidence_contigs_resnames
-      - low_confidence_contigs_resnames
-      - prophages_contigs_resnames
 
   hmmscan:
     label: hmmscan
@@ -178,7 +164,6 @@ steps:
           - prodigal/high_confidence_contigs_genes
           - prodigal/low_confidence_contigs_genes
           - prodigal/prophages_contigs_genes
-          < TODO: add mgyp >
         linkMerge: merge_flattened
       database: hmmscan_database_dir
     out:
@@ -203,7 +188,6 @@ steps:
           - prodigal/high_confidence_contigs_genes
           - prodigal/low_confidence_contigs_genes
           - prodigal/prophages_contigs_genes
-          < TODO: add mgyp >
         linkMerge: merge_flattened
       hmmer_table: ratio_evalue/informative_table
     out:
@@ -286,22 +270,13 @@ outputs:
     outputSource: restore_contig_names/prophages_contigs_resnames
     type: File?
   high_confidence_faa:
-    outputSource: 
-      - assign_mgyp/high_confidence_contigs_genes
-      - prodigal/high_confidence_contigs_genes
-      pickValue: first_non_null
+    outputSource: prodigal/high_confidence_contigs_genes
     type: File?
   low_confidence_faa:
-    outputSource: 
-      - assign_mgyp/low_confidence_contigs_genes
-      - prodigal/low_confidence_contigs_genes
-      pickValue: first_non_null
+    outputSource: prodigal/low_confidence_contigs_genes
     type: File?
   prophages_faa:
-    outputSource: 
-      - assign_mgyp/prophages_contigs_genes
-      - prodigal/prophages_contigs_genes
-      pickValue: first_non_null
+    outputSource: prodigal/prophages_contigs_genes
     type: File?
   taxonomy_assignations:
     outputSource: assign/assign_tables

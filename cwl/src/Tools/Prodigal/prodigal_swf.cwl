@@ -21,6 +21,8 @@ inputs:
   prophages_contigs:
     type: File?
     format: edam:format_1929
+  use_mgyp_from_assembly_pipeline: boolean
+  mapfile_from_assembly_pipeline: File?
 
 steps:
   high_confidence_prodigal:
@@ -42,17 +44,43 @@ steps:
     out:
       - output_fasta
 
+  assign_mgyp:
+    label: Assign MGYPs to annotated proteins
+    when: $(inputs.condition_flag)
+    run: ../FastaRename/fasta_restore_swf.cwl
+    in:
+      condition_flag: use_mgyp_from_assembly_pipeline
+      high_confidence_contigs: high_confidence_prodigal/output_fasta
+      low_confidence_contigs: low_confidence_prodigal/output_fasta
+      prophages_contigs: prophages_prodigal/output_fasta
+      name_map: mapfile_from_assembly_pipeline
+      proteins_rename_flag: { default: true }
+    out:
+      - high_confidence_contigs_resnames
+      - low_confidence_contigs_resnames
+      - prophages_contigs_resnames
+
+
 outputs:
   high_confidence_contigs_genes:
-    outputSource: high_confidence_prodigal/output_fasta
+    outputSource: 
+      - assign_mgyp/high_confidence_contigs_resnames
+      - high_confidence_prodigal/output_fasta
+      pickValue: first_non_null
     type: File?
     format: edam:format_1929
   low_confidence_contigs_genes:
-    outputSource: low_confidence_prodigal/output_fasta
+    outputSource: 
+      - assign_mgyp/low_confidence_contigs_resnames
+      - low_confidence_prodigal/output_fasta
+      pickValue: first_non_null
     type: File?
     format: edam:format_1929
   prophages_contigs_genes:
-    outputSource: prophages_prodigal/output_fasta
+    outputSource: 
+      - assign_mgyp/prophages_contigs_resnames
+      - prophages_prodigal/output_fasta
+      pickValue: first_non_null
     type: File?
     format: edam:format_1929
 
