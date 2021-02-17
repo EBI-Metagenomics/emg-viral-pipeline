@@ -6,7 +6,7 @@ label: "Fasta name restore utility"
 
 hints:
   DockerRequirement:
-    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1.1"
 
 requirements:
   InlineJavascriptRequirement: {}
