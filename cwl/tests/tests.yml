@@ -398,6 +398,21 @@
   output:
     restored_fasta: null 
 
+# Fasta restore protein MGYPs
+- job: tools/fasta_rename_restore/fasta_restore_protein_test_input.yml
+  tool: ../src/Tools/FastaRename/fasta_restore.cwl
+  short_name: fasta_restore.cwl
+  doc: Fasta restore protein MGYPs
+  output:
+    restored_fasta: 
+      location: Any
+      basename: "protein_rename.test_restored.fasta"
+      class: File
+      checksum: sha1$b8142a1f9353ec20a4ab94d259069a0c5cbcbdda
+      size: 1545
+      format: http://edamontology.org/format_1929
+      path: Any
+
 # Fasta rename contigs
 - job: tools/fasta_contig_restore/fasta_rename_test_input.yml
   tool: ../src/Tools/FastaRename/fasta_restore_swf.cwl

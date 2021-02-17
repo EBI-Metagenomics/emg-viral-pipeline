@@ -1,4 +1,4 @@
-FROM python:3-slim
+FROM python:3.8.3-slim
 
 LABEL base_image="python:3-slim"
 LABEL version="1"

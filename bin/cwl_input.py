@@ -46,7 +46,16 @@ def main(args):
             }
         if args.virome:
             file_content["virsorter_virome"] = True
-
+        
+        # change of protein names by mapfile from assembly pipeline
+        if args.protein_mapfile:
+            file_content["mapfile_from_assembly_pipeline"] = {
+                "class": "File",
+                "path": args.protein_mapfile
+            }
+        if args.flag_protein:
+            file_content["use_mgyp_from_assembly_pipeline"] = args.flag_protein
+            
         yaml = YAML()
         yaml.dump(file_content, file)
 
@@ -82,6 +91,11 @@ if __name__ == "__main__":
                         required=False, help="Mashmap reference file")
     parser.add_argument("-o", dest="output_file",
                         required=True, help="Input yaml to generate.")
+    parser.add_argument("-p", dest="protein_mapfile",
+                        required=False, help="Map-file for prodigal")
+    parser.add_argument("-fp", dest="flag_protein",
+                        required=False, help="flag-value to run protein names", 
+                        action='store_true')
     args = parser.parse_args()
 
     main(args)

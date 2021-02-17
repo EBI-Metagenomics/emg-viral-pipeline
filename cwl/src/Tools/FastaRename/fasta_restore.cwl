@@ -6,7 +6,7 @@ label: "Fasta name restore utility"
 
 hints:
   DockerRequirement:
-    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
+    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1.1"
 
 requirements:
   InlineJavascriptRequirement: {}
@@ -31,7 +31,11 @@ inputs:
     type: File
     inputBinding:
       prefix: "--map"
-
+  proteins_rename:
+    type: boolean?
+    inputBinding:
+      prefix: "--proteins"
+      
 arguments:
   - prefix: "--output"
     valueFrom: |

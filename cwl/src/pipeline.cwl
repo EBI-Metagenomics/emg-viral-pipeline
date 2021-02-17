@@ -1,5 +1,5 @@
 #!/usr/bin/env cwl-runner
-cwlVersion: v1.2
+cwlVersion: v1.2.0
 class: Workflow
 label: virify
 
@@ -63,6 +63,18 @@ inputs:
     type: File?
     doc: |
       PPR-Meta singularity simg file
+  use_mgyp_from_assembly_pipeline: 
+    type: boolean  
+    default: false  
+    doc: |
+      Flag to rename Prodigal prediction headers to MGYPs
+      true - rename proteins using provided mapfile 
+      false - skip renaming step 
+  mapfile_from_assembly_pipeline: 
+    type: File?
+    doc: |
+      Map-file to change Prodigal header to MGYP by digest[sequence]
+    
 
 steps:
   fasta_rename:
@@ -145,6 +157,8 @@ steps:
       high_confidence_contigs: restore_contig_names/high_confidence_contigs_resnames
       low_confidence_contigs: restore_contig_names/low_confidence_contigs_resnames
       prophages_contigs: restore_contig_names/prophages_contigs_resnames
+      use_mgyp_from_assembly_pipeline: use_mgyp_from_assembly_pipeline
+      mapfile_from_assembly_pipeline: mapfile_from_assembly_pipeline
     out:
       - high_confidence_contigs_genes
       - low_confidence_contigs_genes
