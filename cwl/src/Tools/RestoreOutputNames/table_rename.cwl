@@ -2,12 +2,7 @@
 cwlVersion: v1.2
 class: CommandLineTool
 
-label: "hmmscan table format"
-
-doc: |
-  Format the hmmscan table results table.
-
-  Usage: hmmscan_format_table.py -t input_table.tsv -o output_name
+label: "Fasta rename utility"
 
 hints:
   DockerRequirement:
@@ -18,27 +13,33 @@ requirements:
   InitialWorkDirRequirement:
     listing:
       - class: File
-        location: ../../../../bin/hmmscan_format_table.py
+        location: ../../../../bin/rename_table_column.py
 
-baseCommand: [ "python", "hmmscan_format_table.py" ]
+doc: |
+  Small python script to rename a tsv/csv file column with a mapping file.
+
+baseCommand: ["python", "rename_table_column.py"]
 
 inputs:
-  input_table:
+  input:
     type: File
     inputBinding:
-      prefix: "-t"
-  output_name:
+      prefix: "--input"
+  map_file:
+    type: File
+    inputBinding:
+      prefix: "--map"
+  output:
     type: string
-  
-arguments:
-  - "-o"
-  - valueFrom: $(inputs.output_name)_hmmer
+    inputBinding:
+      prefix: "--output"
 
 outputs:
-  output_table:
+  modified_table:
     type: File
+    format: edam:format_1929
     outputBinding:
-      glob: $(inputs.output_name)_hmmer.tsv
+      glob: $(inputs.output)
 
 $namespaces:
  edam: http://edamontology.org/

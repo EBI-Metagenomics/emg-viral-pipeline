@@ -1,10 +1,23 @@
+output_name: "test_name"
 aa_fasta_files:
   - class: File
-    path: high_confidence_putative_viral_contigs_prodigal.faa
+    path: high_confidence_putative_viral_contigs_predicted_cds.faa
     format: http://edamontology.org/format_1929
   - class: File
-    path: low_confidence_putative_viral_contigs_prodigal.faa
+    path: low_confidence_putative_viral_contigs_predicted_cds.faa
     format: http://edamontology.org/format_1929
-database:
-  class: Directory
-  path: ../../../databases/vpHMM_database
+hmmdb:
+  class: File
+  path: ../../../databases/vpHMM_database/vpHMM_database.hmm
+h3m:
+  class: File
+  path: ../../../databases/vpHMM_database/vpHMM_database.hmm.h3m
+h3i:
+  class: File
+  path: ../../../databases/vpHMM_database/vpHMM_database.hmm.h3i
+h3f:
+  class: File
+  path: ../../../databases/vpHMM_database/vpHMM_database.hmm.h3f
+h3p:
+  class: File
+  path: ../../../databases/vpHMM_database/vpHMM_database.hmm.h3p

@@ -7,6 +7,8 @@ label: "cat an array of files"
 requirements:
   InlineJavascriptRequirement: {}  # to propagate the file format
 
+baseCommand: ["cat"]
+
 inputs:
   name:
     type: string
@@ -15,8 +17,6 @@ inputs:
     streamable: true
     inputBinding:
       position: 1
-
-baseCommand: ["cat"]
 
 stdout: result
 

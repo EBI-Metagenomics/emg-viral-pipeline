@@ -13,8 +13,8 @@ hints:
 requirements:
   InitialWorkDirRequirement:
     listing:
-        - class: File
-          location: ../../../../bin/fasta_chunker.py
+      - class: File
+        location: ../../../../bin/fasta_chunker.py
 
 baseCommand: [ "python", "fasta_chunker.py" ]
 

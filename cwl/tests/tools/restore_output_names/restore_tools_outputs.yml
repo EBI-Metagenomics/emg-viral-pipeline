@@ -1,0 +1,22 @@
+virsorter_results:
+  - class: File
+    path: VIRSorter_cat-1.fasta
+    format: http://edamontology.org/format_1929
+  - class: File
+    path: VIRSorter_cat-2.fasta
+    format: http://edamontology.org/format_1929
+  - class: File
+    path: VIRSorter_cat-3.fasta
+    format: http://edamontology.org/format_1929
+pprmeta_results:
+  class: File
+  path: pprmeta.csv
+  format: http://edamontology.org/format_3752
+virfinder_results:
+  class: File
+  path: virfinder.tsv
+  format: http://edamontology.org/format_3475
+name_map:
+  class: File
+  path: mapfile.tsv
+  format: http://edamontology.org/format_3475

@@ -19,8 +19,8 @@ requirements:
   InlineJavascriptRequirement: {}
   InitialWorkDirRequirement:
     listing:
-        - class: File
-          location: ../../../../bin/prodigal_wrapper.sh 
+      - class: File
+        location: ../../../../bin/prodigal_wrapper.sh 
 
 baseCommand: ["bash", "prodigal_wrapper.sh"]
 
@@ -41,24 +41,19 @@ arguments:
     valueFrom: |
       ${
         if (inputs.input_fasta && inputs.input_fasta.nameroot) {
-          return inputs.input_fasta.nameroot + "_prodigal.faa";
+          return inputs.input_fasta.nameroot + "_predicted_cds.faa";
         } else {
-          return "empty_prodigal.faa";
+          return "empty_predicted_cds.faa";
         }
       }
     position: 3
 
-stdout: stdout.txt
-stderr: stderr.txt
-
 outputs:
-  stdout: stdout
-  stderr: stderr
   output_fasta:
     type: File
     format: edam:format_1929
     outputBinding:
-      glob: "*_prodigal.faa"
+      glob: "*.faa"
 
 $namespaces:
  s: http://schema.org/
