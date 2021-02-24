@@ -1,6 +1,6 @@
 input_fasta_file:
   class: File
-  path: pipeline_test_input.fasta
+  path: ERZXYZ.fasta
   format: http://edamontology.org/format_1929
 fasta_length_filter: 0.2
 virsorter_data_dir:
@@ -14,15 +14,25 @@ add_hmms_tsv:
   class: File
   path: ../../databases/additional_data_vpHMMs_v1.tsv
   format: http://edamontology.org/format_3475
-hmmscan_database_dir:
-  class: Directory
-  path: ../../databases/vpHMM_database
+hmmdb:
+  class: File
+  path: ../../databases/vpHMM_database/vpHMM_database.hmm
+h3m:
+  class: File
+  path: ../../databases/vpHMM_database/vpHMM_database.hmm.h3m
+h3i:
+  class: File
+  path: ../../databases/vpHMM_database/vpHMM_database.hmm.h3i
+h3f:
+  class: File
+  path: ../../databases/vpHMM_database/vpHMM_database.hmm.h3f
+h3p:
+  class: File
+  path: ../../databases/vpHMM_database/vpHMM_database.hmm.h3p
 ncbi_tax_db_file:
   class: File
   path: ../../databases/ete3_ncbi_tax.sqlite
 img_blast_database_dir:
   class: Directory
   path: ../../databases/IMG_VR_2018-07-01_4
-pprmeta_simg:
-  class: File
-  path: ../../simgs/pprmeta.simg
+

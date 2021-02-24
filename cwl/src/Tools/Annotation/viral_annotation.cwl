@@ -21,7 +21,7 @@ arguments: ["-o", $(runtime.outdir)]
 inputs:
   input_fasta:
     type: File?
-    format: edam:format_1929  # FASTA
+    format: edam:format_1929
     inputBinding:
       separate: true
       prefix: "-p"
@@ -37,7 +37,7 @@ outputs:
     type: File
     format: edam:format_3475
     outputBinding:
-      glob: "*_prot_ann_table.tsv"
+      glob: "*_annotation.tsv"
 
 $namespaces:
  edam: http://edamontology.org/

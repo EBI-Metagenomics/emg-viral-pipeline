@@ -1,12 +1,12 @@
 input_fastas:
   - class: File
-    path: high_confidence_putative_viral_contigs_prodigal.faa
+    path: high_confidence_viral_contigs_predicted_cds.faa
     format: http://edamontology.org/format_1929
   - class: File
-    path: low_confidence_putative_viral_contigs_prodigal.faa
+    path: low_confidence_viral_contigs_predicted_cds.faa
     format: http://edamontology.org/format_1929
   - class: File
-    path: putative_prophages_prodigal.faa
+    path: prophages_predicted_cds.faa
     format: http://edamontology.org/format_1929
 hmmer_table:
   class: File

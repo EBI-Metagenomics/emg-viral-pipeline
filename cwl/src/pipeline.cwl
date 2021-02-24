@@ -37,11 +37,30 @@ inputs:
     format: edam:format_3475
     doc: |
         Additonal metadata tsv
-  hmmscan_database_dir:
-    type: Directory
+  hmmdb:
+    type: File
     doc: |
-      HMMScan Viral HMM (databases/vpHMM/vpHMM_database).
-      NOTE: it needs to be a full path.
+      HMMScan Viral HMM (databases/vpHMM/vpHMM_database.hmm).
+  h3m:
+    type: File
+    doc: |
+      HMM Database secondary file
+      (databases/vpHMM/vpHMM_database.hmm.h3m)
+  h3i:
+    type: File
+    doc: |
+      HMM Database secondary file
+      (databases/vpHMM/vpHMM_database.hmm.h3i)
+  h3f:
+    type: File
+    doc: |
+      HMM Database secondary file
+      (databases/vpHMM/vpHMM_database.hmm.h3f)
+  h3p:
+    type: File
+    doc: |
+      HMM Database secondary file
+      (databases/vpHMM/vpHMM_database.hmm.h3p)
   ncbi_tax_db_file:
     type: File
     doc: |
@@ -58,15 +77,13 @@ inputs:
     type: File?
     doc: |
       MashMap Reference file. Use MashMap to 
-  # == singularity containers == #
-  pprmeta_simg:
-    type: File?
-    doc: |
-      PPR-Meta singularity simg file
 
 steps:
   fasta_rename:
     label: Rename contigs
+    doc: |
+      Rename contigs in fasta, this is required because some tools
+      don't handle long names properly
     run: ./Tools/FastaRename/fasta_rename.cwl
     in:
       input: input_fasta_file
@@ -76,8 +93,8 @@ steps:
 
   length_filter:
     label: Filter contigs
+    doc: Default length 1kb https://github.com/EBI-Metagenomics/emg-virify-scripts/issues/6
     run: ./Tools/LengthFiltering/length_filtering.cwl
-    doc: Default lenght 1kb https://github.com/EBI-Metagenomics/emg-virify-scripts/issues/6
     in:
       fasta_file: fasta_rename/renamed_fasta
       length: fasta_length_filter
@@ -112,7 +129,7 @@ steps:
       - pprmeta_output
 
   parse_pred_contigs:
-    label: Combine
+    label: Parse predictions
     run: ./Tools/ParsingPredictions/parse_viral_pred.cwl
     in:
       assembly: length_filter/filtered_contigs_fasta
@@ -129,11 +146,13 @@ steps:
     label: Restore contig names
     run: ./Tools/FastaRename/fasta_restore_swf.cwl
     in:
+      contigs: length_filter/filtered_contigs_fasta
       high_confidence_contigs: parse_pred_contigs/high_confidence_contigs
       low_confidence_contigs: parse_pred_contigs/low_confidence_contigs
       prophages_contigs: parse_pred_contigs/prophages_contigs
       name_map: fasta_rename/name_map
     out:
+      - contigs_resnames
       - high_confidence_contigs_resnames
       - low_confidence_contigs_resnames
       - prophages_contigs_resnames
@@ -154,13 +173,20 @@ steps:
     label: hmmscan
     run: ./Tools/HMMScan/hmmscan_swf.cwl
     in:
+      output_name:
+        source: input_fasta_file
+        valueFrom: $(self.nameroot)
       aa_fasta_files:
         source: 
           - prodigal/high_confidence_contigs_genes
           - prodigal/low_confidence_contigs_genes
           - prodigal/prophages_contigs_genes
         linkMerge: merge_flattened
-      database: hmmscan_database_dir
+      hmmdb: hmmdb
+      h3m: h3m
+      h3i: h3i
+      h3f: h3f
+      h3p: h3p
     out:
       # single concatenated table
       - output_table
@@ -199,12 +225,17 @@ steps:
 
   krona:
     label: krona plots
-    run:  ./Tools/Krona/krona_swf.cwl
+    run: ./Tools/Krona/krona_swf.cwl
     in:
       assign_tables: assign/assign_tables
+      combined_output_name:
+        source: input_fasta_file
+        valueFrom: $(self.nameroot)_combined_taxonomy_counts.tsv
     out:
+      - krona_tables
       - krona_htmls
-      - krona_all_html
+      - krona_combined_table
+      - krona_combined_html
 
   imgvr_blast:
     label: Blast in a database of viral sequences including metagenomes
@@ -218,17 +249,15 @@ steps:
         linkMerge: merge_flattened
       database: img_blast_database_dir
     out:
-      - blast_results
-      - blast_result_filtered
-      - merged_tsvs
+       - merged_tsvs
   
   mashmap:
     label: MashMap
     run: ./Tools/MashMap/mashmap_swf.cwl
     requirements:
-        ResourceRequirement:    # overrides the ResourceRequirements in first-step.cwl
-            coresMin: 4
-            ramMin: 3814
+        ResourceRequirement:
+          coresMin: 4
+          ramMin: 3814
     when: $(inputs.reference !== undefined && inputs.reference !== null)
     in:
       input_fastas:
@@ -242,19 +271,43 @@ steps:
       # each table will have the input as prefix of the name
       - output_table
   
+  # Rename virsorter, virfinder and pprmeta results
+  restore_tools_outputs_names:
+    label: Restore contig names on ppmeta,virsorter and virfinder results
+    doc: |
+      virsorter, virfinder and pprmeta are fed
+      a fasta file with renamed contigs, due problem with 
+      how those tools handle fasta files.
+      This step restores the contigs within the results
+    run: ./Tools/RestoreOutputNames/restore_tools_outputs_swf.cwl
+    in:
+      virsorter_results: virsorter/virsorter_fastas
+      pprmeta_results: pprmeta/pprmeta_output
+      virfinder_results: virfinder/virfinder_output
+      name_map: fasta_rename/name_map
+    out:
+      - virsorter_results_restored
+      - pprmeta_results_restored
+      - virfinder_results_restored
+
 outputs:
   filtered_contigs:
-    outputSource: length_filter/filtered_contigs_fasta
+    outputSource: restore_contig_names/contigs_resnames
     type: File
-  virfinder_output:
-    outputSource: virfinder/virfinder_output
-    type: File
+  # intermediary files
   virsorter_output_fastas:
-    outputSource: virsorter/virsorter_fastas
+    outputSource: restore_tools_outputs_names/virsorter_results_restored
     type: File[]
   pprmeta_file:
-    outputSource: pprmeta/pprmeta_output
+    outputSource: restore_tools_outputs_names/pprmeta_results_restored
     type: File
+  virfinder_output:
+    outputSource: restore_tools_outputs_names/virfinder_results_restored
+    type: File
+  ratio_evalue:
+    outputSource: ratio_evalue/informative_table
+    type: File
+  # fully analized files
   high_confidence_contigs:
     outputSource: restore_contig_names/high_confidence_contigs_resnames
     type: File?
@@ -278,20 +331,25 @@ outputs:
     type:
       type: array
       items: File
+  krona_tables:
+    outputSource: krona/krona_tables
+    type:
+      type: array
+      items: File
   krona_plots:
     outputSource: krona/krona_htmls
     type:
       type: array
       items: File
-  krona_plot_all:
-    outputSource: krona/krona_all_html
+  krona_table_all:
+    outputSource: krona/krona_combined_table
     type: File
-  blast_results:
-    outputSource: imgvr_blast/blast_results
-    type: File[]
-  blast_result_filtered:
-    outputSource: imgvr_blast/blast_result_filtered
-    type: File[]
+  krona_plot_all:
+    outputSource: krona/krona_combined_html
+    type: File
+  hmmscan_results:
+    outputSource: hmmscan/output_table
+    type: File
   blast_merged_tsvs:
     outputSource: imgvr_blast/merged_tsvs
     type: File[]

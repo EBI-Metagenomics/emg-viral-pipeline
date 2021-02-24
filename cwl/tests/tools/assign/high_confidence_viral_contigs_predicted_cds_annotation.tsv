@@ -1,6 +1,7 @@
 Contig	CDS_ID	Start	End	Direction	Best_hit	Abs_Evalue_exp	Label
-NODE_82_length_2020_cov_811.839186_10_H	NODE_82_length_2020_cov_811.839186_10_H_1	3	1364	1	No hit	NA	
-NODE_82_length_2020_cov_811.839186_10_H	NODE_82_length_2020_cov_811.839186_10_H_2	1632	1901	1	No hit	NA	
+NODE_82_length_2020_cov_811.839186_10_H	NODE_82_length_2020_cov_811.839186_10_H_1	3	1364	1	ViPhOG17126.faa	99	Batrachovirus
+NODE_82_length_2020_cov_811.839186_10_H	NODE_82_length_2020_cov_811.839186_10_H_1	1430	1600	1	ViPhOG17126.faa	99	Batrachovirus
+NODE_82_length_2020_cov_811.839186_10_H	NODE_82_length_2020_cov_811.839186_10_H_1	1632	1901	1	ViPhOG17126.faa	99	Batrachovirus
 NODE_311_length_705_cov_2857.230769_10_H	NODE_311_length_705_cov_2857.230769_10_H_1	31	474	1	No hit	NA	
 NODE_311_length_705_cov_2857.230769_10_H	NODE_311_length_705_cov_2857.230769_10_H_2	484	705	1	No hit	NA	
 NODE_814_length_380_cov_1.563077_10_H	NODE_814_length_380_cov_1.563077_10_H_1	1	162	-1	No hit	NA	

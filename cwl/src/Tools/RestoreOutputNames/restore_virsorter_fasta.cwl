@@ -2,12 +2,7 @@
 cwlVersion: v1.2
 class: CommandLineTool
 
-label: "hmmscan table format"
-
-doc: |
-  Format the hmmscan table results table.
-
-  Usage: hmmscan_format_table.py -t input_table.tsv -o output_name
+label: "Fasta rename utility"
 
 hints:
   DockerRequirement:
@@ -18,27 +13,42 @@ requirements:
   InitialWorkDirRequirement:
     listing:
       - class: File
-        location: ../../../../bin/hmmscan_format_table.py
+        location: ../../../../bin/restore_virsorter_fastas.py
 
-baseCommand: [ "python", "hmmscan_format_table.py" ]
+doc: |
+  Python script to rename VirSorter results fasta,
+  reversing the changes of fasta_rename in virify.
+
+baseCommand: ["python", "restore_virsorter_fastas.py"]
 
 inputs:
-  input_table:
+  input:
+    type: File
+    format: edam:format_1929
+    inputBinding:
+      prefix: "--input"
+  name_map:
     type: File
     inputBinding:
-      prefix: "-t"
-  output_name:
-    type: string
-  
+      prefix: "--map"
+
 arguments:
-  - "-o"
-  - valueFrom: $(inputs.output_name)_hmmer
+  - prefix: "--output"
+    valueFrom: |
+      ${
+        if (inputs.input && inputs.input.nameroot) {
+          return inputs.input.nameroot + ".fasta";
+        } else {
+          return "empty_map.tsv";
+        }
+      }
 
 outputs:
-  output_table:
+  restored_fasta:
     type: File
+    format: edam:format_1929
     outputBinding:
-      glob: $(inputs.output_name)_hmmer.tsv
+      glob: "*.fasta"
 
 $namespaces:
  edam: http://edamontology.org/

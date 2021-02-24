@@ -11,16 +11,43 @@ hints:
 requirements:
   InlineJavascriptRequirement: {}
   InitialWorkDirRequirement:
-    listing: | 
-      ${
-        return inputs.database.listing;
-      }
+    listing:
+      - $(inputs.hmmdb)
+      - $(inputs.h3m)
+      - $(inputs.h3i)
+      - $(inputs.h3f)
+      - $(inputs.h3p)
 
 baseCommand: ["hmmscan_wrapper.sh"]
 
 inputs:
-  database:
-    type: Directory
+  hmmdb:
+    type: File
+    inputBinding:
+      position: 4
+      valueFrom: $(self.basename)
+    doc: |
+      HMMScan Viral HMM (databases/vpHMM/vpHMM_database.hmm).
+  h3m:
+    type: File
+    doc: |
+      HMM Database secondary file
+      (databases/vpHMM/vpHMM_database.hmm.h3m)
+  h3i:
+    type: File
+    doc: |
+      HMM Database secondary file
+      (databases/vpHMM/vpHMM_database.hmm.h3i)
+  h3f:
+    type: File
+    doc: |
+      HMM Database secondary file
+      (databases/vpHMM/vpHMM_database.hmm.h3f)
+  h3p:
+    type: File
+    doc: |
+      HMM Database secondary file
+      (databases/vpHMM/vpHMM_database.hmm.h3p)
   aa_fasta_file:
     type: File
     format: edam:format_1929
@@ -35,17 +62,11 @@ arguments:
   - prefix: --domtblout
     valueFrom: $(inputs.aa_fasta_file.nameroot)_hmmscan.tbl
     position: 3
-  - valueFrom: $(runtime.outdir)/vpHMM_database_v3.hmm
-    position: 4
   - valueFrom: --noali
     position: 1
   - prefix: --cpu
     valueFrom: $(runtime.cores)
     position: 2
-
-# TODO: remove before production as HMMER is very verbose
-stdout: hmmer_stdout.txt
-stderr: hmmer_stderr.txt
 
 outputs:
   output_table:

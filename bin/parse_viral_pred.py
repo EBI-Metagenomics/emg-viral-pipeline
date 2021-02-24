@@ -5,7 +5,8 @@ import re
 import sys
 import csv
 from copy import copy
-from os.path import join, isfile
+from os.path import isfile
+from pathlib import Path
 
 from Bio import SeqIO
 
@@ -195,31 +196,37 @@ def merge_annotations(pprmeta, finder, sorter, assembly):
         sorter_hc, sorter_lc, sorter_prophages
 
 
-def main(pprmeta, finder, sorter, assembly, outdir):
+def main(pprmeta, finder, sorter, assembly, outdir, prefix=False):
     """Parse VirSorter, VirFinder and PPR-Meta outputs and merge the results.
     """
     hc_contigs, lc_contigs, prophage_contigs, sorter_hc, sorter_lc, sorter_prophages = \
         merge_annotations(pprmeta, finder, sorter, assembly)
 
     at_least_one = False
+    name_prefix = ""
+    if prefix:
+        name_prefix = Path(assembly).stem + "_"
+
+    outdir_path = Path(outdir)
+
     if len(hc_contigs):
-        SeqIO.write(hc_contigs, join(
-            outdir, "high_confidence_putative_viral_contigs.fna"), "fasta")
+        SeqIO.write(hc_contigs, 
+            outdir / Path(name_prefix + "high_confidence_viral_contigs.fna"), "fasta")
         at_least_one = True
     if len(lc_contigs):
-        SeqIO.write(lc_contigs, join(
-            outdir, "low_confidence_putative_viral_contigs.fna"), "fasta")
+        SeqIO.write(lc_contigs, 
+            outdir / Path(name_prefix + "low_confidence_viral_contigs.fna"), "fasta")
         at_least_one = True
     if len(prophage_contigs):
-        SeqIO.write(prophage_contigs, join(
-            outdir, "putative_prophages.fna"), "fasta")
+        SeqIO.write(prophage_contigs,
+            outdir / Path(name_prefix + "prophages.fna"), "fasta")
         at_least_one = True
 
     # VirSorter provides some metadata on each annotation
     # - is circular
     # - prophage start and end within a contig
     if sorter_hc or sorter_lc or sorter_prophages:
-        with open(join(outdir, "virsorter_metadata.tsv"), "w") as pm_tsv_file:
+        with open(outdir_path / Path("virsorter_metadata.tsv"), "w") as pm_tsv_file:
             header = ["contig", "category", "circular",
                       "prophage_start", "prophage_end"]
             tsv_writer = csv.writer(pm_tsv_file, delimiter="\t")
@@ -255,10 +262,13 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--pmout", dest="pprmeta",
                         help="Absolute or relative path to PPR-Meta output file"
                         " PPR-Meta output", required=False)
+    parser.add_argument("-r", "--prefix", dest="prefix",
+                        help="Use the assembly filename as prefix for the outputs",
+                        action="store_true")
     parser.add_argument("-o", "--outdir", dest="outdir",
                         help="Absolute or relative path of directory where output"
                         " _viral prediction files should be stored (default: cwd)",
                         default=".")
     args = parser.parse_args()
 
-    main(args.pprmeta, args.finder, args.sorter, args.assembly, args.outdir)
+    main(args.pprmeta, args.finder, args.sorter, args.assembly, args.outdir, prefix=args.prefix)

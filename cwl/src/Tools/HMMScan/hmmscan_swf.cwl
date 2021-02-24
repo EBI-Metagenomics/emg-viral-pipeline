@@ -15,13 +15,37 @@ requirements:
   StepInputExpressionRequirement: {}
 
 inputs:
+  output_name:
+    type: string
   aa_fasta_files:
     type:
       type: array
       items: ["null", "File"]
     doc: FASTA Protein files
-  database:
-    type: Directory
+  hmmdb:
+    type: File
+    doc: |
+      HMMScan Viral HMM (databases/vpHMM/vpHMM_database.hmm).
+  h3m:
+    type: File
+    doc: |
+      HMM Database secondary file
+      (databases/vpHMM/vpHMM_database.hmm.h3m)
+  h3i:
+    type: File
+    doc: |
+      HMM Database secondary file
+      (databases/vpHMM/vpHMM_database.hmm.h3i)
+  h3f:
+    type: File
+    doc: |
+      HMM Database secondary file
+      (databases/vpHMM/vpHMM_database.hmm.h3f)
+  h3p:
+    type: File
+    doc: |
+      HMM Database secondary file
+      (databases/vpHMM/vpHMM_database.hmm.h3p)
 
 steps:
   chunk_fasta:
@@ -37,7 +61,11 @@ steps:
     scatter: fasta_files
     in: 
       fasta_files: chunk_fasta/fasta_chunks
-      database: database
+      hmmdb: hmmdb
+      h3m: h3m
+      h3i: h3i
+      h3f: h3f
+      h3p: h3p
     out:
       - output_files
     run:
@@ -52,8 +80,17 @@ steps:
           type:
             type: array
             items: "File"
-        database:
-          type: Directory
+        hmmdb:
+          type: File
+          doc: HMM Database
+        h3m:
+          type: File
+        h3i:
+          type: File
+        h3f:
+          type: File
+        h3p:
+          type: File
       steps:
         hmmscan:
           run: hmmscan.cwl
@@ -61,7 +98,11 @@ steps:
           scatter: aa_fasta_file
           in:
             aa_fasta_file: fasta_files
-            database: database
+            hmmdb: hmmdb
+            h3m: h3m
+            h3i: h3i
+            h3f: h3f
+            h3p: h3p
           out:
             - output_table
         concatenate:
@@ -70,7 +111,7 @@ steps:
           in:
             files: hmmscan/output_table
             name:
-              valueFrom: "tmp_table.tsv"
+              valueFrom: "inner_tmp_table.tsv"
           out:
             - result
       outputs:
@@ -93,8 +134,7 @@ steps:
     label: Format the table
     in:
       input_table: concatenate/result
-      output_name:
-        valueFrom: "hmmer_table"
+      output_name: output_name
     out:
       - output_table
 

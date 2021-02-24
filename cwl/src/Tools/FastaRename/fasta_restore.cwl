@@ -23,7 +23,9 @@ baseCommand: ["python", "rename_fasta.py"]
 
 inputs:
   input:
-    type: File?
+    type:
+      - File
+      - File?
     format: edam:format_1929
     inputBinding:
       prefix: "--input"
@@ -37,7 +39,10 @@ arguments:
     valueFrom: |
       ${
         if (inputs.input && inputs.input.nameroot) {
-          return inputs.input.nameroot + "_restored.fasta";
+          // clean the name too (remove renamed suffix)
+          var basename = inputs.input.nameroot.replace("_renamed", "");
+          basename = basename.replace("_renamed_", "");
+          return basename + ".fasta";
         } else {
           return "empty_restored.fasta";
         }

@@ -39,7 +39,7 @@ outputs:
     type: File
     format: edam:format_3475
     outputBinding:
-      glob: "*tax_assign.tsv"
+      glob: "*_taxonomy.tsv"
 
 $namespaces:
  edam: http://edamontology.org/

@@ -1,10 +1,11 @@
+combined_output_name: "test_combined_taxonomy_counts.tsv"
 assign_tables:
   - class: File
-    path: test_tax_assign_1.tsv
+    path: test_taxonomy_1.tsv
     format: http://edamontology.org/format_3475
   - class: File
-    path: test_tax_assign_2.tsv
+    path: test_taxonomy_2.tsv
     format: http://edamontology.org/format_3475
   - class: File
-    path: test_tax_assign_3.tsv
+    path: test_taxonomy_3.tsv
     format: http://edamontology.org/format_3475

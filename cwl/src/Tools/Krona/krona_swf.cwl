@@ -7,8 +7,11 @@ label: Krona
 requirements:
   ScatterFeatureRequirement: {}
   StepInputExpressionRequirement: {}
+  InlineJavascriptRequirement: {}
 
 inputs:
+  combined_output_name:
+    type: string
   assign_tables:
     type: File[]
     format: edam:format_3475
@@ -36,11 +39,10 @@ steps:
     label: CAT the tables
     in:
       files: convert_table/count_table
-      name:
-        valueFrom: "krona_all.tsv"
+      name: combined_output_name
     out:
       - result
-  krona_all:
+  krona_combined:
     run: krona.cwl
     label: ktImportText
     in:
@@ -49,21 +51,21 @@ steps:
       - krona_html
 
 outputs:
-  krona_all_html:
-    outputSource: krona_all/krona_html
-    format: edam:format_2331
-    type: File
   krona_htmls:
     outputSource: krona_individual/krona_html
     format: edam:format_2331
     type: File[]
-  table_all:
-    outputSource: concatenate/result
-    type: File
-  tables:
+  krona_tables:
     outputSource: convert_table/count_table
     format: edam:format_3475
     type: File[]
+  krona_combined_html:
+    outputSource: krona_combined/krona_html
+    format: edam:format_2331
+    type: File
+  krona_combined_table:
+    outputSource: concatenate/result
+    type: File
 
 $namespaces:
  s: http://schema.org/
