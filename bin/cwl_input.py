@@ -26,10 +26,6 @@ def main(args):
                 "path": args.add_hmms_tsv,
                 "format": "http://edamontology.org/format_3475"
             },
-            "hmmscan_database_dir": {
-                "class": "Directory",
-                "path": args.hmmscan_db
-            },
             "ncbi_tax_db_file": {
                 "class": "File",
                 "path": args.ncbi_db
@@ -37,8 +33,19 @@ def main(args):
             "img_blast_database_dir": {
                 "class": "Directory",
                 "path": args.img_db
-            }
+            },
+            "hmmdb": {
+                "class": "File",
+                "path": args.hmmscan_db
+            },
         }
+
+        for suffix in ["h3m", "h3i", "h3f", "h3p"]:
+            file_content[suffix] = {
+                "class": "File",
+                "path": args.hmmscan_db + "." + suffix
+            }
+
         if args.mashmap_ref:
             file_content["mashmap_reference_file"] = {
                 "class": "File",
@@ -46,6 +53,8 @@ def main(args):
             }
         if args.virome:
             file_content["virsorter_virome"] = True
+
+        file_content = dict(sorted(file_content.items()))
 
         yaml = YAML()
         yaml.dump(file_content, file)
@@ -70,7 +79,7 @@ if __name__ == "__main__":
     parser.add_argument("-a", dest="add_hmms_tsv",
                         required=True, help="additiona_hmms_metadata.tsv")
     parser.add_argument("-j", dest="hmmscan_db",
-                        required=True, help="HMMSCAN database directory")
+                        required=True, help="HMMSCAN database hmm file (will construct path to secondary .hmm.h3<m,i,f,p>)")
     parser.add_argument("-n", dest="ncbi_db",
                         required=True, help="NCBI Taxonomy database")
     parser.add_argument("-b", dest="img_db",

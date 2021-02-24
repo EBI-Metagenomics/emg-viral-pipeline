@@ -27,10 +27,9 @@ class CwlGeneration(unittest.TestCase):
             "-s", "dummy_virsorter_dir",
             "-d", "dummty_virfinder_model",
             "-a", "dummy_hmms_tsv",
-            "-j", "dummy_hmmscan_db",
+            "-j", "dummy_hmmscan_db.hmm",
             "-n", "dummy_nbci_db",
             "-b", "dummy_img_db",
-            "-p", "dummy_pprmeta_simg",
             "-o", result_file
         ]
         process = subprocess.run(args)
@@ -59,12 +58,11 @@ class CwlGeneration(unittest.TestCase):
             "-s", "dummy_virsorter_dir",
             "-d", "dummty_virfinder_model",
             "-a", "dummy_hmms_tsv",
-            "-j", "dummy_hmmscan_db",
+            "-j", "dummy_hmmscan_db.hmm",
             "-n", "dummy_nbci_db",
             "-b", "dummy_img_db",
             "-v", "true",
             "-m", "dummy_mashmap_ref",
-            "-p", "dummy_pprmeta_simg",
             "-o", result_file
         ]
         process = subprocess.run(args)
