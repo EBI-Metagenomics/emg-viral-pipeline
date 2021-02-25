@@ -8,16 +8,16 @@ aa_fasta_files:
     format: http://edamontology.org/format_1929
 hmmdb:
   class: File
-  path: ../../databases/hmmer_databases/vpHMM_database_v3/vpHMM_database_v3.hmm
+  path: ../../../databases/hmmer_databases/vpHMM_database_v3/vpHMM_database_v3.hmm
 h3m:
   class: File
-  path: ../../databases/hmmer_databases/vpHMM_database_v3/vpHMM_database_v3.hmm.h3m
+  path: ../../../databases/hmmer_databases/vpHMM_database_v3/vpHMM_database_v3.hmm.h3m
 h3i:
   class: File
-  path: ../../databases/hmmer_databases/vpHMM_database_v3/vpHMM_database_v3.hmm.h3i
+  path: ../../../databases/hmmer_databases/vpHMM_database_v3/vpHMM_database_v3.hmm.h3i
 h3f:
   class: File
-  path: ../../databases/hmmer_databases/vpHMM_database_v3/vpHMM_database_v3.hmm.h3f
+  path: ../../../databases/hmmer_databases/vpHMM_database_v3/vpHMM_database_v3.hmm.h3f
 h3p:
   class: File
-  path: ../../databases/hmmer_databases/vpHMM_database_v3/vpHMM_database_v3.hmm.h3p
+  path: ../../../databases/hmmer_databases/vpHMM_database_v3/vpHMM_database_v3.hmm.h3p
