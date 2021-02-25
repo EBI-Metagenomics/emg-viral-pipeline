@@ -1,5 +1,5 @@
 #!/usr/bin/env cwl-runner
-cwlVersion: v1.2
+cwlVersion: v1.2.0-dev4
 class: CommandLineTool
 
 label: "Ratio Evalue table"

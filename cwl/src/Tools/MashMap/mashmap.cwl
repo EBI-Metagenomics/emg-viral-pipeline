@@ -1,5 +1,5 @@
 #!/usr/bin/env cwl-runner
-cwlVersion: v1.2
+cwlVersion: v1.2.0-dev4
 class: CommandLineTool
 
 doc: MashMap is an approximate long read or contig mapper based on Jaccard similarity
