@@ -326,6 +326,11 @@ outputs:
   prophages_faa:
     outputSource: prodigal/prophages_contigs_genes
     type: File?
+  ViPhOG_annotations:
+    outputSource: annotation/annotation_tables
+    type:
+      type: array
+      items: File
   taxonomy_assignations:
     outputSource: assign/assign_tables
     type:

@@ -807,3 +807,28 @@
       nameroot: ERZXYZ_renamed_filt200bp_virfinder_all
       size: 4362
     virsorter_output_fastas: []
+    ViPhOG_annotations:
+    - location: Any
+      basename: "empty_predicted_cds_annotation.tsv"
+      nameroot: "empty_predicted_cds_annotation"
+      nameext: ".tsv"
+      class: File
+      checksum: "sha1$62479419676f20421fa8505254b9ee15a7ec3859"
+      size: 64
+      format: "http://edamontology.org/format_3475"
+    - location: Any
+      basename: "ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation.tsv"
+      nameroot: "ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation"
+      nameext: ".tsv"
+      class: File
+      checksum: "sha1$795f2676756fed574d0785a007ed6ce3efe94364"
+      size: 911
+      format: "http://edamontology.org/format_3475"
+    - location: Any
+      basename: "empty_predicted_cds_annotation.tsv"
+      nameroot: "empty_predicted_cds_annotation"
+      nameext: ".tsv"
+      class: File
+      checksum: "sha1$62479419676f20421fa8505254b9ee15a7ec3859"
+      size: 64
+      format: "http://edamontology.org/format_3475"
