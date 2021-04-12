@@ -11,6 +11,7 @@
 <a name="virify"></a>
 
 # VIRify
+![Logo](figures/virify_logo.png)
 ![Sankey plot](nextflow/figures/sankey.png)
 VIRify is a recently developed pipeline for the detection, annotation, and taxonomic classification of viral contigs in metagenomic and metatranscriptomic assemblies. The pipeline is part of the repertoire of analysis services offered by [MGnify](https://www.ebi.ac.uk/metagenomics/). VIRify’s taxonomic classification relies on the detection of taxon-specific profile hidden Markov models (HMMs), built upon a set of 22,014 orthologous protein domains and referred to as ViPhOGs. 
 
