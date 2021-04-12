@@ -4,6 +4,8 @@
 ![](https://img.shields.io/badge/uses-conda-yellow.svg)
 [![Build Status](https://travis-ci.org/EBI-Metagenomics/emg-viral-pipeline.svg?branch=master)](https://travis-ci.org/EBI-Metagenomics/emg-viral-pipeline)
 
+<img align="right" width="140" height="140" src="figures/virify_logo.png">
+
 1. [ VIRify pipeline ](#virify)
 2. [ CWL execution ](#cwl)
 3. [ Nextflow execution ](#nf)
@@ -11,7 +13,6 @@
 <a name="virify"></a>
 
 # VIRify
-<img align="right" width="100" height="100" src="figures/virify_logo.png">
 ![Sankey plot](nextflow/figures/sankey.png)
 VIRify is a recently developed pipeline for the detection, annotation, and taxonomic classification of viral contigs in metagenomic and metatranscriptomic assemblies. The pipeline is part of the repertoire of analysis services offered by [MGnify](https://www.ebi.ac.uk/metagenomics/). VIRify’s taxonomic classification relies on the detection of taxon-specific profile hidden Markov models (HMMs), built upon a set of 22,014 orthologous protein domains and referred to as ViPhOGs. 
 
