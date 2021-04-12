@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -15,7 +13,7 @@
    viewBox="0 0 66.7416 66.672478"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.4 5da689c313, 2019-01-14"
+   inkscape:version="1.0.2 (e86c8708, 2021-01-15)"
    sodipodi:docname="virify_logo.svg">
   <defs
      id="defs2">
@@ -115,22 +113,23 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="-22.738257"
-     inkscape:cy="89.612982"
+     inkscape:zoom="1.4"
+     inkscape:cx="165.65763"
+     inkscape:cy="145.36207"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:snap-global="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1016"
+     inkscape:window-width="1440"
+     inkscape:window-height="789"
      inkscape:window-x="0"
-     inkscape:window-y="27"
+     inkscape:window-y="25"
      inkscape:window-maximized="1"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0" />
+     fit-margin-bottom="0"
+     inkscape:document-rotation="0" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -244,20 +243,21 @@
     <flowRoot
        xml:space="preserve"
        id="flowRoot850"
-       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif Italic';letter-spacing:0px;word-spacing:0.07px;fill:url(#linearGradient971);fill-opacity:1;stroke:url(#linearGradient963)"
+       style="font-style:italic;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif Italic';letter-spacing:0px;word-spacing:0.07000000000000001px;fill:#000000;fill-opacity:1;stroke:none;"
        transform="matrix(0.26458333,0,0,0.26458333,79.641716,-109.10678)"
        inkscape:export-xdpi="300"
        inkscape:export-ydpi="300"><flowRegion
          id="flowRegion852"
-         style="word-spacing:0.07px;stroke:url(#linearGradient963);fill-opacity:1;fill:url(#linearGradient971)"><rect
+         style="word-spacing:0.07000000000000001px;stroke:none;fill-opacity:1;fill:#000000;"><rect
            id="rect854"
            width="907.117"
            height="252.53813"
            x="-155.56349"
            y="1150.804"
-           style="word-spacing:0.07px;stroke:url(#linearGradient963);fill-opacity:1;fill:url(#linearGradient971)" /></flowRegion><flowPara
+           style="word-spacing:0.07000000000000001px;stroke:none;fill-opacity:1;fill:#000000;" /></flowRegion><flowPara
          id="flowPara856"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:58.66666794px;font-family:Ouhod;-inkscape-font-specification:Ouhod;word-spacing:0.07px;stroke:url(#linearGradient963);fill-opacity:1;fill:url(#linearGradient971)">VIRify</flowPara></flowRoot>    <path
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:58.66666794000000351px;font-family:Ouhod;-inkscape-font-specification:Ouhod;word-spacing:0.07000000000000001px;stroke:none;fill-opacity:1;fill:#000000;">VIRify</flowPara></flowRoot>
+    <path
        style="fill:#ffffff;stroke:#ffffff;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 63.122023,197.35602 6.709077,-6.28385 1.27567,3.49628 z"
        id="path955"
