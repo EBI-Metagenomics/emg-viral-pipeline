@@ -2,23 +2,80 @@
 
 set -e
 
-DIRECTORY="$(pwd)"/databases
-ENDPOINT="rsync://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/"
+usage () {
+    echo ""
+    echo "Download VIRify DBs for the CWL version"
+    echo "* requires rsyncimgvr_blast_swf.cwl"
+    echo ""
+    echo "-f Output folder [mandatory]"
+    echo " "
+}
 
-mkdir -p "${DIRECTORY}"
+OUTPUT=""
 
-echo "Fetching the files"
+while getopts "f:h" opt; do
+  case $opt in
+    f)
+        OUTPUT="$OPTARG"
+        if [ -z "$OUTPUT" ];
+        then
+            echo ""
+            echo "ERROR -f cannot be empty." >&2
+            usage;
+            exit 1
+        fi
+        ;;
+    h)
+        usage;
+        exit 0
+        ;;
+    :)
+        usage;
+        exit 1
+        ;;
+    \?)
+        echo ""
+        echo "Invalid option -${OPTARG}" >&2
+        usage;
+        exit 1;
+    ;;
+  esac
+done
 
-rsync -ahrv "${ENDPOINT}" "${DIRECTORY}"
+if ((OPTIND == 1))
+then
+    echo ""
+    echo "ERROR: No options specified"
+    usage;
+    exit 1
+fi
 
-echo "Done, now decompressing"
+mkdir -p "${OUTPUT}"
 
-tar xvzf "${DIRECTORY}"/virsorter-data-v2.tar.gz --directory "${DIRECTORY}"
+set -u
 
-tar xvzf "${DIRECTORY}"/hmmer_databases/vpHMM_database_v3.tar.gz --directory "${DIRECTORY}"/hmmer_databases
+BASE="rsync://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/"
 
-gunzip "${DIRECTORY}"/2020-07-01_ete3_ncbi_tax.sqlite.gz
+mkdir -p "${OUTPUT}"
 
-tar xvzf "${DIRECTORY}"/IMG_VR_2018-07-01_4.tar.gz --directory "${DIRECTORY}"
+echo "Fetching and decompressing the files"
+
+echo "Virsorter data v2"
+
+rsync -ahrv --progress --partial "${BASE}"virsorter-data-v2.tar.gz "${OUTPUT}"
+
+tar xvzf "${OUTPUT}"/virsorter-data-v2.tar.gz --directory "${OUTPUT}"
+
+echo "vpHMM_database_v3"
+rsync -ahrv --progress --partial "${BASE}"/hmmer_databases/vpHMM_database_v3.tar.gz "${OUTPUT}"
+tar xvzf "${OUTPUT}"/hmmer_databases/vpHMM_database_v3.tar.gz --directory "${OUTPUT}"/hmmer_databases
+
+echo "ete3_ncbi_tax"
+rsync -ahrv --progress --partial "${BASE}"/2020-07-01_ete3_ncbi_tax.sqlite.gz "${OUTPUT}"
+gunzip "${OUTPUT}"/2020-07-01_ete3_ncbi_tax.sqlite.gz
+
+echo "IMG_VR_2018-07-01_4"
+rsync -ahrv --progress --partial "${BASE}"/IMG_VR_2018-07-01_4.tar.gz "${OUTPUT}"
+tar xvzf "${OUTPUT}"/IMG_VR_2018-07-01_4.tar.gz --directory "${OUTPUT}"
 
 echo "Completed."

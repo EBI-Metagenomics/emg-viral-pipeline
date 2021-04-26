@@ -5,3 +5,4 @@ fasta_files:
 database:
   path: ../../../databases/IMG_VR_2018-07-01_4 
   class: Directory
+number_of_cpus: 4

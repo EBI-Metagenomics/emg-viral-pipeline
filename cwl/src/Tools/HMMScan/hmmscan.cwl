@@ -1,5 +1,5 @@
 #!/usr/bin/env cwl-runner
-cwlVersion: v1.2.0-dev4
+cwlVersion: v1.2
 class: CommandLineTool
 
 label: hmmscan wrapper
@@ -54,19 +54,23 @@ inputs:
     inputBinding:
       position: 5
       separate: true
+  number_of_cpus:
+    type: int?
+    default: 4
+    inputBinding:
+      separate: true
+      position: 2
+      prefix: "--cpu"
 
 arguments:
-  - prefix: -E
+  - prefix: "-E"
     valueFrom: "0.001"
     position: 2
-  - prefix: --domtblout
+  - prefix: "--domtblout"
     valueFrom: $(inputs.aa_fasta_file.nameroot)_hmmscan.tbl
     position: 3
-  - valueFrom: --noali
+  - valueFrom: "--noali"
     position: 1
-  - prefix: --cpu
-    valueFrom: $(runtime.cores)
-    position: 2
 
 outputs:
   output_table:

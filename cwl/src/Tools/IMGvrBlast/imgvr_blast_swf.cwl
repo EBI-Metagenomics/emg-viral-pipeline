@@ -1,5 +1,5 @@
 #!/usr/bin/env cwl-runner
-cwlVersion: v1.2.0-dev4
+cwlVersion: v1.2
 class: Workflow
 
 label: IMG/VR blast
@@ -19,6 +19,9 @@ inputs:
   database:
     type: Directory
     doc: IMG/VR blast db
+  number_of_cpus:
+    type: int?
+    default: 12
 
 steps:
   blast:
@@ -28,6 +31,7 @@ steps:
     in:
       query: fasta_files
       database: database
+      number_of_cpus: number_of_cpus
     out:
       - blast_result
       - blast_result_filtered

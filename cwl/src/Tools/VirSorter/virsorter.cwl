@@ -1,10 +1,12 @@
 #!/usr/bin/env cwl-runner
-cwlVersion: v1.2.0-dev4
+cwlVersion: v1.2
 class: CommandLineTool
 
 label: VirSorter
 
 hints:
+  ResourceRequirement:
+    coresMin: $(inputs.number_of_cpus)
   DockerRequirement:
     dockerPull: "docker.io/microbiomeinformatics/virsorter:1.0.6"
 
@@ -40,7 +42,7 @@ inputs:
     inputBinding:
       separate: true
       prefix: "--wdir"
-  number_of_cpu:
+  number_of_cpus:
     type: int?
     default: 8
     inputBinding:
@@ -74,9 +76,6 @@ stdout: stdout.txt
 stderr: stderr.txt
 
 outputs:
-  stdout: stdout
-  stderr: stderr
-
   virsorter_fastas:
     type: File[]
     format: edam:format_1929

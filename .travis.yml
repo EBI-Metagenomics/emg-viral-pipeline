@@ -5,7 +5,7 @@ services:
   - docker
 
 install:
-  - pip install -r cwl/requirements/pip_requirements.txt
+  - pip install -r cwl/requirements/pip_test_requirements.txt
 
 script:
   # CWL validation
