@@ -4,6 +4,8 @@
 ![](https://img.shields.io/badge/uses-conda-yellow.svg)
 [![Build Status](https://travis-ci.org/EBI-Metagenomics/emg-viral-pipeline.svg?branch=master)](https://travis-ci.org/EBI-Metagenomics/emg-viral-pipeline)
 
+<img align="right" width="140" height="140" src="figures/virify_logo.png">
+
 1. [ VIRify pipeline ](#virify)
 2. [ CWL execution ](#cwl)
 3. [ Nextflow execution ](#nf)
