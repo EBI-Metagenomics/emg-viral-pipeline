@@ -16,30 +16,16 @@ VIRify is a recently developed pipeline for the detection, annotation, and taxon
 
 <a name="cwl"></a>
 
-# CWL
-VIRify was implemented in CWL. 
+# Common Workflow Language
+VIRify was implemented in [Common Workflow Language (CWL)](https://www.commonwl.org/). 
 
 ## What do I need?
 
-The current implementation uses CWL version 1.2 dev+2. It was tested using Toil version 4.10 as the workflow engine and conda to manage the software dependencies.
+The current implementation uses CWL version 1.2. It was tested using Toil version 5.3.0 as the workflow engine and conda to manage the software dependencies.
 
-### Docker - Singularity support
+## How?
 
-Soon...
-
-## Setup environment
-
-```bash
-conda env create -f cwl/requirements/conda_env.yml
-conda activate viral_pipeline
-```
-
-## Basic execution
-
-```bash
-cd cwl/
-virify.sh -h
-```
+For instructions go to the [CWL README](cwl/README.md)
 
 <a name="nf"></a>
 

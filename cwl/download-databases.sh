@@ -63,12 +63,13 @@ echo "Fetching and decompressing the files"
 echo "Virsorter data v2"
 
 rsync -ahrv --progress --partial "${BASE}"virsorter-data-v2.tar.gz "${OUTPUT}"
-
 tar xvzf "${OUTPUT}"/virsorter-data-v2.tar.gz --directory "${OUTPUT}"
 
 echo "vpHMM_database_v3"
+
 rsync -ahrv --progress --partial "${BASE}"/hmmer_databases/vpHMM_database_v3.tar.gz "${OUTPUT}"
-tar xvzf "${OUTPUT}"/hmmer_databases/vpHMM_database_v3.tar.gz --directory "${OUTPUT}"/hmmer_databases
+mkdir -p "${OUTPUT}"/hmmer_databases
+tar xvzf "${OUTPUT}"/vpHMM_database_v3.tar.gz --directory "${OUTPUT}"/hmmer_databases
 
 echo "ete3_ncbi_tax"
 rsync -ahrv --progress --partial "${BASE}"/2020-07-01_ete3_ncbi_tax.sqlite.gz "${OUTPUT}"

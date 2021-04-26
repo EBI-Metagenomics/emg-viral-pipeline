@@ -23,7 +23,7 @@ The `init.sh` file is meant to set some env variables needed for the execution, 
 After installing docker or singularity you will need some python package in you system:
 
 ```bash
-pip install -r /requirementspip_requirements.txt
+pip install -r requirements/pip_requirements.txt
 ```
 
 ### Databases

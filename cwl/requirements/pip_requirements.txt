@@ -7,7 +7,7 @@ ruamel.yaml==0.16.5
 
 rdflib==4.2.2
 html5lib==1.0.1
-toil==5.3.0
+toil[cwl]==5.3.0
 # patch for toil issue: https://github.com/DataBiosphere/toil/issues/3565
 # boto and boto3 are not used.
 boto==2.49.0
