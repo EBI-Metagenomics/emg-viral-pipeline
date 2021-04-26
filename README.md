@@ -1,8 +1,8 @@
-![](https://img.shields.io/badge/CWL-1.2.0--dev2-green)
+![](https://img.shields.io/badge/CWL-1.2-green)
 ![](https://img.shields.io/badge/nextflow-20.01.0-brightgreen)
 ![](https://img.shields.io/badge/uses-docker-blue.svg)
 ![](https://img.shields.io/badge/uses-conda-yellow.svg)
-[![Build Status](https://travis-ci.org/EBI-Metagenomics/emg-viral-pipeline.svg?branch=master)](https://travis-ci.org/EBI-Metagenomics/emg-viral-pipeline)
+[![Build Status](https://travis-ci.com/EBI-Metagenomics/emg-viral-pipeline.svg?branch=master)](https://travis-ci.com/EBI-Metagenomics/emg-viral-pipeline)
 
 <img align="right" width="140" height="140" src="figures/virify_logo.png">
 
