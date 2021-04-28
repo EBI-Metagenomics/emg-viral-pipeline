@@ -304,7 +304,7 @@ outputs:
   virfinder_output:
     outputSource: restore_tools_outputs_names/virfinder_results_restored
     type: File
-  ratio_evalue:
+  ratio_evalue_output:
     outputSource: ratio_evalue/informative_table
     type: File
   # fully analized files
