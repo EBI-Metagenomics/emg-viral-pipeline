@@ -483,7 +483,9 @@ workflow plot {
         }
 
         // balloon plot
-        balloon(combined_assigned_lineages_ch)
+        if (params.balloon) {
+          balloon(combined_assigned_lineages_ch)
+        }
 }
 
 
@@ -644,7 +646,8 @@ def helpMSG() {
     --virome            VirSorter parameter, set when running a data set mostly composed of viruses [default: $params.virome]
     --hmmextend         Use additional databases for more hmmscan results [default: $params.hmmextend]
     --blastextend       Use additional BLAST database (IMG/VR) for more annotation [default: $params.blastextend]
-    --chromomap         WIP feature [default: $params.chromomap]
+    --chromomap         WIP feature to activate chromomap plot [default: $params.chromomap]
+    --balloon           WIP feature to activate balloon plot [default: $params.balloonp]
     --length            Initial length filter in kb [default: $params.length]
     --sankey            select the x taxa with highest count for sankey plot, try and error to change plot [default: $params.sankey]
     --chunk             WIP: chunk FASTA files into smaller pieces for parallel calculation [default: $params.chunk]
