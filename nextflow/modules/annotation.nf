@@ -1,13 +1,13 @@
 process annotation {
-      //publishDir "${params.output}/${name}/${params.finaldir}", mode: 'copy', pattern: "*_prot_ann_table.tsv"
-      publishDir "${params.output}/${name}/${params.finaldir}/annotation/", mode: 'copy', pattern: "*_prot_ann_table.tsv"
+      //publishDir "${params.output}/${name}/${params.finaldir}", mode: 'copy', pattern: "*_annotation.tsv"
+      publishDir "${params.output}/${name}/${params.finaldir}/annotation/", mode: 'copy', pattern: "*_annotation.tsv"
       label 'annotation'
 
     input:
       tuple val(name), val(set_name), file(tab), file(faa) 
     
     output:
-      tuple val(name), val(set_name), file("*_prot_ann_table.tsv")
+      tuple val(name), val(set_name), file("*_annotation.tsv")
     
     script:
     """

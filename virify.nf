@@ -39,7 +39,7 @@ println " "
 println "\033[2mOnly run annotation: $params.onlyannotate\u001B[0m"
 println " "
         
-if( !nextflow.version.matches('20.01+') ) {
+if( !nextflow.version.matches('>=20.01')) {
     println "This workflow requires Nextflow version 20.01 or greater -- You are running version $nextflow.version"
     exit 1
 }
@@ -131,14 +131,14 @@ include {blast_filter} from './nextflow/modules/blast_filter'
 include {mashmap} from './nextflow/modules/mashmap'
 
 //visuals
-include plot_contig_map from './nextflow/modules/plot_contig_map' 
-include generate_krona_table from './nextflow/modules/krona' 
-include generate_sankey_table from './nextflow/modules/sankey'
-include generate_chromomap_table from './nextflow/modules/chromomap'
-include krona from './nextflow/modules/krona'
-include sankey from './nextflow/modules/sankey'
-include chromomap from './nextflow/modules/chromomap'
-include balloon from './nextflow/modules/balloon'
+include {plot_contig_map} from './nextflow/modules/plot_contig_map' 
+include {generate_krona_table} from './nextflow/modules/krona' 
+include {generate_sankey_table} from './nextflow/modules/sankey'
+include {generate_chromomap_table} from './nextflow/modules/chromomap'
+include {krona} from './nextflow/modules/krona'
+include {sankey} from './nextflow/modules/sankey'
+include {chromomap} from './nextflow/modules/chromomap'
+include {balloon} from './nextflow/modules/balloon'
 
 //include './modules/kaiju' params(output: params.output, illumina: params.illumina, fasta: params.fasta)
 //include './modules/filter_reads' params(output: params.output)
@@ -483,7 +483,9 @@ workflow plot {
         }
 
         // balloon plot
-        balloon(combined_assigned_lineages_ch)
+        if (params.balloon) {
+          balloon(combined_assigned_lineages_ch)
+        }
 }
 
 
@@ -644,7 +646,8 @@ def helpMSG() {
     --virome            VirSorter parameter, set when running a data set mostly composed of viruses [default: $params.virome]
     --hmmextend         Use additional databases for more hmmscan results [default: $params.hmmextend]
     --blastextend       Use additional BLAST database (IMG/VR) for more annotation [default: $params.blastextend]
-    --chromomap         WIP feature [default: $params.chromomap]
+    --chromomap         WIP feature to activate chromomap plot [default: $params.chromomap]
+    --balloon           WIP feature to activate balloon plot [default: $params.balloonp]
     --length            Initial length filter in kb [default: $params.length]
     --sankey            select the x taxa with highest count for sankey plot, try and error to change plot [default: $params.sankey]
     --chunk             WIP: chunk FASTA files into smaller pieces for parallel calculation [default: $params.chunk]
