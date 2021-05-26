@@ -1,3 +1,7 @@
+contigs:
+  path: contigs.fasta
+  class: File
+  format: http://edamontology.org/format_1929
 high_confidence_contigs:
   path: high_conf.fasta
   class: File

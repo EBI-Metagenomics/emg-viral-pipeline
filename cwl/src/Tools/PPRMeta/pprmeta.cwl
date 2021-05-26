@@ -14,7 +14,7 @@ inputs:
   fasta_file:
     type: File
     label: contigs
-    format: edam:format_1929    
+    format: edam:format_1929
     inputBinding:
       prefix: "-f"
 

@@ -38,16 +38,12 @@ inputs:
       separate: true
       prefix: "-i"
 
-stderr: len_filter_stderr.txt
-stdout: len_filter_stdout.txt
-
 outputs:
   filtered_contigs_fasta:
     type: File
     format: edam:format_1929
     outputBinding:
-      glob: '*_filt*.fasta'
-
+      glob: "*_filt*.fasta"
 
 doc: |
   usage: filter_contigs_len.py [-h] -f input_file -l length_thres -o output_dir -i sample_id

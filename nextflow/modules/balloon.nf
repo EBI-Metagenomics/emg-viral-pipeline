@@ -12,7 +12,7 @@ process balloon {
     """
     if [[ "${set_name}" == "all" ]]; then
       # concat all taxonomy results per assembly regardless of HC, LC or PP
-      cat *_prodigal_prot_ann_table_tax_assign.tsv | grep -v contig_ID > tmp.tsv
+      cat *_annotation_taxonomy.tsv | grep -v contig_ID > tmp.tsv
       NAME=all
     else
       cp ${tbl} tmp.tsv

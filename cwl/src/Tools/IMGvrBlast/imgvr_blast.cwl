@@ -10,10 +10,12 @@ hints:
 
 requirements:
   InlineJavascriptRequirement: {}
+  ResourceRequirement:
+    coresMin: $(inputs.number_of_cpus)
   InitialWorkDirRequirement:
     listing:
-        - class: File
-          location: ../../../../bin/imgvr_blast.sh
+      - class: File
+        location: ../../../../bin/imgvr_blast.sh
 
 baseCommand: ["bash", "imgvr_blast.sh"]
 
@@ -27,6 +29,12 @@ inputs:
     format: edam:format_1929 
     inputBinding:
       prefix: "-q"
+  number_of_cpus:
+    type: int?
+    default: 12
+    inputBinding:
+      separate: true
+      prefix: "-c"
 
 arguments: 
   - prefix: "-o"
@@ -38,8 +46,6 @@ arguments:
           return "empty_imgvr_blast";
         }
       }
-  - prefix: "-c"
-    valueFrom: $(parseInt(runtime.cores))
 
 stdout: stdout
 stderr: stderr 

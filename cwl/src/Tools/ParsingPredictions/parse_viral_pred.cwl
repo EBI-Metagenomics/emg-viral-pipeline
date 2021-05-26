@@ -47,28 +47,25 @@ inputs:
       separate: true
       prefix: "-o"
 
-stdout: stdout.txt
-stderr: stderr.txt
+arguments:
+  - "-r"
 
 outputs:
-  stdout: stdout
-  stderr: stderr
-
   high_confidence_contigs:
     type: File?
     format: edam:format_1929
     outputBinding:
-      glob: "high_confidence_putative_viral_contigs.fna"
+      glob: "*high_confidence_viral_contigs.fna"
   low_confidence_contigs:
     type: File?
     format: edam:format_1929
     outputBinding:
-      glob: "low_confidence_putative_viral_contigs.fna"
+      glob: "*low_confidence_viral_contigs.fna"
   prophages_contigs:
     type: File?
     format: edam:format_1929
     outputBinding:
-      glob: "putative_prophages.fna"
+      glob: "*prophages.fna"
 
 doc: |
   usage: parse_viral_pred.py [-h] -a ASSEMB -f FINDER -s SORTER [-o OUTDIR]
@@ -87,6 +84,8 @@ doc: |
   -o OUTDIR, --outdir OUTDIR
                         Absolute or relative path of directory where output
                         viral prediction files should be stored (default: cwd)
+  -r, --prefix          Use the assembly filename as prefix for the outputs
+
 $namespaces:
  s: http://schema.org/
  edam: http://edamontology.org/

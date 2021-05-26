@@ -1,8 +1,10 @@
-![](https://img.shields.io/badge/CWL-1.2.0--dev2-green)
+![](https://img.shields.io/badge/CWL-1.2-green)
 ![](https://img.shields.io/badge/nextflow-20.01.0-brightgreen)
 ![](https://img.shields.io/badge/uses-docker-blue.svg)
 ![](https://img.shields.io/badge/uses-conda-yellow.svg)
-[![Build Status](https://travis-ci.org/EBI-Metagenomics/emg-viral-pipeline.svg?branch=master)](https://travis-ci.org/EBI-Metagenomics/emg-viral-pipeline)
+[![Build Status](https://travis-ci.com/EBI-Metagenomics/emg-viral-pipeline.svg?branch=master)](https://travis-ci.com/EBI-Metagenomics/emg-viral-pipeline)
+
+<img align="right" width="140" height="140" src="figures/virify_logo.png">
 
 1. [ VIRify pipeline ](#virify)
 2. [ CWL execution ](#cwl)
@@ -16,30 +18,16 @@ VIRify is a recently developed pipeline for the detection, annotation, and taxon
 
 <a name="cwl"></a>
 
-# CWL
-VIRify was implemented in CWL. 
+# Common Workflow Language
+VIRify was implemented in [Common Workflow Language (CWL)](https://www.commonwl.org/). 
 
 ## What do I need?
 
-The current implementation uses CWL version 1.2 dev+2. It was tested using Toil version 4.10 as the workflow engine and conda to manage the software dependencies.
+The current implementation uses CWL version 1.2. It was tested using Toil version 5.3.0 as the workflow engine and conda to manage the software dependencies.
 
-### Docker - Singularity support
+## How?
 
-Soon...
-
-## Setup environment
-
-```bash
-conda env create -f cwl/requirements/conda_env.yml
-conda activate viral_pipeline
-```
-
-## Basic execution
-
-```bash
-cd cwl/
-virify.sh -h
-```
+For instructions go to the [CWL README](cwl/README.md)
 
 <a name="nf"></a>
 

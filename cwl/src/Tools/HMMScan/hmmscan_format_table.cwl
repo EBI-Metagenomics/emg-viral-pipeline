@@ -17,8 +17,8 @@ requirements:
   InlineJavascriptRequirement: {}
   InitialWorkDirRequirement:
     listing:
-        - class: File
-          location: ../../../../bin/hmmscan_format_table.py
+      - class: File
+        location: ../../../../bin/hmmscan_format_table.py
 
 baseCommand: [ "python", "hmmscan_format_table.py" ]
 
@@ -29,17 +29,16 @@ inputs:
       prefix: "-t"
   output_name:
     type: string
-    inputBinding:
-      prefix: "-o"
-
-stdout: stdout.txt
-stderr: stderr.txt
+  
+arguments:
+  - "-o"
+  - valueFrom: $(inputs.output_name)_hmmer
 
 outputs:
   output_table:
     type: File
     outputBinding:
-      glob: $(inputs.output_name).tsv
+      glob: $(inputs.output_name)_hmmer.tsv
 
 $namespaces:
  edam: http://edamontology.org/

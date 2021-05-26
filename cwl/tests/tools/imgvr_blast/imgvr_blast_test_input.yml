@@ -5,3 +5,4 @@ query:
   class: File
   path: high_confidence_putative_viral_contigs.fna
   format: http://edamontology.org/format_1929
+number_of_cpus: 4

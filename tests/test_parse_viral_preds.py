@@ -1,14 +1,14 @@
 #!/bin/env python3
 
+import hashlib
 import os
-import unittest
 import shutil
 import tempfile
-import hashlib
+import unittest
 
-from bin.parse_viral_pred import (
-    parse_virus_sorter, _parse_virsorter_metadata,
-    parse_virus_finder, merge_annotations, main)
+from bin.parse_viral_pred import (_parse_virsorter_metadata, main,
+                                  merge_annotations, parse_virus_finder,
+                                  parse_virus_sorter)
 
 
 class ParseViralPredictions(unittest.TestCase):
@@ -127,23 +127,25 @@ class ParseViralPredictions(unittest.TestCase):
 
         vs_files = [os.path.join(vs_path, f) for f in os.listdir(vs_path)]
 
+        print(test_dir)
+
         main(pprmeta_path, vf_path, vs_files, assembly, test_dir)
 
-        with open(test_dir + "/high_confidence_putative_viral_contigs.fna", "rb") as hc_f:
+        with open(test_dir + "/high_confidence_viral_contigs.fna", "rb") as hc_f:
             with open(
                 self._build_path("/kleiner2015/expected/"
                                  "high_confidence_putative_viral_contigs.fna"), "rb") as hc_e:
                 self.assertEqual(hashlib.md5(hc_f.read()).hexdigest(),
                                  hashlib.md5(hc_e.read()).hexdigest())
 
-        with open(test_dir + "/low_confidence_putative_viral_contigs.fna", "rb") as lc_f:
+        with open(test_dir + "/low_confidence_viral_contigs.fna", "rb") as lc_f:
             with open(
                 self._build_path("/kleiner2015/expected/"
                                  "low_confidence_putative_viral_contigs.fna"), "rb") as lc_e:
                 self.assertEqual(hashlib.md5(lc_f.read()).hexdigest(),
                                  hashlib.md5(lc_e.read()).hexdigest())
 
-        with open(test_dir + "/putative_prophages.fna", "rb") as p_f:
+        with open(test_dir + "/prophages.fna", "rb") as p_f:
             with open(
                 self._build_path("/kleiner2015/expected/"
                                  "putative_prophages.fna"), "rb") as p_e:
@@ -176,14 +178,14 @@ class ParseViralPredictions(unittest.TestCase):
 
         main(pprmeta_path, vf_path, sorter_files, assembly, test_dir)
 
-        with open(test_dir + "/high_confidence_putative_viral_contigs.fna", "rb") as hc_f:
+        with open(test_dir + "/high_confidence_viral_contigs.fna", "rb") as hc_f:
             with open(
                 self._build_path("/virsorter_precedence/expected/"
                                  "/high_confidence_putative_viral_contigs.fna"), "rb") as hc_e:
                 self.assertEqual(hashlib.md5(hc_f.read()).hexdigest(),
                                  hashlib.md5(hc_e.read()).hexdigest())
 
-        with open(test_dir + "/low_confidence_putative_viral_contigs.fna", "rb") as lc_f:
+        with open(test_dir + "/low_confidence_viral_contigs.fna", "rb") as lc_f:
             content = lc_f.readlines()
             self.assertEqual(">seq1\n" in content, False)
             lc_f.seek(0)
@@ -193,7 +195,7 @@ class ParseViralPredictions(unittest.TestCase):
                 self.assertEqual(hashlib.md5(lc_f.read()).hexdigest(),
                                  hashlib.md5(lc_e.read()).hexdigest())
 
-        with open(test_dir + "/putative_prophages.fna", "rb") as p_f:
+        with open(test_dir + "/prophages.fna", "rb") as p_f:
             self.assertEqual(p_f.readline(), b">seq1 prophage-21696:135184\n")
             p_f.seek(0)
             with open(

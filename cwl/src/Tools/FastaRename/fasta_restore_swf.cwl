@@ -5,6 +5,9 @@ class: Workflow
 label: Restore contig names
 
 inputs:
+  contigs:
+    type: File
+    format: edam:format_1929
   high_confidence_contigs:
     type: File?
     format: edam:format_1929
@@ -19,6 +22,14 @@ inputs:
     format: edam:format_3475
 
 steps:
+  rename_contigs:
+    label: Restore filtered contigs names
+    run: fasta_restore.cwl
+    in:
+      input: contigs
+      name_map: name_map
+    out:
+      - restored_fasta  
   rename_hc:
     label: Restore high conf.
     run: fasta_restore.cwl
@@ -45,6 +56,10 @@ steps:
       - restored_fasta      
 
 outputs:
+  contigs_resnames:
+    type: File
+    format: edam:format_1929
+    outputSource: rename_contigs/restored_fasta
   high_confidence_contigs_resnames:
     type: File?
     format: edam:format_1929

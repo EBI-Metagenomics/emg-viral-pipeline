@@ -34,17 +34,13 @@ inputs:
       prefix: "-t"
     doc: |
       tsv with the HMM
+
 outputs:
-  stdout: stdout
-  stderr: stderr
   informative_table:
     type: File
     format: edam:format_3475
     outputBinding:
       glob: "*informative.tsv"
-
-stdout: stdout.txt
-stderr: stderr.txt
 
 $namespaces:
  s: http://schema.org/

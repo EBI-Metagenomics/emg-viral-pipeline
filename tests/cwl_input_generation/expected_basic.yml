@@ -1,28 +1,38 @@
 add_hmms_tsv:
   class: File
-  format: http://edamontology.org/format_3475
   path: dummy_hmms_tsv
-fasta_length_filter: '2.0'
-hmmscan_database_dir:
-  class: Directory
-  path: dummy_hmmscan_db
+  format: http://edamontology.org/format_3475
+h3f:
+  class: File
+  path: dummy_hmmscan_db.hmm.h3f
+h3i:
+  class: File
+  path: dummy_hmmscan_db.hmm.h3i
+h3m:
+  class: File
+  path: dummy_hmmscan_db.hmm.h3m
+h3p:
+  class: File
+  path: dummy_hmmscan_db.hmm.h3p
+hmmdb:
+  class: File
+  path: dummy_hmmscan_db.hmm
 img_blast_database_dir:
   class: Directory
   path: dummy_img_db
 input_fasta_file:
   class: File
-  format: http://edamontology.org/format_1929
   path: dummy_fasta.fasta
+  format: http://edamontology.org/format_1929
 ncbi_tax_db_file:
   class: File
   path: dummy_nbci_db
-pprmeta_simg:
-  class: File
-  path: dummy_pprmeta_simg
 virfinder_model:
   class: File
-  format: http://edamontology.org/format_2330
   path: dummty_virfinder_model
+  format: http://edamontology.org/format_2330
 virsorter_data_dir:
   class: Directory
   path: dummy_virsorter_dir
+
+fasta_length_filter: 2.0
