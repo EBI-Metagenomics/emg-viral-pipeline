@@ -1,6 +1,7 @@
 ![](https://img.shields.io/badge/CWL-1.2-green)
-![](https://img.shields.io/badge/nextflow-20.01.0-brightgreen)
+![](https://img.shields.io/badge/nextflow-21.04.0-brightgreen)
 ![](https://img.shields.io/badge/uses-docker-blue.svg)
+![](https://img.shields.io/badge/uses-singularity-red.svg)
 ![](https://img.shields.io/badge/uses-conda-yellow.svg)
 [![Build Status](https://travis-ci.com/EBI-Metagenomics/emg-viral-pipeline.svg?branch=master)](https://travis-ci.com/EBI-Metagenomics/emg-viral-pipeline)
 
@@ -35,7 +36,7 @@ For instructions go to the [CWL README](cwl/README.md)
 
 # Nextflow
 
-A Nextflow implementation of the VIRify pipeline. In the backend, the same scripts are used as in the CWL implementation. Main implementation done by [hoelzer](http://github.com/hoelzer).
+A Nextflow implementation of the VIRify pipeline. In the backend, the same scripts are used as in the CWL implementation.
 
 ## What do I need?
 
