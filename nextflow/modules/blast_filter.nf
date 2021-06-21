@@ -1,7 +1,7 @@
 process blast_filter {
       publishDir "${params.output}/${assembly_name}/${params.blastdir}/", mode: 'copy', pattern: "*.meta"
       publishDir "${params.output}/${assembly_name}/${params.finaldir}/blast/", mode: 'copy', pattern: "*.meta"
-      label 'ruby'
+      label 'python3'
 
       errorStrategy 'retry'
       maxRetries 1
