@@ -29,7 +29,12 @@ usage () {
     echo "-s mashmap reference file fasta or fastq (.gz) (optional)"
     echo "-r Restart workdir path. "
     echo "   Path to the job work dir for restart.Toil will raise an expection if the work directory doesn't exist"
-    echo "-l Run the worklfow locally using containters (singularity) for dev purposes"
+    echo "-p Execution profile:"
+    echo " LOCAL to run the pipeline locally with no batch scheduler."
+    echo " EMBASSY to run it using Slurm and Docker"
+    echo " CODON to run it using LSF and Singularity"
+    echo ""
+    echo ""
     echo "-t Use cwltool to run the pipeline."
     echo ""
     echo "Example:
@@ -52,11 +57,10 @@ MASHMAP_REFERENCE=""
 ENV_SCRIPT=""
 LEN_FILTER="1.0"
 RESTART=""
-MODE="EBI"
-CLUSTER_BATCH_SYSTEM="slurm"
+PROFILE=""
 CWLTOOL=false
 
-while getopts "e:n:j:o:c:m:i:vs:r:f:lth" opt; do
+while getopts "e:n:j:o:c:m:i:vs:r:f:p:th" opt; do
   case $opt in
     e)
         ENV_SCRIPT="$OPTARG"
@@ -145,9 +149,15 @@ while getopts "e:n:j:o:c:m:i:vs:r:f:lth" opt; do
     r)
         RESTART="${OPTARG}"
         ;;
-    l)
-        # Local execution using docker
-        MODE="LOCAL"
+    p)
+        PROFILE="${OPTARG^^}"
+        if [[ "${PROFILE}" =~ ^(LOCAL|EMBASSY|CODON)$ ]]; then
+            echo "Profile selected: ${PROFILE}"
+        else
+            echo "Invalid profile, please select one of LOCAL, EMBASSY or CODON"
+            usage;
+            exit 1;
+        fi
         ;;
     t)
         CWLTOOL=true
@@ -213,7 +223,6 @@ then
     OUT_DIR="${OUT_DIR}/${NAME_RUN}_${TS}"
 
     # Prepare folders
-    mkdir -p "${TMPDIR}"
     mkdir -p "${LOG_DIR}"
     mkdir -p "${OUT_DIR}"
 
@@ -261,15 +270,16 @@ TOIL_PARAMS=(
     --disableProgress
 )
 
-if [ "${MODE}" = "CLUSTER" ];
+# Profiles #
+if [ "${PROFILE}" = "EMBASSY" ];
 then
     TOIL_PARAMS+=(
-        --batchSystem "${CLUSTER_BATCH_SYSTEM}"
+        --batchSystem slurm
         --disableCaching
     )
 fi
 
-if [ "${MODE}" = "EBI" ];
+if [ "${PROFILE}" = "CODON" ];
 then
     TOIL_PARAMS+=(
         --singularity
@@ -278,7 +288,7 @@ then
     )
 fi
 
-if [ "${MODE}" = "LOCAL" ];
+if [ "${PROFILE}" = "LOCAL" ];
 then
     TOIL_PARAMS+=(--no-container)
 fi
