@@ -1,6 +1,7 @@
 ![](https://img.shields.io/badge/CWL-1.2-green)
-![](https://img.shields.io/badge/nextflow-20.01.0-brightgreen)
+![](https://img.shields.io/badge/nextflow-21.04.0-brightgreen)
 ![](https://img.shields.io/badge/uses-docker-blue.svg)
+![](https://img.shields.io/badge/uses-singularity-red.svg)
 ![](https://img.shields.io/badge/uses-conda-yellow.svg)
 [![Build Status](https://travis-ci.com/EBI-Metagenomics/emg-viral-pipeline.svg?branch=master)](https://travis-ci.com/EBI-Metagenomics/emg-viral-pipeline)
 
@@ -14,7 +15,9 @@
 
 # VIRify
 ![Sankey plot](nextflow/figures/sankey.png)
-VIRify is a recently developed pipeline for the detection, annotation, and taxonomic classification of viral contigs in metagenomic and metatranscriptomic assemblies. The pipeline is part of the repertoire of analysis services offered by [MGnify](https://www.ebi.ac.uk/metagenomics/). VIRify’s taxonomic classification relies on the detection of taxon-specific profile hidden Markov models (HMMs), built upon a set of 22,014 orthologous protein domains and referred to as ViPhOGs. 
+VIRify is a recently developed pipeline for the detection, annotation, and taxonomic classification of viral contigs in metagenomic and metatranscriptomic assemblies. The pipeline is part of the repertoire of analysis services offered by [MGnify](https://www.ebi.ac.uk/metagenomics/). VIRify’s taxonomic classification relies on the detection of taxon-specific profile hidden Markov models (HMMs), built upon a set of 22,014 orthologous protein domains and [referred to as ViPhOGs](https://doi.org/10.3390/v13061164). 
+
+The pipeline is implemented and available in [CWL](#cwl) and [Nextflow](#nf).
 
 <a name="cwl"></a>
 
@@ -32,13 +35,12 @@ For instructions go to the [CWL README](cwl/README.md)
 <a name="nf"></a>
 
 # Nextflow
-Email: hoelzer.martin@gmail.com
 
-A nextflow implementation of the VIRify pipeline for the detection of viruses from metagenomic assemblies. The same scripts are used in the CWL and Nextflow implementation. 
+A Nextflow implementation of the VIRify pipeline. In the backend, the same scripts are used as in the CWL implementation.
 
 ## What do I need?
 
-This pipeline runs with the workflow manager [Nextflow](https://www.nextflow.io/) using [Docker](https://docs.docker.com/v17.09/engine/installation/linux/docker-ce/ubuntu/#install-docker-ce) (Conda will be implemented soonish, hopefully). All other programs and databases are automatically downloaded by Nextflow. _Attention_, the workflow will download databases with a size of roughly 19 GB (49 GB with `--hmmextend` and `--blastextend`) the first time it is executed. 
+This pipeline runs with the workflow manager [Nextflow](https://www.nextflow.io/) and needs as second dependency either [Docker](https://docs.docker.com/v17.09/engine/installation/linux/docker-ce/ubuntu/#install-docker-ce) or [Singularity](https://sylabs.io/guides/3.0/user-guide/quick_start.html). Conda will be implemented soonish, hopefully. However, we highly recommend the usage of the stable containers. All other programs and databases are automatically downloaded by Nextflow. _Attention_, the workflow will download databases with a size of roughly 19 GB (49 GB with `--hmmextend` and `--blastextend`) the first time it is executed. 
 
 ### Install Nextflow
 ```bash
@@ -55,10 +57,20 @@ sudo usermod -a -G docker $USER
 * restart your computer
 * see [more instructions about Docker](https://docs.docker.com/v17.09/engine/installation/linux/docker-ce/ubuntu/#install-docker-ce)
 
+### Install Singularity
+
+While singularity can be installed via Conda, we recommend setting up a _true_ Singularity installation. For HPCs, ask the system administrator you trust. [Here](https://github.com/hpcng/singularity/blob/master/INSTALL.md) is also a good manual to get you started. _Please note_: you only need Docker or Singularity. 
 
 ## Basic execution
 
-Simply clone this repository or get or update the workflow via Nextflow:
+Simply clone this repository and execute `virify.nf`:
+```bash
+git clone https://github.com/EBI-Metagenomics/emg-viral-pipeline.git
+cd emg-viral-pipeline
+nextflow run virify.nf --help
+```
+
+or (__recommended__) let Nextflow handle the installation. With the same command you can update the pipeline.
 ```bash
 nextflow pull EBI-Metagenomics/emg-viral-pipeline
 ```
@@ -68,17 +80,25 @@ Get help:
 nextflow run EBI-Metagenomics/emg-viral-pipeline --help
 ```
 
-Pull and run a certain release:
+We __highly recommend__ to run stable releases, also for reproducibility:
 ```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.1 --help
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.2.0 --help
 ```
 
-Run annotation for a small assembly file (10 contigs, 0.78 Mbp) on your local machine (`--cores 4`; takes approximately 10min + time for database download; ~19 GB on a 8 core i7 laptop):
+Run annotation for a small assembly file (10 contigs, 0.78 Mbp) on your local machine using Docker containers (per default `--cores 4`; takes approximately 10 min on a 8 core i7 laptop + time for database download; ~19 GB):
 ```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" --cores 4 -profile local,docker
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.2.0 --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" --cores 4 -profile local,docker
 ```
 
-EBI cluster:
+__Please note__ that in particular further parameters such as 
+
+* `--workdir` or `-w` (here your work directories will be save)
+* `--databases` (here your databases will be saved and the workflow checks if they are already available)
+* `--cachedir` (here Singularity containers will be cached, not needed for Docker)
+
+are important to handle where Nextflow writes files. 
+
+Execution specific for the EBI cluster:
 ```bash
 source /hps/nobackup2/production/metagenomics/virus-pipeline/CONFIG 
 
@@ -89,24 +109,30 @@ DIR=$PWD
 cd $OUTPUT
 # this will pull the pipeline if it is not already available
 # use `nextflow pull EBI-Metagenomics/emg-viral-pipeline` to update the pipeline
-nextflow run EBI-Metagenomics/emg-viral-pipeline --fasta "/homes/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" --output $OUTPUT --workdir $OUTPUT/work $DATABASES --cachedir $SINGULARITY -profile ebi
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.2.0 \
+--fasta "/homes/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" \
+--output $OUTPUT --workdir $OUTPUT/work --databases $DATABASES \
+--cachedir $SINGULARITY -profile ebi
 cd $DIR
 ```
 
 
 ## Profiles
 
-The Nextflow uses the merged profile handling system so you have to define an executor (`local`, `lsf`, `slurm`) and an engine (`docker`, `singularity`, `conda`). 
+Nextflow uses a merged profile handling system so you have to define an executor (e.g., `local`, `lsf`, `slurm`) and an engine (`docker`, `singularity`) to run the pipeline according to your needs and infrastructure 
 
-Per default, the workflow is run with Docker-support. When you execute the workflow on a HPC you can switch to 
+Per default, the workflow runs locally (e.g. on your laptop) with Docker. When you execute the workflow on a HPC you can for example switch to a specific job scheduler and Singularity instead of Docker:
+
 * SLURM (``-profile slurm,singularity``)
 * LSF (``-profile lsf,singularity``)
-and then you should also define the parameters
-* `--workdir` (here your work directories will be save)
-* `--databases` (here your databases will be saved and the workflow checks if they are already available)
-* `--cachedir` (here Docker/Singularity containers will be cached)
 
-The engine `conda` is not working at the moment until there is a conda recipe for PPR-Meta. Sorry. Use Docker. Please. Or install PPR-Meta by yourself.  
+Dont forget, especially on an HPC, to define further important parameters such as
+
+* `--workdir` or `-w` (here your work directories will be save)
+* `--databases` (here your databases will be saved and the workflow checks if they are already available)
+* `--cachedir` (here Singularity containers will be cached)
+
+The engine `conda` is not working at the moment until there is a conda recipe for PPR-Meta. Sorry. Use Docker. Please. Or install PPR-Meta by yourself and then use the `conda` profile.  
 
 ## DAG chart
 
@@ -123,3 +149,9 @@ Although VIRify has been benchmarked and validated with metagenomic data in mind
 <b>3. Post-processing:</b> Metatranscriptomes generate highly fragmented assemblies. Therefore, filtering contigs based on a set minimum length has a substantial impact in the number of contigs processed in VIRify. It has also been observed that the number of false-positive detections of [VirFinder](https://github.com/jessieren/VirFinder/releases) (one of the tools included in VIRify) is lower among larger contigs. The choice of a length threshold will depend on the complexity of the sample and the sequencing technology used, but in our experience any contigs <2 kb should be analysed with caution.
 
 <b>4. Classification:</b> The classification module of VIRify depends on the presence of a minimum number and proportion of phylogenetically-informative genes within each contig in order to confidently assign a taxonomic lineage. Therefore, short contigs typically obtained from metatranscriptome assemblies remain generally unclassified. For targeted classification of RNA viruses (for instance, to search for Coronavirus-related sequences), alternative DNA- or protein-based classification methods can be used. Two of the possible options are: (i) using [MashMap](https://github.com/marbl/MashMap/releases) to screen the VIRify contigs against a database of RNA viruses (e.g. Coronaviridae) or (ii) using [hmmsearch](http://hmmer.org/download.html) to screen the proteins obtained in the VIRify contigs against marker genes of the taxon of interest.
+
+# Cite
+
+If you use VIRify in your work, please cite:
+
+[TBA](https://www.lipsum.com/)

@@ -1,6 +1,6 @@
 process assign {
-      publishDir "${params.output}/${name}/${params.taxdir}", mode: 'copy', pattern: "*tax_assign.tsv"
-      publishDir "${params.output}/${name}/${params.finaldir}/taxonomy", mode: 'copy', pattern: "*tax_assign.tsv"
+      publishDir "${params.output}/${name}/${params.taxdir}", mode: 'copy', pattern: "*_taxonomy.tsv"
+      publishDir "${params.output}/${name}/${params.finaldir}/taxonomy", mode: 'copy', pattern: "*_taxonomy.tsv"
       label 'assign'
 
     input:
@@ -8,7 +8,7 @@ process assign {
       file(db)
     
     output:
-      tuple val(name), val(set_name), file("*tax_assign.tsv")
+      tuple val(name), val(set_name), file("*_taxonomy.tsv")
     
     script:
     """
