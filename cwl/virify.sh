@@ -229,7 +229,7 @@ then
     set +x
 
     # Prepare the yaml file
-    YML_INPUT="${NAME_RUN}_${TS}_input.yaml"
+    YML_INPUT="${OUT_DIR}/${NAME_RUN}_${TS}_input.yaml"
 
     CWL_PARAMS=(
         -i "${INPUT_FASTA}"
