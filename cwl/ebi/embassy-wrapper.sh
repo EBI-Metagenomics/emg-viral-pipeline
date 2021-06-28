@@ -117,4 +117,5 @@
         -f "${LEN_FILTER}" \
         -c "${CORES}" \
         -m "${MEMORY}" \
-        -i "${INPUT_FASTA}"
+        -i "${INPUT_FASTA}" \
+        -p embassy
