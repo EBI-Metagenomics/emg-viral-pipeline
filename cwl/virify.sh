@@ -204,7 +204,7 @@ then
 
     set -x
 
-    TS="$(date +"%Y-%m-%d_%H-%M-%S")"
+    TS="$(date +"%Y-%m-%d_%H-%M")"
 
     # Prefix the path to make it easier to clean
     TMPDIR="${TMPDIR:-/scratch}/${NAME_RUN}_${TS}"
@@ -296,7 +296,6 @@ then
         --logFile "${LOG_DIR}/${NAME_RUN}.log"
         --rotatingLogging
         --jobStore "${JOB_DIR}"
-        --enable-dev
         "${SCRIPT_DIR}/src/pipeline.cwl"
         "${YML_INPUT}"
     )
