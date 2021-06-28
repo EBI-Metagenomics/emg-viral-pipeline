@@ -6,12 +6,13 @@ label: blast against IMG/VR
 
 hints:
   DockerRequirement:
-    dockerPull: "docker.io/microbiomeinformatics/blast:v2.9.0"
+    dockerPull: "microbiomeinformatics/blast:v2.9.0"
 
 requirements:
   InlineJavascriptRequirement: {}
   ResourceRequirement:
     coresMin: $(inputs.number_of_cpus)
+    ramMin: 9536
   InitialWorkDirRequirement:
     listing:
       - class: File

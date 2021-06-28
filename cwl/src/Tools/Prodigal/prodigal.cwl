@@ -8,7 +8,7 @@ doc: Protein-coding gene prediction for prokaryotic genomes
 
 hints:
   DockerRequirement:
-    dockerPull: "docker.io/microbiomeinformatics/prodigal:v2.6.3"
+    dockerPull: "microbiomeinformatics/prodigal:v2.6.3"
   SoftwareRequirement:
     packages:
       prodigal:

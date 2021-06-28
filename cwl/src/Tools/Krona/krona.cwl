@@ -6,7 +6,7 @@ label: Krona
 
 hints:
   DockerRequirement:
-    dockerPull: "docker.io/microbiomeinformatics/krona:v2.7.1"
+    dockerPull: "microbiomeinformatics/krona:v2.7.1"
 
 baseCommand: ["ktImportText"]
 

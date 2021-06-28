@@ -79,4 +79,10 @@ echo "IMG_VR_2018-07-01_4"
 rsync -ahrv --progress --partial "${BASE}"/IMG_VR_2018-07-01_4.tar.gz "${OUTPUT}"
 tar xvzf "${OUTPUT}"/IMG_VR_2018-07-01_4.tar.gz --directory "${OUTPUT}"
 
+echo "VirFinder metadata"
+rsync -ahrv --progress --partial "${BASE}"/virfinder/* "${OUTPUT}/virfinder"
+
+echo "Additional Metadata version 2"
+rsync -ahrv --progress --partial "${BASE}"/additional_data_vpHMMs_v2.tsv "${OUTPUT}/additional_data_vpHMMs_v2.tsv"
+
 echo "Completed."
