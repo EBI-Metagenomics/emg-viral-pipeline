@@ -18,10 +18,8 @@ inputs:
     type: File?
     format: edam:format_1929  
   name_map:
-    type: File?
+    type: File
     format: edam:format_3475
-  proteins_rename_flag:
-    type: boolean?
 
 steps:
   rename_contigs:
@@ -38,7 +36,6 @@ steps:
     in:
       input: high_confidence_contigs
       name_map: name_map
-      proteins_rename: proteins_rename_flag
     out:
       - restored_fasta
   rename_lc:
@@ -47,7 +44,6 @@ steps:
     in:
       input: low_confidence_contigs
       name_map: name_map
-      proteins_rename: proteins_rename_flag
     out:
       - restored_fasta
   rename_p:
@@ -56,7 +52,6 @@ steps:
     in:
       input: prophages_contigs
       name_map: name_map
-      proteins_rename: proteins_rename_flag
     out:
       - restored_fasta
 
