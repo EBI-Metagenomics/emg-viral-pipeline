@@ -11,6 +11,7 @@
 # Production scripts and env
 VIRIFY_SH="/nfs/production/rdf/metagenomics/pipelines/prod/emg-viral-pipeline/cwl/virify.sh"
 ENV_FILE="/nfs/production/rdf/metagenomics/pipelines/prod/emg-viral-pipeline/cwl/ebi/codon-virify-env.sh"
+WORKDIR="/hps/nobackup/rdf/metagenomics/toil-workdir"
 
 set -e
 
@@ -78,7 +79,7 @@ fi
 ${VIRIFY_SH} \
 -e ${ENV_FILE} \
 -n "${NAME}" \
--j "${JOB_STORE}" \
+-j "${WORKDIR}" \
 -o "${RESULTS_FOLDER}" \
 -f "${LEN_FILTER}" \
 -p CODON \
