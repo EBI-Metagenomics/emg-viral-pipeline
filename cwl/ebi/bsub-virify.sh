@@ -10,7 +10,7 @@
 
 # Production scripts and env
 VIRIFY_SH="/nfs/production/rdf/metagenomics/pipelines/prod/emg-viral-pipeline/cwl/virify.sh"
-ENV_FILE="/nfs/production/rdf/metagenomics/pipelines/prod/emg-viral-pipeline/cwl/ebi/virify-env.sh"
+ENV_FILE="/nfs/production/rdf/metagenomics/pipelines/prod/emg-viral-pipeline/cwl/ebi/codon-virify-env.sh"
 
 set -e
 
