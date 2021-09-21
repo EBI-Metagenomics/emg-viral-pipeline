@@ -19,7 +19,7 @@ usage () {
     echo "Virify pipeline BSUB"
     echo "Example:"
     echo ""
-    echo "bsub-virify.sh -n test-run -i input_fasta -o /data/results/"
+    echo "bsub-virify.sh -n test-run -i input_fasta -o /data/results/ [-f 1,0]"
     echo ""
     echo "NOTE:"
     echo "- The results folder will be /data/results/{job_name}."
