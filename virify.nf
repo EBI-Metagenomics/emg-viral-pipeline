@@ -97,6 +97,7 @@ include {pvogsGetDB} from './nextflow/modules/pvogsGetDB'
 include {vogdbGetDB} from './nextflow/modules/vogdbGetDB' 
 include {vpfGetDB} from './nextflow/modules/vpfGetDB'
 include {imgvrGetDB} from './nextflow/modules/imgvrGetDB'
+include {checkvGetDB} from './nextflow/modules/checkvGetDB'
 //include './modules/kaijuGetDB' params(cloudProcess: params.cloudProcess, databases: params.databases)
 
 //preprocessing
@@ -139,6 +140,10 @@ include {krona} from './nextflow/modules/krona'
 include {sankey} from './nextflow/modules/sankey'
 include {chromomap} from './nextflow/modules/chromomap'
 include {balloon} from './nextflow/modules/balloon'
+
+//qc
+include { checkV } from './nextflow/modules/checkV'
+
 
 //include './modules/kaiju' params(output: params.output, illumina: params.illumina, fasta: params.fasta)
 //include './modules/filter_reads' params(output: params.output)
@@ -315,6 +320,19 @@ workflow download_imgvr_db {
   emit: db    
 }
 
+workflow download_checkv_db {
+    main:
+    // local storage via storeDir
+    if (!params.cloudProcess) { checkvGetDB(); db = checkvGetDB.out }
+    // cloud storage via db_preload.exists()
+    if (params.cloudProcess) {
+      db_preload = file("${params.databases}/checkv", type: 'dir')
+      if (db_preload.exists()) { db = db_preload }
+      else  { checkvGetDB(); db = checkvGetDB.out } 
+    }
+  emit: db    
+}
+
 /*
 workflow download_kaiju_db {
     main:
@@ -407,6 +425,7 @@ workflow annotate {
             vpf_db
             imgvr_db
             additional_model_data
+            checkv_db
 
     main:
         // ORF detection --> prodigal
@@ -447,6 +466,10 @@ workflow annotate {
         if (params.mashmap) {
             mashmap(predicted_contigs, mashmap_ref_ch)
         }
+
+        // checkV QC
+        checkV(predicted_contigs, checkv_db)
+
         
     predicted_contigs_filtered = predicted_contigs.map { id, set_name, fasta -> [set_name, id, fasta] }
     plot_contig_map_filtered = plot_contig_map.out.map { id, set_name, dir, table -> [set_name, table] }
@@ -563,6 +586,9 @@ workflow {
     if (params.imgvr) { imgvr_db = file(params.imgvr)} 
     else {download_imgvr_db(); imgvr_db = download_imgvr_db.out }
 
+    if (params.checkv) { checkv_db = file(params.checkv)} 
+    else {download_checkv_db(); checkv_db = download_checkv_db.out }
+
     //download_kaiju_db()
     //kaiju_db = download_kaiju_db.out
     /**************************************************************/
@@ -576,7 +602,7 @@ workflow {
             postprocess(
               preprocess(
                 fasta_input_ch).map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map)}
-              ), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data
+              ), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db
           )
         )
       } else {
@@ -587,7 +613,7 @@ workflow {
                     preprocess(fasta_input_ch),
                     virsorter_db, virfinder_db, pprmeta_git
                 )
-            ), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data
+            ), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db
           )
         )
       }
@@ -598,7 +624,7 @@ workflow {
       assemble_illumina(illumina_input_ch)    
       plot(
         annotate(
-          postprocess(detect(preprocess(assemble_illumina.out), virsorter_db, virfinder_db, pprmeta_git)), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data)
+          postprocess(detect(preprocess(assemble_illumina.out), virsorter_db, virfinder_db, pprmeta_git)), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db)
       )
     }
 }
@@ -640,6 +666,7 @@ def helpMSG() {
     --vogdb             the VOGDB, hmmpress'ed [default: $params.vogdb]
     --vpf               the VPF from IMG/VR, hmmpress'ed [default: $params.vpf]
     --ncbi              a NCBI taxonomy database, from ete3 import NCBITaxa, named ete3_ncbi_tax.sqlite [default: $params.ncbi]
+    --checkv            the CheckV reference database for virus QC [default: $params.checkv]
     --imgvr             the IMG/VR, viral (meta)genome sequences [default: $params.imgvr]
     --pprmeta           the PPR-Meta github [default: $params.pprmeta]
     --meta              the tsv dictionary w/ meta information about ViPhOG models [default: $params.meta]
