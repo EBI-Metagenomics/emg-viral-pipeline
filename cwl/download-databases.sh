@@ -85,4 +85,8 @@ rsync -ahrv --progress --partial "${BASE}"/virfinder/* "${OUTPUT}/virfinder"
 echo "Additional Metadata version 2"
 rsync -ahrv --progress --partial "${BASE}"/additional_data_vpHMMs_v2.tsv "${OUTPUT}/additional_data_vpHMMs_v2.tsv"
 
+echo "CheckV database"
+wget https://portal.nersc.gov/CheckV/checkv-db-v1.0.tar.gz
+tar -zxvf checkv-db-v1.0.tar.gz
+
 echo "Completed."

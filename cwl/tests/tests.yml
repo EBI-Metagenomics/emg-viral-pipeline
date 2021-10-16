@@ -1,4 +1,3 @@
-
 # Annotation
 - job: tools/annotation/viral_annotation_input.yml
   tool: ../src/Tools/Annotation/viral_annotation_swf.cwl
@@ -54,7 +53,7 @@
   doc: "HMMScan"
   output:
     output_table:
-      class: File 
+      class: File
       basename: test_name_hmmer.tsv
       checksum: sha1$b74e7278479d445527daac06bc95cdead5cbcc02
       location: Any
@@ -132,7 +131,7 @@
       size: 292
       format: http://edamontology.org/format_3475
 
-# VirFinder 
+# VirFinder
 - job: tools/virfinder/virfinder_test_input.yml
   tool: ../src/Tools/VirFinder/virfinder.cwl
   short_name: virfinder.cwl
@@ -158,32 +157,32 @@
         basename: VIRSorter_cat-1.fasta
         checksum: Any
         location: Any
-        path: Any  
+        path: Any
         size: 5448
       - class: File
         basename: VIRSorter_cat-2.fasta
         checksum: Any
         size: 37434
         location: Any
-        path: Any    
+        path: Any
       - class: File
         basename: VIRSorter_cat-3.fasta
         checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
         size: 0
         location: Any
-        path: Any    
+        path: Any
       - class: File
         basename: VIRSorter_prophages_cat-4.fasta
         checksum: Any
         size: 0
         location: Any
-        path: Any    
+        path: Any
       - class: File
         basename: VIRSorter_prophages_cat-5.fasta
         checksum: Any
         size: 0
         location: Any
-        path: Any    
+        path: Any
       - class: File
         basename: VIRSorter_prophages_cat-6.fasta
         checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
@@ -196,7 +195,7 @@
         checksum: Any
         size: 13292
         location: Any
-        path: Any    
+        path: Any
       - class: File
         basename: VIRSorter_cat-2.gb
         checksum: Any
@@ -220,7 +219,7 @@
         checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
         size: 0
         location: Any
-        path: Any    
+        path: Any
       - class: File
         basename: VIRSorter_prophages_cat-6.gb
         checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
@@ -262,51 +261,51 @@
       class: File
       location: Any
       path: Any
-      size: 920  
+      size: 920
     krona_htmls:
-    - basename: test_taxonomy_1_counts_krona.html
-      checksum: Any
-      class: File
-      location: Any
-      path: Any
-      size: 226995
-      format: http://edamontology.org/format_2331
-    - basename: test_taxonomy_2_counts_krona.html
-      checksum: Any
-      class: File
-      location: Any
-      path: Any
-      size: 228130
-      format: http://edamontology.org/format_2331
-    - basename: test_taxonomy_3_counts_krona.html
-      checksum: Any
-      class: File
-      location: Any
-      path: Any
-      size: 227237
-      format: http://edamontology.org/format_2331
+      - basename: test_taxonomy_1_counts_krona.html
+        checksum: Any
+        class: File
+        location: Any
+        path: Any
+        size: 226995
+        format: http://edamontology.org/format_2331
+      - basename: test_taxonomy_2_counts_krona.html
+        checksum: Any
+        class: File
+        location: Any
+        path: Any
+        size: 228130
+        format: http://edamontology.org/format_2331
+      - basename: test_taxonomy_3_counts_krona.html
+        checksum: Any
+        class: File
+        location: Any
+        path: Any
+        size: 227237
+        format: http://edamontology.org/format_2331
     krona_tables:
-    - basename: test_taxonomy_1_counts.tsv
-      checksum: sha1$e73033e6fac3b6023e87bc821dc13ce21e9596db
-      class: File
-      location: Any
-      path: Any
-      size: 165
-      format: http://edamontology.org/format_3475
-    - basename: test_taxonomy_2_counts.tsv
-      checksum: sha1$2cac08609b6b9f3b212109cc570de6263a8c0060
-      class: File
-      location: Any
-      path: Any
-      size: 541
-      format: http://edamontology.org/format_3475
-    - basename: test_taxonomy_3_counts.tsv
-      checksum: sha1$90dcd9a5a8bae670ff53c3e47ee27e9eed81c9a0
-      class: File
-      location: Any
-      path: Any
-      size: 214
-      format: http://edamontology.org/format_3475
+      - basename: test_taxonomy_1_counts.tsv
+        checksum: sha1$e73033e6fac3b6023e87bc821dc13ce21e9596db
+        class: File
+        location: Any
+        path: Any
+        size: 165
+        format: http://edamontology.org/format_3475
+      - basename: test_taxonomy_2_counts.tsv
+        checksum: sha1$2cac08609b6b9f3b212109cc570de6263a8c0060
+        class: File
+        location: Any
+        path: Any
+        size: 541
+        format: http://edamontology.org/format_3475
+      - basename: test_taxonomy_3_counts.tsv
+        checksum: sha1$90dcd9a5a8bae670ff53c3e47ee27e9eed81c9a0
+        class: File
+        location: Any
+        path: Any
+        size: 214
+        format: http://edamontology.org/format_3475
 
 # Fasta rename
 - job: tools/fasta_rename_restore/fasta_rename_test_input.yml
@@ -321,16 +320,15 @@
       path: Any
       class: File
       size: 48071
-      format: http://edamontology.org/format_3475  
+      format: http://edamontology.org/format_3475
     renamed_fasta:
       checksum: sha1$8f562c5b5152140f4a4891d74a13df4bb7313a51
-      basename: ERR575691_host_filtered_renamed.fasta 
+      basename: ERR575691_host_filtered_renamed.fasta
       location: Any
       path: Any
-      class: File 
+      class: File
       size: 2457631
       format: http://edamontology.org/format_1929
-
 
 # Fasta restore
 - job: tools/fasta_rename_restore/fasta_restore_test_input.yml
@@ -339,8 +337,8 @@
   doc: Fasta name restore
   output:
     restored_fasta:
-      checksum: sha1$952b544cb61be6576e18c129fddab1d3f3d881e6 
-      basename: ERR575691_host_filtered.fasta 
+      checksum: sha1$952b544cb61be6576e18c129fddab1d3f3d881e6
+      basename: ERR575691_host_filtered.fasta
       location: Any
       path: Any
       class: File
@@ -353,7 +351,7 @@
   short_name: fasta_restore.cwl
   doc: Fasta name restore (empty)
   output:
-    restored_fasta: null 
+    restored_fasta: null
 
 # Fasta rename contigs
 - job: tools/fasta_contig_restore/fasta_rename_test_input.yml
@@ -417,15 +415,15 @@
   output:
     blast_result:
       checksum: sha1$f8ffbf47f3101595d7a1985b8758299956da6086
-      basename: high_confidence_putative_viral_contigs_imgvr_blast.tsv 
+      basename: high_confidence_putative_viral_contigs_imgvr_blast.tsv
       location: Any
       path: Any
-      class: File 
+      class: File
       size: 510291
     blast_result_filtered:
       checksum: sha1$469a5ee86cd8fbf9c57061012a2a32b0675629a2
       basename: high_confidence_putative_viral_contigs_imgvr_blast_filtered.tsv
-      location: Any 
+      location: Any
       path: Any
       class: File
       size: 95
@@ -450,7 +448,7 @@
   short_name: imgvr_blast_swf.cwl
   doc: Blast with IMG/VR subworflow
   output:
-    blast_results: 
+    blast_results:
       - checksum: sha1$f8ffbf47f3101595d7a1985b8758299956da6086
         basename: high_confidence_putative_viral_contigs_imgvr_blast.tsv
         location: Any
@@ -469,7 +467,7 @@
         path: Any
         class: File
         size: 931615
-    blast_result_filtered: 
+    blast_result_filtered:
       - checksum: sha1$469a5ee86cd8fbf9c57061012a2a32b0675629a2
         basename: high_confidence_putative_viral_contigs_imgvr_blast_filtered.tsv
         location: Any
@@ -488,7 +486,7 @@
         path: Any
         class: File
         size: 749
-    merged_tsvs: 
+    merged_tsvs:
       - checksum: sha1$cf7b735ec7cf3497fc278ce2fec696d23a0b71bf
         basename: high_confidence_putative_viral_contigs_imgvr_blast_filtered_merged.tsv
         location: Any
@@ -506,7 +504,7 @@
         path: Any
         class: File
         size: 1854
- 
+
 # IMG/VR blast (empty)
 - job: tools/imgvr_blast/imgvr_blast_subwf_test_input_empty.yml
   tool: ../src/Tools/IMGvrBlast/imgvr_blast_swf.cwl
@@ -514,12 +512,12 @@
   doc: Blast with IMG/VR subworflow (empty)
   output:
     blast_result_filtered:
-      - basename: empty_imgvr_blast_filtered.tsv 
+      - basename: empty_imgvr_blast_filtered.tsv
         checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
         location: Any
         path: Any
-        class: File 
-        size: 0    
+        class: File
+        size: 0
     blast_results:
       - basename: empty_imgvr_blast.tsv
         checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
@@ -558,27 +556,27 @@
       format: http://edamontology.org/format_1929
       path: Any
     virsorter_results_restored:
-    - location: Any
-      basename: VIRSorter_cat-1.fasta
-      class: File
-      checksum: sha1$a95075ecced0a52abdae869496b9af80f11707bc
-      size: 100846
-      format: http://edamontology.org/format_1929
-      path: Any
-    - location: Any
-      basename: VIRSorter_cat-2.fasta
-      class: File
-      checksum: sha1$0a62f316af41c157ea99eebe65f9526c004c2ef2
-      size: 135309
-      format: http://edamontology.org/format_1929
-      path: Any
-    - location: Any
-      basename: VIRSorter_cat-3.fasta
-      class: File
-      checksum: sha1$f3b34e645d3134eb616b18b974a35fb0943f7605
-      size: 67034
-      format: http://edamontology.org/format_1929
-      path: Any
+      - location: Any
+        basename: VIRSorter_cat-1.fasta
+        class: File
+        checksum: sha1$a95075ecced0a52abdae869496b9af80f11707bc
+        size: 100846
+        format: http://edamontology.org/format_1929
+        path: Any
+      - location: Any
+        basename: VIRSorter_cat-2.fasta
+        class: File
+        checksum: sha1$0a62f316af41c157ea99eebe65f9526c004c2ef2
+        size: 135309
+        format: http://edamontology.org/format_1929
+        path: Any
+      - location: Any
+        basename: VIRSorter_cat-3.fasta
+        class: File
+        checksum: sha1$f3b34e645d3134eb616b18b974a35fb0943f7605
+        size: 67034
+        format: http://edamontology.org/format_1929
+        path: Any
 
 # MashMap
 - job: tools/mashmap/mashmap_test_input.yml
@@ -600,6 +598,54 @@
         path": Any
         size: 81
 
+# CheckV
+- job: tools/checkv/checkv_test_input.yml
+  tool: ../src/Tools/checkv/checkv.cwl
+  short_name: checkv.cwl
+  doc: CheckV
+  output:
+    quality_summary_table:
+      location: Any
+      basename: high_confidence_putative_viral_contigs_quality_summary.tsv
+      nameroot: high_confidence_putative_viral_contigs_quality_summary
+      nameext: .tsv
+      class: File
+      checksum: sha1$e29a2f70f6cbfbaabd8edb61e026536dae34921f
+      size: 440
+      format: http://edamontology.org/format_3751
+
+# CheckV - subworfklow
+- job: tools/checkv/checkv_swf_test_input.yml
+  tool: ../src/Tools/checkv/checkv_swf.cwl
+  short_name: checkv_swf.cwl
+  doc: CheckV
+  output:
+    quality_summary_tables:
+      - basename: high_confidence_putative_viral_contigs_quality_summary.tsv
+        checksum: sha1$e29a2f70f6cbfbaabd8edb61e026536dae34921f
+        class: File
+        format: http://edamontology.org/format_3751
+        location: Any
+        nameext: .tsv
+        nameroot: high_confidence_putative_viral_contigs_quality_summary
+        size: 440
+      - basename: putative_prophages_quality_summary.tsv
+        checksum: sha1$88b1051ec8361894e48114cbb245154131c2c58b
+        class: File
+        format: http://edamontology.org/format_3751
+        location: Any
+        nameext: .tsv
+        nameroot: putative_prophages_quality_summary
+        size: 489
+      - basename: low_confidence_putative_viral_contigs_quality_summary.tsv
+        checksum: sha1$893b63465f67e3ed150f96d84565e530a040a2cf
+        class: File
+        format: http://edamontology.org/format_3751
+        location: Any
+        nameext: .tsv
+        nameroot: low_confidence_putative_viral_contigs_quality_summary
+        size: 1906
+
 # Pipeline
 - job: workflows/pipeline_test_input.yml
   tool: ../src/pipeline.cwl
@@ -607,30 +653,30 @@
   doc: Whole pipeline
   output:
     blast_merged_tsvs:
-    - basename: empty_imgvr_blast_filtered_merged.tsv
-      checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
-      class: File
-      format: http://edamontology.org/format_3475
-      location: Any
-      nameext: ".tsv"
-      nameroot: empty_imgvr_blast_filtered_merged
-      size: 0
-    - basename: ERZXYZ_filt200bp_low_confidence_viral_contigs_imgvr_blast_filtered_merged.tsv
-      checksum: sha1$3b30d71550230e753dbe7a82051bf2911b1162a8
-      class: File
-      format: http://edamontology.org/format_3475
-      location: Any
-      nameext: ".tsv"
-      nameroot: ERZXYZ_filt200bp_low_confidence_viral_contigs_imgvr_blast_filtered_merged
-      size: 24320
-    - basename: empty_imgvr_blast_filtered_merged.tsv
-      checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
-      class: File
-      format: http://edamontology.org/format_3475
-      location: Any
-      nameext: ".tsv"
-      nameroot: empty_imgvr_blast_filtered_merged
-      size: 0
+      - basename: empty_imgvr_blast_filtered_merged.tsv
+        checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
+        class: File
+        format: http://edamontology.org/format_3475
+        location: Any
+        nameext: ".tsv"
+        nameroot: empty_imgvr_blast_filtered_merged
+        size: 0
+      - basename: ERZXYZ_filt200bp_low_confidence_viral_contigs_imgvr_blast_filtered_merged.tsv
+        checksum: sha1$3b30d71550230e753dbe7a82051bf2911b1162a8
+        class: File
+        format: http://edamontology.org/format_3475
+        location: Any
+        nameext: ".tsv"
+        nameroot: ERZXYZ_filt200bp_low_confidence_viral_contigs_imgvr_blast_filtered_merged
+        size: 24320
+      - basename: empty_imgvr_blast_filtered_merged.tsv
+        checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
+        class: File
+        format: http://edamontology.org/format_3475
+        location: Any
+        nameext: ".tsv"
+        nameroot: empty_imgvr_blast_filtered_merged
+        size: 0
     filtered_contigs:
       basename: ERZXYZ_filt200bp.fasta
       checksum: sha1$917ffb0f099e3755131e640b7f3344f9021c6daa
@@ -668,30 +714,30 @@
       nameroot: ERZXYZ_combined_taxonomy_counts_krona
       size: 226431
     krona_plots:
-    - basename: empty_predicted_cds_annotation_taxonomy_counts_krona.html
-      checksum: Any
-      class: File
-      format: http://edamontology.org/format_2331
-      location: Any
-      nameext: ".html"
-      nameroot: empty_predicted_cds_annotation_taxonomy_counts_krona
-      size: 226177
-    - basename: ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation_taxonomy_counts_krona.html
-      checksum: Any
-      class: File
-      format: http://edamontology.org/format_2331
-      location: Any
-      nameext: ".html"
-      nameroot: ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation_taxonomy_counts_krona
-      size: 226486
-    - basename: empty_predicted_cds_annotation_taxonomy_counts_krona.html
-      checksum: sha1$7e5ae89c073c5d938f6072884013b0bdcb9b84d6
-      class: File
-      format: http://edamontology.org/format_2331
-      location: Any
-      nameext: ".html"
-      nameroot: empty_predicted_cds_annotation_taxonomy_counts_krona
-      size: 226177
+      - basename: empty_predicted_cds_annotation_taxonomy_counts_krona.html
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_2331
+        location: Any
+        nameext: ".html"
+        nameroot: empty_predicted_cds_annotation_taxonomy_counts_krona
+        size: 226177
+      - basename: ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation_taxonomy_counts_krona.html
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_2331
+        location: Any
+        nameext: ".html"
+        nameroot: ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation_taxonomy_counts_krona
+        size: 226486
+      - basename: empty_predicted_cds_annotation_taxonomy_counts_krona.html
+        checksum: sha1$7e5ae89c073c5d938f6072884013b0bdcb9b84d6
+        class: File
+        format: http://edamontology.org/format_2331
+        location: Any
+        nameext: ".html"
+        nameroot: empty_predicted_cds_annotation_taxonomy_counts_krona
+        size: 226177
     krona_table_all:
       basename: ERZXYZ_combined_taxonomy_counts.tsv
       checksum: sha1$1ed4bdb6a0c0bf5df2e768aba8452f7d5d8b747c
@@ -701,30 +747,30 @@
       nameroot: ERZXYZ_combined_taxonomy_counts
       size: 46
     krona_tables:
-    - basename: empty_predicted_cds_annotation_taxonomy_counts.tsv
-      checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
-      class: File
-      format: http://edamontology.org/format_3475
-      location: Any
-      nameext: ".tsv"
-      nameroot: empty_predicted_cds_annotation_taxonomy_counts
-      size: 0
-    - basename: ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation_taxonomy_counts.tsv
-      checksum: sha1$1ed4bdb6a0c0bf5df2e768aba8452f7d5d8b747c
-      class: File
-      format: http://edamontology.org/format_3475
-      location: Any
-      nameext: ".tsv"
-      nameroot: ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation_taxonomy_counts
-      size: 46
-    - basename: empty_predicted_cds_annotation_taxonomy_counts.tsv
-      checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
-      class: File
-      format: http://edamontology.org/format_3475
-      location: Any
-      nameext: ".tsv"
-      nameroot: empty_predicted_cds_annotation_taxonomy_counts
-      size: 0
+      - basename: empty_predicted_cds_annotation_taxonomy_counts.tsv
+        checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
+        class: File
+        format: http://edamontology.org/format_3475
+        location: Any
+        nameext: ".tsv"
+        nameroot: empty_predicted_cds_annotation_taxonomy_counts
+        size: 0
+      - basename: ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation_taxonomy_counts.tsv
+        checksum: sha1$1ed4bdb6a0c0bf5df2e768aba8452f7d5d8b747c
+        class: File
+        format: http://edamontology.org/format_3475
+        location: Any
+        nameext: ".tsv"
+        nameroot: ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation_taxonomy_counts
+        size: 46
+      - basename: empty_predicted_cds_annotation_taxonomy_counts.tsv
+        checksum: sha1$da39a3ee5e6b4b0d3255bfef95601890afd80709
+        class: File
+        format: http://edamontology.org/format_3475
+        location: Any
+        nameext: ".tsv"
+        nameroot: empty_predicted_cds_annotation_taxonomy_counts
+        size: 0
     low_confidence_contigs:
       basename: ERZXYZ_filt200bp_low_confidence_viral_contigs.fasta
       checksum: sha1$94d643ea04056ab967588dfce6ce8af11cb2cb77
@@ -773,30 +819,30 @@
       nameroot: ERZXYZ_hmmer_informative
       size: 1101
     taxonomy_assignations:
-    - basename: empty_predicted_cds_annotation_taxonomy.tsv
-      checksum: Any
-      class: File
-      format: http://edamontology.org/format_3475
-      location: Any
-      nameext: ".tsv"
-      nameroot: empty_predicted_cds_annotation_taxonomy
-      size: 40
-    - basename: ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation_taxonomy.tsv
-      checksum: Any
-      class: File
-      format: http://edamontology.org/format_3475
-      location: Any
-      nameext: ".tsv"
-      nameroot: ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation_taxonomy
-      size: 244
-    - basename: empty_predicted_cds_annotation_taxonomy.tsv
-      checksum: Any
-      class: File
-      format: http://edamontology.org/format_3475
-      location: Any
-      nameext: ".tsv"
-      nameroot: empty_predicted_cds_annotation_taxonomy
-      size: 40
+      - basename: empty_predicted_cds_annotation_taxonomy.tsv
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_3475
+        location: Any
+        nameext: ".tsv"
+        nameroot: empty_predicted_cds_annotation_taxonomy
+        size: 40
+      - basename: ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation_taxonomy.tsv
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_3475
+        location: Any
+        nameext: ".tsv"
+        nameroot: ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation_taxonomy
+        size: 244
+      - basename: empty_predicted_cds_annotation_taxonomy.tsv
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_3475
+        location: Any
+        nameext: ".tsv"
+        nameroot: empty_predicted_cds_annotation_taxonomy
+        size: 40
     virfinder_output:
       basename: ERZXYZ_renamed_filt200bp_virfinder_all.tsv
       checksum: sha1$92ed4af32ec8d62a98d8aa4b7ba3b1d368f95288
@@ -808,27 +854,27 @@
       size: 4362
     virsorter_output_fastas: []
     ViPhOG_annotations:
-    - location: Any
-      basename: "empty_predicted_cds_annotation.tsv"
-      nameroot: "empty_predicted_cds_annotation"
-      nameext: ".tsv"
-      class: File
-      checksum: "sha1$62479419676f20421fa8505254b9ee15a7ec3859"
-      size: 64
-      format: "http://edamontology.org/format_3475"
-    - location: Any
-      basename: "ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation.tsv"
-      nameroot: "ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation"
-      nameext: ".tsv"
-      class: File
-      checksum: "sha1$795f2676756fed574d0785a007ed6ce3efe94364"
-      size: 911
-      format: "http://edamontology.org/format_3475"
-    - location: Any
-      basename: "empty_predicted_cds_annotation.tsv"
-      nameroot: "empty_predicted_cds_annotation"
-      nameext: ".tsv"
-      class: File
-      checksum: "sha1$62479419676f20421fa8505254b9ee15a7ec3859"
-      size: 64
-      format: "http://edamontology.org/format_3475"
+      - location: Any
+        basename: "empty_predicted_cds_annotation.tsv"
+        nameroot: "empty_predicted_cds_annotation"
+        nameext: ".tsv"
+        class: File
+        checksum: "sha1$62479419676f20421fa8505254b9ee15a7ec3859"
+        size: 64
+        format: "http://edamontology.org/format_3475"
+      - location: Any
+        basename: "ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation.tsv"
+        nameroot: "ERZXYZ_filt200bp_low_confidence_viral_contigs_predicted_cds_annotation"
+        nameext: ".tsv"
+        class: File
+        checksum: "sha1$795f2676756fed574d0785a007ed6ce3efe94364"
+        size: 911
+        format: "http://edamontology.org/format_3475"
+      - location: Any
+        basename: "empty_predicted_cds_annotation.tsv"
+        nameroot: "empty_predicted_cds_annotation"
+        nameext: ".tsv"
+        class: File
+        checksum: "sha1$62479419676f20421fa8505254b9ee15a7ec3859"
+        size: 64
+        format: "http://edamontology.org/format_3475"

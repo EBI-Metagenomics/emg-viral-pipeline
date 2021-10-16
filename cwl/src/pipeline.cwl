@@ -4,7 +4,7 @@ class: Workflow
 label: virify
 
 requirements:
-  SubworkflowFeatureRequirement: {}  
+  SubworkflowFeatureRequirement: {}
   MultipleInputFeatureRequirement: {}
   StepInputExpressionRequirement: {}
   InlineJavascriptRequirement: {}
@@ -72,6 +72,12 @@ inputs:
     doc: |
       Downloaded from:
       https://genome.jgi.doe.gov/portal/IMG_VR/IMG_VR.home.html
+  checkv_database:
+    type: Directory
+    doc: |
+      CheckV database version 1.0 - compatilble with CheckV 0.8.1
+      Downloaded from:
+      wget https://portal.nersc.gov/CheckV/checkv-db-v1.0.tar.gz
   # optional steps
   mashmap_reference_file:
     type: File?
@@ -290,6 +296,24 @@ steps:
       - pprmeta_results_restored
       - virfinder_results_restored
 
+  checkv:
+    label: CheckV
+    run: ./Tools/checkv/checkv_swf.cwl
+    requirements:
+        ResourceRequirement:
+          coresMin: 4
+          ramMin: 3814
+    in:
+      input_fastas:
+        source:
+          - restore_contig_names/high_confidence_contigs_resnames
+          - restore_contig_names/low_confidence_contigs_resnames
+          - restore_contig_names/prophages_contigs_resnames
+        linkMerge: merge_flattened
+      database: checkv_database
+    out:
+      - quality_summary_tables
+
 outputs:
   filtered_contigs:
     outputSource: restore_contig_names/contigs_resnames
@@ -357,6 +381,9 @@ outputs:
     type: File
   blast_merged_tsvs:
     outputSource: imgvr_blast/merged_tsvs
+    type: File[]
+  quality_summary_tables:
+    outputSource: checkv/quality_summary_tables
     type: File[]
   # optional 
   mashmap_hits:
