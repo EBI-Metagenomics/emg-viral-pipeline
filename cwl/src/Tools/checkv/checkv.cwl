@@ -12,7 +12,7 @@ requirements:
 hints:
   # TODO: tag the version
   DockerRequirement:
-    dockerPull: "quay.io/microbiome-informatics/checkv"
+    dockerPull: "quay.io/microbiome-informatics/checkv:v0.8.1"
 
 baseCommand: ["checkv"]
 
@@ -68,9 +68,69 @@ outputs:
           return self;
         }
     doc: |
-        This contains integrated results from the three main modules and should be the main output referred to. Below is an example to demonstrate the type of results you can expect in your data, space-delimited with each line consisting of 
-        "contig_id	contig_length	genome_copies	gene_count	viral_genes	host_genes	checkv_quality	miuvig_quality	completeness	completeness_method	contamination	provirus	termini	warnings"
+        This contains integrated results from the three main modules and should be the main output referred to.
+        Below is an example to demonstrate the type of results you can expect in your data, space-delimited with each line consisting of 
+        - contig_id
+        - contig_length
+        - genome_copies
+        - gene_count
+        - viral_genes
+        - host_genes
+        - checkv_quality
+        - miuvig_quality
+        - completeness
+        - completeness_method
+        - contamination 
+        - provirus
+        - termini
+        - warnings
         https://bitbucket.org/berkeleylab/checkv/src/master/
+  completeness_table:
+    type: File
+    format: edam:format_3751
+    outputBinding:
+      glob: "completeness.tsv"
+      outputEval: |
+        ${
+          self[0].basename = inputs.query.nameroot + "_completeness.tsv";
+          return self;
+        }
+    doc: |
+        Table with the following columns:
+        - contig_id
+        - contig_length
+        - proviral_length 
+        - aai_expected_length
+        - aai_completeness
+        - aai_confidence 
+        - aai_error
+        - aai_num_hits
+        -	aai_top_hit
+        - aai_id
+        - aai_af
+        - hmm_completeness_lower
+        - hmm_hits
+        For more information: https://bitbucket.org/berkeleylab/checkv/src/master/
+  contamination_table:
+    type: File
+    format: edam:format_3751
+    outputBinding:
+      glob: "contamination.tsv"
+      outputEval: |
+        ${
+          self[0].basename = inputs.query.nameroot + "_contamination.tsv";
+          return self;
+        }
+    doc: |
+        Table with the following columns:
+        - contig_id
+        - contig_length
+        - prediction_type
+        - confidence_level
+        - confidence_reason
+        - repeat_length
+        - repeat_count
+        For more information: https://bitbucket.org/berkeleylab/checkv/src/master/
 
 $namespaces:
  s: http://schema.org/

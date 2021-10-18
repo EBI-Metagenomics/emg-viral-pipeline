@@ -613,6 +613,24 @@
       checksum: sha1$e29a2f70f6cbfbaabd8edb61e026536dae34921f
       size: 440
       format: http://edamontology.org/format_3751
+    completeness_table:
+      basename: high_confidence_putative_viral_contigs_completeness.tsv
+      checksum: Any
+      class: File
+      format: 'http://edamontology.org/format_3751'
+      location: Any
+      nameext: .tsv
+      nameroot: high_confidence_putative_viral_contigs_completeness
+      size: Any
+    contamination_table:
+      basename: high_confidence_putative_viral_contigs_contamination.tsv
+      checksum: sha1$b89b951e1e6614cb7a879ceda415943256746151
+      class: File
+      format: 'http://edamontology.org/format_3751'
+      location: Any
+      nameext: .tsv
+      nameroot: high_confidence_putative_viral_contigs_contamination
+      size: 343
 
 # CheckV - subworfklow
 - job: tools/checkv/checkv_swf_test_input.yml
@@ -620,6 +638,56 @@
   short_name: checkv_swf.cwl
   doc: CheckV
   output:
+    completeness_tables:
+      - basename: high_confidence_putative_viral_contigs_completeness.tsv
+        checksum: Any
+        class: File
+        format: 'http://edamontology.org/format_3751'
+        location: Any
+        nameext: .tsv
+        nameroot: high_confidence_putative_viral_contigs_completeness
+        size: Any
+      - basename: putative_prophages_completeness.tsv
+        checksum: Any
+        class: File
+        format: 'http://edamontology.org/format_3751'
+        location: Any
+        nameext: .tsv
+        nameroot: putative_prophages_completeness
+        size: Any
+      - basename: low_confidence_putative_viral_contigs_completeness.tsv
+        checksum: Any
+        class: File
+        format: 'http://edamontology.org/format_3751'
+        location: Any
+        nameext: .tsv
+        nameroot: low_confidence_putative_viral_contigs_completeness
+        size: Any
+    contamination_tables:
+      - basename: high_confidence_putative_viral_contigs_contamination.tsv
+        checksum: sha1$b89b951e1e6614cb7a879ceda415943256746151
+        class: File
+        format: 'http://edamontology.org/format_3751'
+        location: Any
+        nameext: .tsv
+        nameroot: high_confidence_putative_viral_contigs_contamination
+        size: 343
+      - basename: putative_prophages_contamination.tsv
+        checksum: sha1$f13a9f6b6a970ff152f6c7d584dbfa09b6a7c1ce
+        class: File
+        format: 'http://edamontology.org/format_3751'
+        location: Any
+        nameext: .tsv
+        nameroot: putative_prophages_contamination
+        size: 411
+      - basename: low_confidence_putative_viral_contigs_contamination.tsv
+        checksum: sha1$8b774673b1362755f0f9d1692bf64e6e147f9fbc
+        class: File
+        format: 'http://edamontology.org/format_3751'
+        location: Any
+        nameext: .tsv
+        nameroot: low_confidence_putative_viral_contigs_contamination
+        size: 1262
     quality_summary_tables:
       - basename: high_confidence_putative_viral_contigs_quality_summary.tsv
         checksum: sha1$e29a2f70f6cbfbaabd8edb61e026536dae34921f

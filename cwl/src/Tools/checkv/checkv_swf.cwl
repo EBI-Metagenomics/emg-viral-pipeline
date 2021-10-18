@@ -34,6 +34,8 @@ steps:
       database: database
     out:
       - quality_summary_table
+      - completeness_table
+      - contamination_table
 
 outputs:
   quality_summary_tables:
@@ -41,6 +43,17 @@ outputs:
     outputSource:
       - checkv/quality_summary_table
     pickValue: all_non_null
+  completeness_tables:
+    type: File[]
+    outputSource:
+      - checkv/completeness_table
+    pickValue: all_non_null
+  contamination_tables:
+    type: File[]
+    outputSource:
+      - checkv/contamination_table
+    pickValue: all_non_null
+
 
 $namespaces:
  s: http://schema.org/

@@ -313,6 +313,8 @@ steps:
       database: checkv_database
     out:
       - quality_summary_tables
+      - completeness_tables
+      - contamination_tables
 
 outputs:
   filtered_contigs:
@@ -382,8 +384,15 @@ outputs:
   blast_merged_tsvs:
     outputSource: imgvr_blast/merged_tsvs
     type: File[]
+  # CheckV
   quality_summary_tables:
     outputSource: checkv/quality_summary_tables
+    type: File[]
+  completeness_tables:
+    outputSource: checkv/completeness_tables
+    type: File[]
+  contamination_tables:
+    outputSource: checkv/contamination_tables
     type: File[]
   # optional 
   mashmap_hits:
