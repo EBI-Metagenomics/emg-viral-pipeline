@@ -39,11 +39,6 @@ println " "
 println "\033[2mOnly run annotation: $params.onlyannotate\u001B[0m"
 println " "
         
-if( !nextflow.version.matches('>=20.01')) {
-    println "This workflow requires Nextflow version 20.01 or greater -- You are running version $nextflow.version"
-    exit 1
-}
-
 if (params.help) { exit 0, helpMSG() }
 if (params.profile) {
   exit 1, "--profile is WRONG use -profile" }
