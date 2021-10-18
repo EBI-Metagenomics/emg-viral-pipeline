@@ -10,7 +10,6 @@ requirements:
   InlineJavascriptRequirement: {}
 
 hints:
-  # TODO: tag the version
   DockerRequirement:
     dockerPull: "quay.io/microbiome-informatics/checkv:v0.8.1"
 
