@@ -43,7 +43,7 @@ steps:
       map_file: name_map
     out:
       - modified_table
-  virfinder_results:
+  restore_virfinder_results:
     label: Restore contig names in virfinder
     run: table_rename.cwl
     in:
@@ -67,7 +67,7 @@ outputs:
   virfinder_results_restored:
     type: File
     format: edam:format_3752
-    outputSource: virfinder_results/modified_table
+    outputSource: restore_virfinder_results/modified_table
 
 doc: |
   Restore the contig names using the map file in ppmeta, virfinder and virsorter output files.
