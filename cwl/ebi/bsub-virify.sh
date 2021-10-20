@@ -1,36 +1,32 @@
 #!/bin/bash
 #BSUB -n 1
-#BSUB -M 8192
+#BSUB -R "rusage[mem=4096]"
+#BSUB -J virify
+#BSUB -o output.txt
+#BSUB -e error.txt
 
 # CONSTANTS
-# Wrapper for Virify.sh
-WORKDIR="/hps/nobackup/production/metagenomics/toil-workdir"
+# Wrapper for Virify.shs
 
-# Production
-# virify.sh
-VIRIFY_SH="/nfs/production/metagenomics/pipelines/virify/scripts/virify.sh"
-# ENV
-ENV_FILE="/nfs/production/metagenomics/pipelines/virify/scripts/ebi-env.sh"
+# Production scripts and env
+VIRIFY_SH="/nfs/production/rdf/metagenomics/pipelines/prod/emg-viral-pipeline/cwl/virify.sh"
+ENV_FILE="/nfs/production/rdf/metagenomics/pipelines/prod/emg-viral-pipeline/cwl/ebi/codon-virify-env.sh"
+WORKDIR="/hps/nobackup/rdf/metagenomics/toil-workdir"
 
 set -e
 
 usage () {
     echo ""
     echo "Virify pipeline BSUB"
-    echo ""
-    echo "-n the name for the job *a timestamp will be added to folder* [mandatory]"
-    echo "-i contigs input fasta [mandatory]"
-    echo "-o output folder [mandatory]"
-    echo ""
     echo "Example:"
     echo ""
-    echo "bsub-virify.sh -n test-run -i input_fasta -o /data/results/"
+    echo "bsub-virify.sh -n test-run -i input_fasta -o /data/results/ [-f 1.0]"
     echo ""
     echo "NOTE:"
     echo "- The results folder will be /data/results/{job_name}."
     echo "- The logs will be stored in /data/results/{job_name}/logs"
     echo ""
-    echo "PARAMETERS:"
+    echo "Settings files and executable scripts:"
     echo "- toil work dir: ${WORKDIR} * toil will create a folder in this path"
     echo "- virify.sh: ${VIRIFY_SH}"
     echo "- virify env: ${ENV_FILE}"
@@ -41,24 +37,25 @@ usage () {
 NAME=""
 CONTIGS=""
 RESULTS_FOLDER=""
+LEN_FILTER="1.0"
 
-while getopts "n:i:o:h" opt; do
+while getopts "n:i:o:f:h" opt; do
   case $opt in
     n)
         NAME="$OPTARG"
         ;;
     i)
         CONTIGS="$OPTARG"
-        # if [ ! -f "$NAME_RUN" ];
-        # then
-        #     echo ""
-        #     echo "ERROR '${OPTARG}' doesn't exist." >&2
-        #     usage;
-        #     exit 1
-        # fi
         ;;
     o)
         RESULTS_FOLDER="$OPTARG"
+        ;;
+    f)
+        LEN_FILTER="$OPTARG"
+        ;;
+    h)
+        usage;
+        exit 0
         ;;
     :)
         usage;
@@ -81,8 +78,10 @@ fi
 
 ${VIRIFY_SH} \
 -e ${ENV_FILE} \
--n ${NAME} \
--j ${WORKDIR} \
--o ${RESULTS_FOLDER} \
--c 1 -m 8192 \
--i ${CONTIGS}
+-n "${NAME}" \
+-j "${WORKDIR}" \
+-o "${RESULTS_FOLDER}" \
+-f "${LEN_FILTER}" \
+-p CODON \
+-c 1 -m 12000 \
+-i "${CONTIGS}"

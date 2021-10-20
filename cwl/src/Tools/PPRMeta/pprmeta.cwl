@@ -8,7 +8,7 @@ baseCommand: [ "bash", "pprmeta.sh"]
 
 hints:
   DockerRequirement:
-    dockerPull: "docker.io/microbiomeinformatics/pprmeta:v1.1"
+    dockerPull: "microbiomeinformatics/pprmeta:v1.1"
 
 inputs:
   fasta_file:

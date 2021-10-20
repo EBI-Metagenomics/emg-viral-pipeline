@@ -6,7 +6,7 @@ label: hmmscan wrapper
 
 hints:
  DockerRequirement:
-   dockerPull: "docker.io/microbiomeinformatics/hmmer:v3.1b2"
+   dockerPull: "microbiomeinformatics/hmmer:v3.1b2"
 
 requirements:
   InlineJavascriptRequirement: {}

@@ -1,0 +1,7 @@
+query:
+  class: File
+  path: high_confidence_putative_viral_contigs.fna
+  format: http://edamontology.org/format_1929
+database:
+  path: ../../../databases/checkv-db-v1.0
+  class: Directory

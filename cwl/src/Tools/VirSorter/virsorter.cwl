@@ -7,8 +7,9 @@ label: VirSorter
 hints:
   ResourceRequirement:
     coresMin: $(inputs.number_of_cpus)
+    ramMin: 9536
   DockerRequirement:
-    dockerPull: "docker.io/microbiomeinformatics/virsorter:1.0.6"
+    dockerPull: "microbiomeinformatics/virsorter:1.0.6"
 
 baseCommand: ["wrapper_phage_contigs_sorter_iPlant.pl"]
 

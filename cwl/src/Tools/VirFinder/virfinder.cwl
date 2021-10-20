@@ -6,7 +6,7 @@ label: VirFinder
 
 hints:
   DockerRequirement:
-    dockerPull: "docker.io/microbiomeinformatics/virfinder:v1.1__eb8032e"
+    dockerPull: "microbiomeinformatics/virfinder:v1.1__eb8032e"
 
 requirements:
   InitialWorkDirRequirement:

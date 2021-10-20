@@ -8,7 +8,7 @@ doc: Combine the filtered blast results with meta information from the IMG/VR da
 
 hints:
   DockerRequirement:
-    dockerPull: "docker.io/microbiomeinformatics/emg-viral-pipeline-python3:v1"
+    dockerPull: "microbiomeinformatics/emg-viral-pipeline-python3:v1"
 
 requirements:
   InitialWorkDirRequirement:

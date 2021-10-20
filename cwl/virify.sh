@@ -8,6 +8,7 @@ usage () {
     echo ""
     echo "-e Environemnt init script [mandatory]: "
     echo "   * conda env activation"
+    echo "   * Batch system (lsf or slurm)"
     echo "   * Add scripts folder to PATH"
     echo "   * Full paths for:"
     echo "      . VIRSORTER_DATA"
@@ -16,6 +17,7 @@ usage () {
     echo "      . NCBI_TAX_DB_FILE"
     echo "      . IMGVR_BLAST_DB"
     echo "      . VIRFINDER_MODEL"
+    echo "   * CLUSTER_BATCH_SYSTEM: The cluster batch system (default slurm)"
     echo "-n the name for the job *a timestamp will be added to folder* [mandatory]"
     echo "-j toil job store folder path [mandatory]"
     echo "-o output folder [mandatory]"
@@ -27,7 +29,13 @@ usage () {
     echo "-s mashmap reference file fasta or fastq (.gz) (optional)"
     echo "-r Restart workdir path. "
     echo "   Path to the job work dir for restart.Toil will raise an expection if the work directory doesn't exist"
-    echo "-l Run the worklfow locally using containters (singularity) for dev purposes"
+    echo "-p Execution profile:"
+    echo " LOCAL to run the pipeline locally with no batch scheduler."
+    echo " EMBASSY to run it using Slurm and Docker"
+    echo " CODON to run it using LSF and Singularity"
+    echo ""
+    echo ""
+    echo "-t Use cwltool to run the pipeline."
     echo ""
     echo "Example:
             virify.sh -e init.sh -n test-run -m 1024 -c 12 -j JOB_DIR_path -o /data/results/ -i input.fasta
@@ -49,9 +57,10 @@ MASHMAP_REFERENCE=""
 ENV_SCRIPT=""
 LEN_FILTER="1.0"
 RESTART=""
-MODE="EBI"
+PROFILE=""
+CWLTOOL=false
 
-while getopts "e:n:j:o:c:m:i:vs:r:f:lh" opt; do
+while getopts "e:n:j:o:c:m:i:vs:r:f:p:th" opt; do
   case $opt in
     e)
         ENV_SCRIPT="$OPTARG"
@@ -140,8 +149,18 @@ while getopts "e:n:j:o:c:m:i:vs:r:f:lh" opt; do
     r)
         RESTART="${OPTARG}"
         ;;
-    l)
-        MODE="LOCAL"
+    p)
+        PROFILE="${OPTARG^^}"
+        if [[ "${PROFILE}" =~ ^(LOCAL|EMBASSY|CODON)$ ]]; then
+            echo "Profile selected: ${PROFILE}"
+        else
+            echo "Invalid profile, please select one of LOCAL, EMBASSY or CODON"
+            usage;
+            exit 1;
+        fi
+        ;;
+    t)
+        CWLTOOL=true
         ;;
     :)
         usage;
@@ -195,7 +214,7 @@ then
 
     set -x
 
-    TS="$(date +"%Y-%m-%d_%H-%M-%S")"
+    TS="$(date +"%Y-%m-%d_%H-%M")"
 
     # Prefix the path to make it easier to clean
     TMPDIR="${TMPDIR:-/scratch}/${NAME_RUN}_${TS}"
@@ -204,14 +223,13 @@ then
     OUT_DIR="${OUT_DIR}/${NAME_RUN}_${TS}"
 
     # Prepare folders
-    mkdir -p "${TMPDIR}"
     mkdir -p "${LOG_DIR}"
     mkdir -p "${OUT_DIR}"
 
     set +x
 
     # Prepare the yaml file
-    YML_INPUT="${NAME_RUN}_${TS}_input.yaml"
+    YML_INPUT="${OUT_DIR}/${NAME_RUN}_${TS}_input.yaml"
 
     CWL_PARAMS=(
         -i "${INPUT_FASTA}"
@@ -252,18 +270,26 @@ TOIL_PARAMS=(
     --disableProgress
 )
 
-if [ "${MODE}" = "EBI" ];
+# Profiles #
+if [ "${PROFILE}" = "EMBASSY" ];
 then
     TOIL_PARAMS+=(
-        --singularity
-        --batchSystem LSF
+        --batchSystem slurm
         --disableCaching
     )
 fi
 
-if [ "${MODE}" = "LOCAL" ];
+if [ "${PROFILE}" = "CODON" ];
 then
-    # TOIL_PARAMS+=(--singularity)
+    TOIL_PARAMS+=(
+        --singularity
+        --batchSystem lsf
+        --disableCaching
+    )
+fi
+
+if [ "${PROFILE}" = "LOCAL" ];
+then
     TOIL_PARAMS+=(--no-container)
 fi
 
@@ -280,7 +306,6 @@ then
         --logFile "${LOG_DIR}/${NAME_RUN}.log"
         --rotatingLogging
         --jobStore "${JOB_DIR}"
-        --enable-dev
         "${SCRIPT_DIR}/src/pipeline.cwl"
         "${YML_INPUT}"
     )
@@ -296,4 +321,18 @@ fi
 
 set -x
 
-toil-cwl-runner "${TOIL_PARAMS[@]}"
+if [ "${CWLTOOL}" = true ];
+then
+    echo "CWL tool runner."
+    cwltool \
+    --preserve-entire-environment \
+    --leave-container \
+    --timestamps \
+    --disable-color \
+    --outdir "${OUT_DIR}" \
+    "${SCRIPT_DIR}/src/pipeline.cwl" \
+    "${YML_INPUT}" | tee "${LOG_DIR}"/"${NAME_RUN}".log
+else
+    echo "Toil runner"
+    toil-cwl-runner "${TOIL_PARAMS[@]}"
+fi
