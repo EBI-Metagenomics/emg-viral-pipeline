@@ -18,6 +18,7 @@ export HMMSCAN_DATABASE="${DATABASES}/hmmer_databases/vpHMM_database_v3/vpHMM_da
 export NCBI_TAX_DB_FILE="${DATABASES}/2020-07-01_ete3_ncbi_tax.sqlite"
 export IMGVR_BLAST_DB="${DATABASES}/IMG_VR_2018-07-01_4"
 export VIRFINDER_MODEL="${DATABASES}/virfinder/VF.modEPV_k8.rda"
+export CHECKV_DB="${DATABASES}/checkv-db-v1.0"
 
 # workdir
 # required to be shared because
