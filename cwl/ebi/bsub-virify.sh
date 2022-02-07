@@ -1,9 +1,4 @@
 #!/bin/bash
-#BSUB -n 1
-#BSUB -R "rusage[mem=4096]"
-#BSUB -J virify
-#BSUB -o output.txt
-#BSUB -e error.txt
 
 # CONSTANTS
 # Wrapper for Virify.shs
@@ -15,31 +10,45 @@ WORKDIR="/hps/nobackup/rdf/metagenomics/toil-jobstore"
 
 set -e
 
-usage () {
-    echo ""
-    echo "Virify pipeline BSUB"
-    echo "Example:"
-    echo ""
-    echo "bsub-virify.sh -n test-run -i input_fasta -o /data/results/ [-f 1.0]"
-    echo ""
-    echo "NOTE:"
-    echo "- The results folder will be /data/results/{job_name}."
-    echo "- The logs will be stored in /data/results/{job_name}/logs"
-    echo ""
-    echo "Settings files and executable scripts:"
-    echo "- toil work dir: ${WORKDIR} * toil will create a folder in this path"
-    echo "- virify.sh: ${VIRIFY_SH}"
-    echo "- virify env: ${ENV_FILE}"
-    echo ""
-}
-
 # PARAMS
 NAME=""
 CONTIGS=""
 RESULTS_FOLDER=""
 LEN_FILTER="1.0"
+BSUB_ERROR=""
+BSUB_OUTPUT=""
+BSUB_USER=""
 
-while getopts "n:i:o:f:h" opt; do
+usage () {
+    echo "
+Virify pipeline BSUB
+
+Usage.
+
+bsub-virify.sh -n test-run -i input_fasta -o /data/results/ [-f ${LEN_FILTER}] [-e] [-x] [-u]
+
+Script arguments.
+  -n                  Job name, used for the folders and bsub -J
+  -i                  -i intput fasta file with contigs
+  -o                  -o output folder prefix, a folder using the job name will be created
+  -f                  -f Length threshold in kb of selected sequences [default: ${LEN_FILTER}]
+
+  -e                  bsub -e
+  -x                  bsub -o
+  -u                  bsub -u
+
+NOTE:
+- The results folder will be /data/results/{job_name}.
+- The logs will be stored in /data/results/{job_name}/logs
+
+Settings files and executable scripts:
+- toil work dir: ${WORKDIR} * toil will create a folder in this path
+- virify.sh: ${VIRIFY_SH}
+- virify env: ${ENV_FILE}
+"
+}
+
+while getopts "n:i:o:f:e:x:u:h" opt; do
   case $opt in
     n)
         NAME="$OPTARG"
@@ -52,6 +61,15 @@ while getopts "n:i:o:f:h" opt; do
         ;;
     f)
         LEN_FILTER="$OPTARG"
+        ;;
+    e)
+        BSUB_ERROR="$OPTARG"
+        ;;
+    x)
+        BSUB_OUTPUT="$OPTARG"
+        ;;
+    u)
+        BSUB_USER="$OPTARG"
         ;;
     h)
         usage;
@@ -76,12 +94,44 @@ then
     exit 1
 fi
 
-${VIRIFY_SH} \
--e ${ENV_FILE} \
--n "${NAME}" \
--j "${WORKDIR}" \
--o "${RESULTS_FOLDER}" \
--f "${LEN_FILTER}" \
--p CODON \
--c 1 -m 12000 \
--i "${CONTIGS}"
+
+BSUB_PARAMS=(
+    -n 1
+    -R "rusage[mem=4096]"
+    -J "${NAME}"
+)
+
+if [ -n "${BSUB_ERROR}" ]; then
+    BSUB_PARAMS+=(
+        -e "${BSUB_ERROR}"
+    )
+fi
+
+if [ -n "${BSUB_OUTPUT}" ]; then
+    BSUB_PARAMS+=(
+        -o "${BSUB_OUTPUT}"
+    )
+fi
+
+if [ -n "${BSUB_USER}" ]; then
+      BSUB_PARAMS+=(
+        -u "${BSUB_USER}"
+    )  
+fi
+
+
+# virify #
+BSUB_PARAMS+=(
+    "${VIRIFY_SH}"
+    -e "${ENV_FILE}"
+    -n "${NAME}"
+    -j "${WORKDIR}"
+    -o "${RESULTS_FOLDER}"
+    -f "${LEN_FILTER}"
+    -p CODON
+    -c 1
+    -m 12000
+    -i "${CONTIGS}"
+)
+
+bsub "${BSUB_PARAMS[@]}"

@@ -3,7 +3,7 @@
 set -e
 
 # EMG-Viral pipeline ENV script
-. /hps/software/users/rdf/metagenomics/service-team/envs/mitrc.sh
+. /hps/software/users/rdf/metagenomics/service-team/repos/mi-automation/team_environments/codon/mitrc.sh
 
 mitload virify env
 
@@ -23,5 +23,7 @@ export CHECKV_DB="${DATABASES}/checkv-db-v1.0"
 # workdir
 # required to be shared because
 # - https://toil.readthedocs.io/en/latest/running/hpcEnvironments.html#standard-output-error-from-batch-system-jobs
+
+
 # TODO this was seted in virify.sh
-export TMPDIR="/tmp"
+# export TMPDIR="/tmp"
