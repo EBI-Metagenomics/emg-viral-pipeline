@@ -48,9 +48,6 @@ arguments:
         }
       }
 
-stdout: stdout
-stderr: stderr 
-
 outputs:
   blast_result:
     type: File

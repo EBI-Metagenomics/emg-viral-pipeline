@@ -20,10 +20,6 @@ export IMGVR_BLAST_DB="${DATABASES}/IMG_VR_2018-07-01_4"
 export VIRFINDER_MODEL="${DATABASES}/virfinder/VF.modEPV_k8.rda"
 export CHECKV_DB="${DATABASES}/checkv-db-v1.0"
 
-# workdir
-# required to be shared because
-# - https://toil.readthedocs.io/en/latest/running/hpcEnvironments.html#standard-output-error-from-batch-system-jobs
+export TMPDIR="/hps/scratch/rdf/metagenomics/pipelines-tmp"
 
-
-# TODO this was seted in virify.sh
-# export TMPDIR="/tmp"
+module load singularity-3.7.0-gcc-9.3.0-dp5ffrp

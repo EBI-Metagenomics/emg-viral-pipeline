@@ -35,9 +35,6 @@ inputs:
     inputBinding:
       prefix: "-o"
 
-stdout: stdout
-stderr: stderr 
-
 outputs:
   merged_tsv:
     type: File
