@@ -36,7 +36,7 @@ process pprmetaGet {
 
   script:
     """
-    git clone https://github.com/Stormrider935/PPR-Meta.git
+    git clone https://github.com/mult1fractal/PPR-Meta.git
     mv PPR-Meta/* .  
     rm -r PPR-Meta
     """
