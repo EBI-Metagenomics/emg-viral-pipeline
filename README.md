@@ -94,7 +94,7 @@ __Please note__ that in particular further parameters such as
 
 * `--workdir` or `-w` (here your work directories will be save)
 * `--databases` (here your databases will be saved and the workflow checks if they are already available)
-* `--cachedir` (here Singularity containers will be cached, not needed for Docker)
+* `--singularity_cachedir` (here Singularity containers will be cached, not needed for Docker, default: 'singularity')
 
 are important to handle where Nextflow writes files. 
 
@@ -112,7 +112,7 @@ cd $OUTPUT
 nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.2.0 \
 --fasta "/homes/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" \
 --output $OUTPUT --workdir $OUTPUT/work --databases $DATABASES \
---cachedir $SINGULARITY -profile ebi
+--singularity_cachedir $SINGULARITY -profile ebi
 cd $DIR
 ```
 
@@ -130,7 +130,7 @@ Dont forget, especially on an HPC, to define further important parameters such a
 
 * `--workdir` or `-w` (here your work directories will be save)
 * `--databases` (here your databases will be saved and the workflow checks if they are already available)
-* `--cachedir` (here Singularity containers will be cached)
+* `--singularity_cachedir` (here Singularity containers will be stored, default 'singularity')
 
 The engine `conda` is not working at the moment until there is a conda recipe for PPR-Meta. Sorry. Use Docker. Please. Or install PPR-Meta by yourself and then use the `conda` profile.  
 
