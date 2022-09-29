@@ -63,8 +63,12 @@ outputs:
       glob: "quality_summary.tsv"
       outputEval: |
         ${
-          self[0].basename = inputs.query.nameroot + "_quality_summary.tsv";
-          return self;
+          if (self && self.length > 0) {
+            self[0].basename = inputs.query.nameroot + "_quality_summary.tsv";
+            return self;
+          } else {
+            return self;
+          }
         }
     doc: |
         This contains integrated results from the three main modules and should be the main output referred to.
@@ -91,8 +95,12 @@ outputs:
       glob: "completeness.tsv"
       outputEval: |
         ${
-          self[0].basename = inputs.query.nameroot + "_completeness.tsv";
-          return self;
+          if (self && self.length > 0) {
+            self[0].basename = inputs.query.nameroot + "_completeness.tsv";
+            return self;
+          } else {
+            return self;
+          }
         }
     doc: |
         Table with the following columns:
@@ -117,8 +125,12 @@ outputs:
       glob: "contamination.tsv"
       outputEval: |
         ${
-          self[0].basename = inputs.query.nameroot + "_contamination.tsv";
-          return self;
+          if (self && self.length > 0) {
+            self[0].basename = inputs.query.nameroot + "_contamination.tsv";
+            return self;
+          } else {
+            return self;
+          }
         }
     doc: |
         Table with the following columns:

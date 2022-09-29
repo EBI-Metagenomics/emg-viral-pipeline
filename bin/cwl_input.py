@@ -38,6 +38,10 @@ def main(args):
                 "class": "File",
                 "path": args.hmmscan_db
             },
+            "checkv_database": {
+                "class": "Directory",
+                "path": args.checkv_db
+            }
         }
 
         for suffix in ["h3m", "h3i", "h3f", "h3p"]:
@@ -84,6 +88,8 @@ if __name__ == "__main__":
                         required=True, help="NCBI Taxonomy database")
     parser.add_argument("-b", dest="img_db",
                         required=True, help="IMG/VR database directory")
+    parser.add_argument("-cv", dest="checkv_db",
+                        required=True, help="CheckV database.")
     parser.add_argument("-v", dest="virome",
                         required=False, type=bool, default=False,
                         help="Virome mode for virsorter")

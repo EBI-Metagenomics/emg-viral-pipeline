@@ -17,6 +17,7 @@ usage () {
     echo "      . NCBI_TAX_DB_FILE"
     echo "      . IMGVR_BLAST_DB"
     echo "      . VIRFINDER_MODEL"
+    echo "      . CHECKV_DB"
     echo "   * CLUSTER_BATCH_SYSTEM: The cluster batch system (default slurm)"
     echo "-n the name for the job *a timestamp will be added to folder* [mandatory]"
     echo "-j toil job store folder path [mandatory]"
@@ -239,6 +240,7 @@ then
         -j "${HMMSCAN_DATABASE}"
         -n "${NCBI_TAX_DB_FILE}"
         -b "${IMGVR_BLAST_DB}"
+        -cv "${CHECKV_DB}"
         -d "${VIRFINDER_MODEL}"
         -o "${YML_INPUT}"
     )

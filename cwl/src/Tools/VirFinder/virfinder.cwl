@@ -33,9 +33,6 @@ inputs:
 arguments:
   - valueFrom: $(runtime.outdir)
     position: 2
-  
-stdout: stdout.txt
-stderr: stderr.txt
 
 outputs:
   virfinder_output:

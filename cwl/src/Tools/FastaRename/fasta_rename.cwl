@@ -63,9 +63,6 @@ outputs:
     outputBinding:
       glob: "*.tsv"
 
-stdout: stdout.txt
-stderr: stderr.txt
-
 $namespaces:
  edam: http://edamontology.org/
  s: http://schema.org/
