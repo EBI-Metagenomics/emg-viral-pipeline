@@ -703,9 +703,9 @@ def helpMSG() {
 
     ${c_yellow}HPC computing:${c_reset}
     Especially for execution of the workflow on a HPC (LSF, SLURM) adjust the following parameters if needed:
-    --databases         defines the path where databases are stored [default: $params.dbs]
-    --workdir           defines the path where nextflow writes tmp files [default: $params.workdir]
-    --cachedir          defines the path where images (singularity) are cached [default: $params.cachedir] 
+    --databases               defines the path where databases are stored [default: $params.dbs]
+    --workdir                 defines the path where nextflow writes tmp files [default: $params.workdir]
+    --singularity_cachedir    defines the path where images (singularity) are cached [default: $params.singularity_cachedir] 
 
     ${c_yellow}Profiles: Execution/Engine:${c_reset}
      VIRify supports profiles to run via different ${c_green}Executers${c_reset} and ${c_blue}Engines${c_reset} e.g.:
@@ -723,8 +723,6 @@ def helpMSG() {
       Or use a ${c_yellow}pre-configured${c_reset} setup instead:
         standard (local,docker) [default]
         ebi (lsf,singularity; preconfigured for the EBI cluster)
-        yoda (lsf,singularity; preconfigured for the EBI YODA cluster)
-        nih (slurm,singularity; preconfigured for the NIH cluster)
         gcloud (use this as template for your own GCP setup)
       ${c_reset}
 

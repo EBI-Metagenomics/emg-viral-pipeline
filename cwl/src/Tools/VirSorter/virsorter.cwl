@@ -73,9 +73,6 @@ inputs:
       separate: true
       prefix: "--no_c"
 
-stdout: stdout.txt
-stderr: stderr.txt
-
 outputs:
   virsorter_fastas:
     type: File[]

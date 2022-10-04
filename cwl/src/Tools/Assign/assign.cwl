@@ -31,9 +31,6 @@ inputs:
       http://etetoolkit.org/docs/latest/tutorial/tutorial_ncbitaxonomy.html
       This file was manually built and placed in the corresponding path (on databases)"
 
-stdout: stdout.txt
-stderr: stderr.txt
-
 outputs:
   assign_table:
     type: File

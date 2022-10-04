@@ -25,11 +25,12 @@ class CwlGeneration(unittest.TestCase):
             "-i", "dummy_fasta.fasta",
             "-f", "2.0",
             "-s", "dummy_virsorter_dir",
-            "-d", "dummty_virfinder_model",
+            "-d", "dummy_virfinder_model",
             "-a", "dummy_hmms_tsv",
             "-j", "dummy_hmmscan_db.hmm",
             "-n", "dummy_nbci_db",
             "-b", "dummy_img_db",
+            "-cv", "dummy_checkv_database_dir",
             "-o", result_file
         ]
         process = subprocess.run(args)
@@ -61,6 +62,7 @@ class CwlGeneration(unittest.TestCase):
             "-j", "dummy_hmmscan_db.hmm",
             "-n", "dummy_nbci_db",
             "-b", "dummy_img_db",
+            "-cv", "dummy_checkv_database_dir",
             "-v", "true",
             "-m", "dummy_mashmap_ref",
             "-o", result_file

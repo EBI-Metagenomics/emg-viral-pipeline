@@ -111,9 +111,6 @@ inputs:
     doc: |
       count of threads for parallel execution [default : 4] 
 
-stdout: stdout
-stderr: stderr
-
 outputs:
   mashmap_table:
     type: File

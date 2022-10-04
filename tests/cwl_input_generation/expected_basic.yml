@@ -2,6 +2,9 @@ add_hmms_tsv:
   class: File
   path: dummy_hmms_tsv
   format: http://edamontology.org/format_3475
+checkv_database:
+  class: Directory
+  path: dummy_checkv_database_dir
 h3f:
   class: File
   path: dummy_hmmscan_db.hmm.h3f
@@ -29,7 +32,7 @@ ncbi_tax_db_file:
   path: dummy_nbci_db
 virfinder_model:
   class: File
-  path: dummty_virfinder_model
+  path: dummy_virfinder_model
   format: http://edamontology.org/format_2330
 virsorter_data_dir:
   class: Directory
