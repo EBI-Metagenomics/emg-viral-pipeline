@@ -56,71 +56,60 @@ sudo usermod -a -G docker $USER
 
 While singularity can be installed via Conda, we recommend setting up a _true_ Singularity installation. For HPCs, ask the system administrator you trust. [Here](https://github.com/hpcng/singularity/blob/master/INSTALL.md) is also a good manual to get you started. _Please note_: you only need Docker or Singularity. However, due to security concerns it might not be possible to use Docker on your shared machine or HPC.
 
-## Basic execution
+## Basic Nextflow execution
 
-While it is possible to clone this repository and directly execute the `virify.nf`We _recommended_ to let Nextflow handle the installation. Get the pipeline code via:
+### Install
+
+While it is possible to clone this repository and directly execute the `virify.nf`, we _recommend_ to let Nextflow handle the installation. Get the pipeline code via:
 ```bash
 nextflow pull EBI-Metagenomics/emg-viral-pipeline
 ```
 
-Get help:
+Test installation and get help:
 ```bash
 nextflow run EBI-Metagenomics/emg-viral-pipeline --help
 ```
 
-We __highly recommend__ to run stable releases, also for reproducibility:
+### Run specific pipeline version
+
+We __highly recommend__ to always run stable [releases](https://github.com/EBI-Metagenomics/emg-viral-pipeline/releases), also for reproducibility:
 ```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.2.0 --help
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.4.0 --help
 ```
 
-Run annotation for a small assembly file (10 contigs, 0.78 Mbp) on your local machine using Docker containers (per default `--cores 4`; takes approximately 10 min on a 8 core i7 laptop + time for database download; ~19 GB):
+Check the [release page](https://github.com/EBI-Metagenomics/emg-viral-pipeline/releases) to figure out the newest version of the pipelne. Or run:
+
 ```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.2.0 --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" --cores 4 -profile local,docker
+nextflow info EBI-Metagenomics/emg-viral-pipeline
 ```
 
-__Please note__ that in particular further parameters such as 
+### Example execution
 
-* `--workdir` or `-w` (here your work directories will be save)
-* `--databases` (here your databases will be saved and the workflow checks if they are already available)
-* `--singularity_cachedir` (here Singularity containers will be cached, not needed for Docker, default: 'singularity')
-
-are important to handle where Nextflow writes files. 
-
-Execution specific for the EBI cluster:
+Run annotation for a small assembly file (10 contigs, 0.78 Mbp) on your local Linux machine using Docker containers (per default `--cores 4`; takes approximately 10 min on a 8 core i7 laptop + time for database download; ~19 GB):
 ```bash
-source /hps/nobackup2/production/metagenomics/virus-pipeline/CONFIG 
-
-# recommended run example to easily resume a run later and to have all run-related .nextflow.log files in the correct folder
-OUTPUT=/path/to/output/dir
-mkdir -p $OUTPUT
-DIR=$PWD
-cd $OUTPUT
-# this will pull the pipeline if it is not already available
-# use `nextflow pull EBI-Metagenomics/emg-viral-pipeline` to update the pipeline
-nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.2.0 \
---fasta "/homes/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" \
---output $OUTPUT --workdir $OUTPUT/work --databases $DATABASES \
---singularity_cachedir $SINGULARITY -profile ebi
-cd $DIR
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.4.0 --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" --cores 4 -profile local,docker
 ```
 
+__Please note__ that in particular the following parameters are important to handle where Nextflow writes files. 
+
+* `--workdir` or `-w` (here your work directories with intermediate data will be saved)
+* `--databases` (here your databases will be saved and the workflow checks if they are already available under this path)
+* `--singularity_cachedir` (here Singularity containers will be cached, not needed for Docker, default path: `./singularity`)
+
+**Please clean up your work directory from time to time to save disk space!**
 
 ## Profiles
 
-Nextflow uses a merged profile handling system so you have to define an executor (e.g., `local`, `lsf`, `slurm`) and an engine (`docker`, `singularity`) to run the pipeline according to your needs and infrastructure 
+Nextflow uses a merged profile handling system so you have to define an executor (e.g., `local`, `lsf`, `slurm`) and an engine (`docker`, `singularity`) to run the pipeline according to your needs and infrastructure. 
 
-Per default, the workflow runs locally (e.g. on your laptop) with Docker. When you execute the workflow on a HPC you can for example switch to a specific job scheduler and Singularity instead of Docker:
+Per default, the workflow runs locally (e.g., on your laptop) with Docker. When you execute the workflow on a HPC you can for example switch to a specific job scheduler and Singularity instead of Docker:
 
 * SLURM (``-profile slurm,singularity``)
 * LSF (``-profile lsf,singularity``)
 
-Dont forget, especially on an HPC, to define further important parameters such as
+Don't forget, especially on an HPC, to define further important parameters such as `-w`, `--databases`, and `--singularity_cachedir` as mentioned above.
 
-* `--workdir` or `-w` (here your work directories will be save)
-* `--databases` (here your databases will be saved and the workflow checks if they are already available)
-* `--singularity_cachedir` (here Singularity containers will be stored, default 'singularity')
-
-The engine `conda` is not working at the moment until there is a conda recipe for PPR-Meta. Sorry. Use Docker. Please. Or install PPR-Meta by yourself and then use the `conda` profile.  
+The engine `conda` is not working at the moment until there is a conda recipe for PPR-Meta or we switch the tool. Sorry. Use Docker. Or Singularity. Please. Or install PPR-Meta by yourself and then use the `conda` profile (not recommended).  
 
 
 <a name="cwl"></a>
@@ -132,7 +121,7 @@ VIRify was implemented in [Common Workflow Language (CWL)](https://www.commonwl.
 The current implementation uses CWL version 1.2. It was tested using Toil version 5.3.0 as the workflow engine and conda to manage the software dependencies.
 
 ## How?
-For instructions go to the [CWL README](cwl/README.md)
+For instructions go to the [CWL README](cwl/README.md).
 
 
 <a name="overview"></a>
@@ -161,46 +150,53 @@ Although VIRify has been benchmarked and validated with metagenomic data in mind
 
 # Resources
 
-Additional material as well as the ViPhOG HMMs used in VIRify are available at [osf.io/fbrxy](https://osf.io/fbrxy/).
+Additional material (assemblies used for benchmarking in the paper, ...) as well as the ViPhOG HMMs with model-specific bit score thresholds used in VIRify are available at [osf.io/fbrxy](https://osf.io/fbrxy/).
 
-Here, we list databases used and automatically downloaded by the pipeline during first execution. We deposited most database files on a separate FTP to ensure accessibility. The files can be also downloaded manually and then used as an input for the pipeline to prevent auto-download (see `--help`).
+Here, we also list databases used and automatically downloaded by the pipeline (in v1.0.0) when it is first run. We deposited database files on a separate FTP to ensure their accessibility. The files can be also downloaded manually and then used as an input for the pipeline to prevent the auto-download (see `--help` in the Nextflow pipeline).
 
 ### Virus-specific protein profile HMMs
 
 * **ViPhOGs** (mandatory, used for taxonomy assignment)
     * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vpHMM_database_v3.tar.gz`
+    * [Publication](https://www.mdpi.com/1999-4915/13/6/1164)
 * **pVOGs** (optional)
     * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/pvogs.tar.gz`
+    * [Publication](https://doi.org/10.1093/nar/gkw975)
 * **RVDB** (optional)
     * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/rvdb.tar.gz`
+    * [Publication](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7492780/)
 * **VOGDB** (optional)
     * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vogdb.tar.gz`
+    * [Publication](https://vogdb.org/)
 * **VPF** (optional)
     * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vpf.tar.gz`
+    * [Publication](https://doi.org/10.1093/nar/gky1127)
 
 ### Initial virus prediction on contig level
 
 * **VirSorter** HMMs
     * `wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virsorter-data-v2.tar.gz`
+    * [Publication](https://peerj.com/articles/985/)
 * **Virfinder** model
     * `wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virfinder/VF.modEPV_k8.rda`
+    * [Publication](https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-017-0283-5)
 
 ### Virus prediction QC
 
 * **CheckV**
     * `wget https://portal.nersc.gov/CheckV/checkv-db-v1.0.tar.gz`
-    * PAPER
+    * [Publication](https://www.nature.com/articles/s41587-020-00774-7)
 
 ### Taxonomy annotation
 
 * **NCBI taxonomy**
     * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/2020-07-01_ete3_ncbi_tax.sqlite.gz`
 
-### Blast-based assignment (optional)
+### Additional blast-based assignment (optional, super slow)
 
 * **IMG/VR**
     * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/IMG_VR_2018-07-01_4.tar.gz`
-
+    * [Publication](https://doi.org/10.1093/nar/gkw1030)
 
 
 <a name="cite"></a>
