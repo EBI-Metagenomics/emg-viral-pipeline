@@ -411,7 +411,8 @@ Also runs additional HMM from further databases if defined and can also run a si
 Then, all results are summarized for reporting and plotting. 
 */
 workflow annotate {
-    take:   predicted_contigs
+    take:   filtered_contigs
+            predicted_contigs
             viphog_db
             ncbi_db
             rvdb_db
@@ -463,7 +464,7 @@ workflow annotate {
         }
 
         // checkV QC
-        checkV(predicted_contigs, checkv_db)
+        checkV(predicted_contigs, checkv_db, filtered_contigs)
 
         
     predicted_contigs_filtered = predicted_contigs.map { id, set_name, fasta -> [set_name, id, fasta] }
@@ -594,18 +595,19 @@ workflow {
       if (params.onlyannotate) {
         plot(
           annotate(
+            preprocess(fasta_input_ch),
             postprocess(
-              preprocess(
-                fasta_input_ch).map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map)}
+              preprocess.out.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map)}
               ), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db
           )
         )
       } else {
         plot(
           annotate(
+            preprocess(fasta_input_ch),
             postprocess(
                 detect(
-                    preprocess(fasta_input_ch),
+                    preprocess.out,
                     virsorter_db, virfinder_db, pprmeta_git
                 )
             ), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db
@@ -619,7 +621,8 @@ workflow {
       assemble_illumina(illumina_input_ch)    
       plot(
         annotate(
-          postprocess(detect(preprocess(assemble_illumina.out), virsorter_db, virfinder_db, pprmeta_git)), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db)
+          preprocess(assemble_illumina.out),
+          postprocess(detect(preprocess.out, virsorter_db, virfinder_db, pprmeta_git)), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db)
       )
     }
 }

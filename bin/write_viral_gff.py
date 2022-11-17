@@ -75,7 +75,8 @@ def write_metadata(checkv_files, taxonomy_files, sample_prefix, virify_contigs, 
         output_filename = f'{ena_assembly_accession}_virify_contig_viewer_metadata.tsv'
     else:
         output_filename = f'{sample_prefix}_virify_contig_viewer_metadata.tsv'
-    headers = 'sequence_id\tcontig\tvirify_taxonomy\tsequence_start\tsequence_end\tcheckv_provirus\tcheckv_quality\n'
+    headers = 'sequence_id\tcontig\tvirify_taxonomy\tstart_of_first_viphog\tend_of_last_viphog\tcheckv_provirus\t' \
+              'checkv_quality\n'
     checkv_dict, taxonomy_dict = {}, {}
 
     #   parse checkv for quality

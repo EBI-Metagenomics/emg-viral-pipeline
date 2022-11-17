@@ -5,13 +5,19 @@ process checkV {
         errorStrategy 'ignore'
         label 'checkV'
     input:
-        tuple val(name), val(confidence_set_name), file(fasta) 
+        tuple val(name), val(confidence_set_name), file(fasta)
         file(database)
+        file(filtered_fasta)
     output:
         tuple val(name), val(confidence_set_name), path("${confidence_set_name}_quality_summary.tsv"), path("${confidence_set_name}/") optional true
     script:
         """
-        checkv end_to_end ${fasta} -d ${database} -t ${task.cpus} ${confidence_set_name} 
+        if [[ ${fasta} == *"prophage"* ]]; then
+          grep '>' ${fasta} | cut -d' ' -f1 > prophage_contigs
+          seqtk subseq ${filtered_fasta} prophage_contigs > prophage_contigs.fasta
+          checkv end_to_end prophage_contigs.fasta -d ${database} -t ${task.cpus} ${confidence_set_name} 
+        else;
+          checkv end_to_end ${fasta} -d ${database} -t ${task.cpus} ${confidence_set_name} 
         cp ${confidence_set_name}/quality_summary.tsv ${confidence_set_name}_quality_summary.tsv 
         """
     stub:
@@ -22,3 +28,10 @@ process checkV {
         """
 }
 //, file("negative_result_${name}.tsv") optional true
+
+
+for file in *.out;do
+  if [[ "$file" == *"$STRING"* ]];then
+    printf '%s\n' "$file"
+  fi
+done
