@@ -18,6 +18,7 @@ process checkV {
           checkv end_to_end prophage_contigs.fasta -d ${database} -t ${task.cpus} ${confidence_set_name} 
         else;
           checkv end_to_end ${fasta} -d ${database} -t ${task.cpus} ${confidence_set_name} 
+        fi
         cp ${confidence_set_name}/quality_summary.tsv ${confidence_set_name}_quality_summary.tsv 
         """
     stub:
@@ -28,10 +29,3 @@ process checkV {
         """
 }
 //, file("negative_result_${name}.tsv") optional true
-
-
-for file in *.out;do
-  if [[ "$file" == *"$STRING"* ]];then
-    printf '%s\n' "$file"
-  fi
-done
