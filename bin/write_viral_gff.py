@@ -85,7 +85,8 @@ def write_metadata(checkv_files, taxonomy_files, sample_prefix, virify_contigs, 
         for index, row in checkv_df.iterrows():
             if row["contig_id"] in virify_contigs:
                 checkv_type = row["provirus"]
-                checkv_dict[row["contig_id"]] = {'checkv_type': checkv_type, 'checkv_quality': row["checkv_quality"]}
+                checkv_dict[row["contig_id"]] = {'checkv_type': checkv_type, 'checkv_quality': row["checkv_quality"], 
+                                                 'miuvig_quality': row["miuvig_quality"]}
 
     #   parse taxonomic lineage when available
     for tfile in taxonomy_files:
@@ -119,13 +120,15 @@ def write_metadata(checkv_files, taxonomy_files, sample_prefix, virify_contigs, 
             sequence_id = f'{contig_name}-start-{sequence_start}-end-{sequence_end}'
             checkv_type = checkv_dict[contig]['checkv_type']
             checkv_quality = checkv_dict[contig]['checkv_quality']
+            miuvig_quality = checkv_dict[contig]['miuvig_quality']
             metadata.write("\t".join([sequence_id,
                                       contig_name,
                                       virify_taxonomy,
                                       str(sequence_start),
                                       str(sequence_end),
                                       checkv_type,
-                                      str(checkv_quality)]) + '\n')
+                                      str(checkv_quality),
+                                      str(miuvig_quality)]) + '\n')
 
 
 if __name__ == "__main__":
@@ -160,7 +163,8 @@ if __name__ == "__main__":
         args.taxonomy_folder = args.virify_folder
 
     if args.rename_contigs and not args.ena_contigs:
-        logging.error('Contig renaming selected but no contig file provided. Provide path to ENA contig file with --ena-contigs')
+        logging.error('Contig renaming selected but no contig file provided. Provide path to ENA contig '
+                      'file with --ena-contigs')
 
     virify_files = glob.glob(os.path.join(args.virify_folder, '*' + args.virify_ext))
     checkv_files = glob.glob(os.path.join(args.checkv_folder, '*' + args.checkv_ext))
