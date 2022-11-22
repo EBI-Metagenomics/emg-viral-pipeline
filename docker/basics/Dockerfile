@@ -1,7 +1,7 @@
 FROM ubuntu:20.04
 
 LABEL base_image="ubuntu/20.04"
-LABEL version="1"
+LABEL version="1.1"
 LABEL about.summary="EMG Viral Pipeline basic tools."
 LABEL about.license="SPDX:GPL-3.0-or-later"
 LABEL about.tags="unix, python"

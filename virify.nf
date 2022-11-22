@@ -139,6 +139,8 @@ include {balloon} from './nextflow/modules/balloon'
 //qc
 include { checkV } from './nextflow/modules/checkV'
 
+//gff
+include { write_gff } from './nextflow/modules/write_gff'
 
 //include './modules/kaiju' params(output: params.output, illumina: params.illumina, fasta: params.fasta)
 //include './modules/filter_reads' params(output: params.output)
@@ -465,6 +467,9 @@ workflow annotate {
 
         // checkV QC
         checkV(predicted_contigs, checkv_db, filtered_contigs)
+        
+        // write GFF
+        write_gff(annotation.out, checkV.out, assign.out)
 
         
     predicted_contigs_filtered = predicted_contigs.map { id, set_name, fasta -> [set_name, id, fasta] }
@@ -593,24 +598,28 @@ workflow {
     if (params.fasta) {
       // only annotate the FASTA
       if (params.onlyannotate) {
+        preprocess(fasta_input_ch)
         plot(
           annotate(
-            preprocess(fasta_input_ch),
+            preprocess.out.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(filtered_fasta)},
             postprocess(
               preprocess.out.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map)}
-              ), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db
+              ), 
+            viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db
           )
         )
       } else {
-        plot(
-          annotate(
-            preprocess(fasta_input_ch),
-            postprocess(
-                detect(
-                    preprocess.out,
-                    virsorter_db, virfinder_db, pprmeta_git
-                )
-            ), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db
+          preprocess(fasta_input_ch)
+          plot(
+            annotate(
+              preprocess.out.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(filtered_fasta)},
+              postprocess(
+                  detect(
+                      preprocess.out,
+                      virsorter_db, virfinder_db, pprmeta_git
+                  )
+              ), 
+              viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db
           )
         )
       }
@@ -618,11 +627,13 @@ workflow {
 
     // illumina data to build an assembly first
     if (params.illumina) { 
-      assemble_illumina(illumina_input_ch)    
+      assemble_illumina(illumina_input_ch)   
+      preprocess(assemble_illumina.out) 
       plot(
         annotate(
-          preprocess(assemble_illumina.out),
-          postprocess(detect(preprocess.out, virsorter_db, virfinder_db, pprmeta_git)), viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db)
+          preprocess.out.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(filtered_fasta)},
+          postprocess(detect(preprocess.out, virsorter_db, virfinder_db, pprmeta_git)), 
+          viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db)
       )
     }
 }
