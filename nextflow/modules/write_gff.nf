@@ -1,6 +1,6 @@
 process write_gff {
        publishDir "${params.output}/${name}/${params.finaldir}/gff", mode: 'copy' , pattern: "*.gff"
-       publishDir "${params.output}/${name}/", mode: 'copy' , pattern: "metadata.tsv"
+       publishDir "${params.output}/${name}/", mode: 'copy' , pattern: "*metadata.tsv"
 
        errorStrategy 'ignore'
        label 'python3'

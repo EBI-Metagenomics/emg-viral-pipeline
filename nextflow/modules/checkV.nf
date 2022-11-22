@@ -3,8 +3,7 @@ process checkV {
         publishDir "${params.output}/${name}/${params.checkvdir}/", mode: 'copy' , pattern: "*.tsv"
 
         errorStrategy 'ignore'
-        label 'checkV'
-        label 'basics'
+        label 'basics', 'checkV'
     input:
         tuple val(name), val(confidence_set_name), file(fasta)
         file(database)
@@ -12,15 +11,16 @@ process checkV {
     output:
         tuple val(name), val(confidence_set_name), file("${confidence_set_name}_quality_summary.tsv"), path("${confidence_set_name}/") optional false
     script:
+    if( ${confidence_set_name} == 'prophages')
         """
-        if [[ ${fasta} == *"prophage"* ]] 
-        then
-          grep '>' ${fasta} | cut -d' ' -f1 > prophage_contigs
-          seqtk subseq ${filtered_fasta} prophage_contigs > prophage_contigs.fasta
-          checkv end_to_end prophage_contigs.fasta -d ${database} -t ${task.cpus} ${confidence_set_name} 
-        else
-          checkv end_to_end ${fasta} -d ${database} -t ${task.cpus} ${confidence_set_name} 
-        fi
+        grep '>' ${fasta} | cut -d' ' -f1 > prophage_contigs
+        seqtk subseq ${filtered_fasta} prophage_contigs > prophage_contigs.fasta
+        checkv end_to_end prophage_contigs.fasta -d ${database} -t ${task.cpus} ${confidence_set_name} 
+        cp ${confidence_set_name}/quality_summary.tsv ${confidence_set_name}_quality_summary.tsv 
+        """
+    else
+        """
+        checkv end_to_end ${fasta} -d ${database} -t ${task.cpus} ${confidence_set_name} 
         cp ${confidence_set_name}/quality_summary.tsv ${confidence_set_name}_quality_summary.tsv 
         """
         
