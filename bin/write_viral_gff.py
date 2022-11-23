@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import sys
 import os
 import logging
@@ -30,17 +28,9 @@ def write_gff(virify_files, sample_prefix, ena_mapping=None):
     else:
         output_filename = f'{sample_prefix}_virify.gff'
     with open(output_filename, 'w') as gff:
+        gff.write(f'##gff-version 3\n')
         #   annotation type specify this is virify confidence level
         for vfile in virify_files:
-            if 'high_confidence_viral_contigs' in vfile:
-                viral_type = 'virify_high_confidence_viral_contig'
-            elif 'low_confidence_viral_contigs' in vfile:
-                viral_type = 'virify_low_confidence_viral_contig'
-            elif 'prophages' in vfile:
-                viral_type = 'virify_prophage'
-            else:
-                logging.error(f'viral type {vfile} is not high, low or prophage')
-                sys.exit()
             virify_df = pd.read_csv(vfile, sep="\t")
             filtered_df = virify_df[virify_df["Best_hit"] != 'No hit']
             #   set lowest possible start and highest possible end
@@ -66,7 +56,7 @@ def write_gff(virify_files, sample_prefix, ena_mapping=None):
                 #   ID=ERZ2271866.1-NODE-1-length-21396-cov-5.122534;viphog=ViPhOG1;viphog_taxonomy=Phaeovirus
                 annotation = f'ID={contig_name};viphog={viphog};viphog_taxonomy={row["Label"]}'
                 #   start with: ERZ2271866.1-NODE-1-length-21396-cov-5.122534	ViPhOG	proviral_region	1020	2050	.	-	.
-                gff.write(f'{contig_name}\t{viphog}\t{viral_type}\t{row["Start"]}\t{row["End"]}\t.\t{direction}'
+                gff.write(f'{contig_name}\t{viphog}\tviral_sequence\t{row["Start"]}\t{row["End"]}\t.\t{direction}'
                           f'\t.\t{annotation}\n')
     return contigs
 
@@ -78,7 +68,7 @@ def write_metadata(checkv_files, taxonomy_files, sample_prefix, virify_contigs, 
     else:
         output_filename = f'{sample_prefix}_virify_contig_viewer_metadata.tsv'
     headers = 'sequence_id\tcontig\tvirify_taxonomy\tstart_of_first_viphog\tend_of_last_viphog\tcheckv_provirus\t' \
-              'checkv_quality\n'
+              'checkv_quality\tmiuvig_quality\n'
     checkv_dict, taxonomy_dict = {}, {}
 
     #   parse checkv for quality
@@ -102,7 +92,7 @@ def write_metadata(checkv_files, taxonomy_files, sample_prefix, virify_contigs, 
                     else:
                         contig_lineage.append(lineage)
                 joined_lineage = ';'.join(contig_lineage)
-                #   set to unclassified if all levels are empty
+                #set to unclassified if all levels are empty
                 if joined_lineage == ';;;':
                     taxonomy_dict[row["contig_ID"]] = 'unclassified'
                 else:
@@ -136,12 +126,18 @@ def write_metadata(checkv_files, taxonomy_files, sample_prefix, virify_contigs, 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Generate GFF and corresponding from VIRify output files" )
-    parser.add_argument("-v", "--virify-files", dest="virify_files", help="list of virify annotation summary files",
-                        nargs='+', required=True)
-    parser.add_argument("-c", "--checkv-files", dest="checkv_files",
-                        help="Path to checkV results files", required=True, nargs='+')
-    parser.add_argument("-t", "--taxonomy-files", dest="taxonomy_files",
-                        help="Path to taxonomy result files", required=True, nargs='+' )
+    parser.add_argument("-v", "--virify-folder", dest="virify_folder", help="Path to virify output folders",
+                        required=True)
+    parser.add_argument("-c", "--checkv-folder", dest="checkv_folder",
+                        help="Path to checkV results folder, defaults to virify folder", required=False)
+    parser.add_argument("-t", "--taxonomy-folder", dest="taxonomy_folder",
+                        help="Path to checkV results folder, defaults to virify folder", required=False)
+    parser.add_argument("-sv", "--suffix_virify", dest="virify_ext", help="file extension for virify outputs",
+                        required=True)
+    parser.add_argument("-sc", "--suffix_checkv", dest="checkv_ext", help="file extension for checkv outputs",
+                        required=True)
+    parser.add_argument("-st", "--suffix_taxonomy", dest="taxonomy_ext", help="file extension for taxonomy outputs",
+                        required=True)
     parser.add_argument("-s", "--sample-id", dest="sample_id", help="sample_id to prefix output file name. "
                                                                     "Ignored with --rename-contigs option",
                         required=True)
@@ -152,13 +148,19 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    #    validate arguments
+    if not args.checkv_folder:
+        args.checkv_folder = args.virify_folder
+    if not args.taxonomy_folder:
+        args.taxonomy_folder = args.virify_folder
+
     if args.rename_contigs and not args.ena_contigs:
         logging.error('Contig renaming selected but no contig file provided. Provide path to ENA contig '
                       'file with --ena-contigs')
 
-    virify_files = args.virify_files
-    checkv_files = args.checkv_files
-    taxonomy_files = args.taxonomy_files
+    virify_files = glob.glob(os.path.join(args.virify_folder, '*' + args.virify_ext))
+    checkv_files = glob.glob(os.path.join(args.checkv_folder, '*' + args.checkv_ext))
+    taxonomy_files = glob.glob(os.path.join(args.taxonomy_folder, '*' + args.taxonomy_ext))
 
     logging.info(f'found virify files: {virify_files}')
     logging.info(f'found checkV files: {checkv_files}')
