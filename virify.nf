@@ -137,6 +137,7 @@ include {chromomap} from './nextflow/modules/chromomap'
 include {balloon} from './nextflow/modules/balloon'
 
 //qc
+include { select_prophage } from './nextflow/modules/checkV'
 include { checkV } from './nextflow/modules/checkV'
 
 //gff
@@ -466,7 +467,9 @@ workflow annotate {
         }
 
         // checkV QC
-        checkV(predicted_contigs, checkv_db, filtered_contigs)
+        checkV(
+          select_prophage(predicted_contigs, filtered_contigs),
+          checkv_db)
         
         // write GFF
         write_gff(annotation.out, checkV.out, assign.out)

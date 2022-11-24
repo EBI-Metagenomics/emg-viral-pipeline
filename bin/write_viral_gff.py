@@ -1,8 +1,5 @@
-import sys
-import os
-import logging
+=import logging
 import argparse
-import glob
 import pandas as pd
 from Bio import SeqIO
 import gzip
@@ -126,18 +123,12 @@ def write_metadata(checkv_files, taxonomy_files, sample_prefix, virify_contigs, 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Generate GFF and corresponding from VIRify output files" )
-    parser.add_argument("-v", "--virify-folder", dest="virify_folder", help="Path to virify output folders",
-                        required=True)
-    parser.add_argument("-c", "--checkv-folder", dest="checkv_folder",
-                        help="Path to checkV results folder, defaults to virify folder", required=False)
-    parser.add_argument("-t", "--taxonomy-folder", dest="taxonomy_folder",
-                        help="Path to checkV results folder, defaults to virify folder", required=False)
-    parser.add_argument("-sv", "--suffix_virify", dest="virify_ext", help="file extension for virify outputs",
-                        required=True)
-    parser.add_argument("-sc", "--suffix_checkv", dest="checkv_ext", help="file extension for checkv outputs",
-                        required=True)
-    parser.add_argument("-st", "--suffix_taxonomy", dest="taxonomy_ext", help="file extension for taxonomy outputs",
-                        required=True)
+    parser.add_argument("-v", "--virify-files", dest="virify_files", help="list of virify annotation summary files",
+                        nargs='+', required=True)
+    parser.add_argument("-c", "--checkv-files", dest="checkv_files",
+                        help="Path to checkV results files", required=True, nargs='+')
+    parser.add_argument("-t", "--taxonomy-files", dest="taxonomy_files",
+                        help="Path to taxonomy result files", required=True, nargs='+' )
     parser.add_argument("-s", "--sample-id", dest="sample_id", help="sample_id to prefix output file name. "
                                                                     "Ignored with --rename-contigs option",
                         required=True)
@@ -148,19 +139,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    #    validate arguments
-    if not args.checkv_folder:
-        args.checkv_folder = args.virify_folder
-    if not args.taxonomy_folder:
-        args.taxonomy_folder = args.virify_folder
-
     if args.rename_contigs and not args.ena_contigs:
         logging.error('Contig renaming selected but no contig file provided. Provide path to ENA contig '
                       'file with --ena-contigs')
 
-    virify_files = glob.glob(os.path.join(args.virify_folder, '*' + args.virify_ext))
-    checkv_files = glob.glob(os.path.join(args.checkv_folder, '*' + args.checkv_ext))
-    taxonomy_files = glob.glob(os.path.join(args.taxonomy_folder, '*' + args.taxonomy_ext))
+    virify_files = args.virify_files
+    checkv_files = args.checkv_files
+    taxonomy_files = args.taxonomy_files
 
     logging.info(f'found virify files: {virify_files}')
     logging.info(f'found checkV files: {checkv_files}')
