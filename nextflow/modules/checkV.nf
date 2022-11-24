@@ -12,7 +12,7 @@ process select_prophage {
     script:
     if( ${confidence_set_name} == 'prophages')
         """
-        grep '>' ${fasta} | cut -d' ' -f1 | sed 's/>//g' > prophage_contigs
+        grep '>' ${fasta} | cut -d' ' -f1 | sed 's/>//g' | sort -u > prophage_contigs
         seqtk subseq ${filtered_fasta} prophage_contigs > ${confidence_set_name}_checkv_contigs.fasta
         """
     else
