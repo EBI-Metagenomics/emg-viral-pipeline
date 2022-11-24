@@ -1,5 +1,6 @@
-=import logging
+import logging
 import argparse
+import sys
 import pandas as pd
 from Bio import SeqIO
 import gzip
@@ -89,7 +90,7 @@ def write_metadata(checkv_files, taxonomy_files, sample_prefix, virify_contigs, 
                     else:
                         contig_lineage.append(lineage)
                 joined_lineage = ';'.join(contig_lineage)
-                #set to unclassified if all levels are empty
+                #   set to unclassified if all levels are empty
                 if joined_lineage == ';;;':
                     taxonomy_dict[row["contig_ID"]] = 'unclassified'
                 else:
@@ -126,9 +127,9 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--virify-files", dest="virify_files", help="list of virify annotation summary files",
                         nargs='+', required=True)
     parser.add_argument("-c", "--checkv-files", dest="checkv_files",
-                        help="Path to checkV results files", required=True, nargs='+')
+                        help="list of checkv summary files", required=True, nargs='+')
     parser.add_argument("-t", "--taxonomy-files", dest="taxonomy_files",
-                        help="Path to taxonomy result files", required=True, nargs='+' )
+                        help="list of virify taxonomic annotation summary files", required=True, nargs='+' )
     parser.add_argument("-s", "--sample-id", dest="sample_id", help="sample_id to prefix output file name. "
                                                                     "Ignored with --rename-contigs option",
                         required=True)
@@ -150,7 +151,28 @@ if __name__ == "__main__":
     logging.info(f'found virify files: {virify_files}')
     logging.info(f'found checkV files: {checkv_files}')
     logging.info(f'found taxonomy files: {taxonomy_files}')
+    
+    #   sanity check: only keep any confidence level that is present in all three folders
+    virify_files_filt, checkv_files_filt, taxonomy_files_filt = [], [], []
+    for confidence in ['high', 'low', 'prophage']:
+        vf_exists = any(confidence in x for x in virify_files)
+        cf_exists = any(confidence in x for x in checkv_files)
+        tf_exists = any(confidence in x for x in taxonomy_files)
+        
+        if not vf_exists or not cf_exists or not tf_exists:
+            for file_list in [virify_files, checkv_files, taxonomy_files]:
+                for f in file_list:
+                    if confidence in f:
+                        file_list.remove(f)
 
+    logging.info(f'filtered virify files: {virify_files}')
+    logging.info(f'filtered checkV files: {checkv_files}')
+    logging.info(f'filtered taxonomy files: {taxonomy_files}')
+    
+    if not len(virify_files):
+        logging.info('No viral predictions found.. exiting')
+        sys.exit(0)
+        
     if args.rename_contigs:
         logging.warning('Provided sample ID is ignored with --rename-contigs option. ENA ERZ accession will be used')
         ena_mapping = get_ena_contig_mapping(args.ena_contigs)
@@ -158,6 +180,6 @@ if __name__ == "__main__":
         ena_mapping = None
 
     logging.info('Generating GFF')
-    virify_contigs = write_gff(virify_files, args.sample_id, ena_mapping=ena_mapping)
+    virify_contigs = write_gff(virify_files_filt, args.sample_id, ena_mapping=ena_mapping)
     logging.info('Generating metadata')
-    write_metadata(checkv_files, taxonomy_files, args.sample_id, virify_contigs, ena_mapping=ena_mapping)
+    write_metadata(checkv_files_filt, taxonomy_files_filt, args.sample_id, virify_contigs, ena_mapping=ena_mapping)
