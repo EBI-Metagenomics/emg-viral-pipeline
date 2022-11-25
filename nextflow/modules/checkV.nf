@@ -3,7 +3,8 @@ process checkV {
         publishDir "${params.output}/${name}/${params.checkvdir}/", mode: 'copy' , pattern: "*.tsv"
         label 'checkV'
     input:
-        tuple val(name), val(confidence_set_name), file(fasta), file(contigs), file(database)
+        tuple val(name), val(confidence_set_name), file(fasta), file(contigs)
+        file(database)
 
     output:
         tuple val(name), val(confidence_set_name), file("${confidence_set_name}_quality_summary.tsv"), path("${confidence_set_name}/")

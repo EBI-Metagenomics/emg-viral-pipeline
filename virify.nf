@@ -466,7 +466,8 @@ workflow annotate {
         }
 
         checkV(
-          predicted_contigs.combine(contigs.map { name, fasta -> fasta }.merge(checkv_db))
+          predicted_contigs.combine(contigs.map { name, fasta -> fasta }),
+          checkv_db
         )
 
         viphos_annotations = annotation.out.map { _, __, annotations -> annotations }.collect()
