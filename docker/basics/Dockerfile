@@ -10,7 +10,7 @@ LABEL about.home="https://github.com/EBI-Metagenomics/emg-viral-pipeline/"
 LABEL maintainer="MGnify team <https://www.ebi.ac.uk/support/metagenomics>"
 
 RUN apt update && \
-    apt install -y --no-install-recommends procps wget curl tar gzip python3 pdftk-java seqtk && \
+    apt install -y --no-install-recommends procps wget curl tar gzip python3 pdftk-java && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
