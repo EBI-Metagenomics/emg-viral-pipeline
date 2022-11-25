@@ -137,7 +137,6 @@ include {chromomap} from './nextflow/modules/chromomap'
 include {balloon} from './nextflow/modules/balloon'
 
 //qc
-include { select_prophage } from './nextflow/modules/checkV'
 include { checkV } from './nextflow/modules/checkV'
 
 //gff
@@ -414,7 +413,8 @@ Also runs additional HMM from further databases if defined and can also run a si
 Then, all results are summarized for reporting and plotting. 
 */
 workflow annotate {
-    take:   filtered_contigs
+    take:   
+            contigs
             predicted_contigs
             viphog_db
             ncbi_db
@@ -461,23 +461,28 @@ workflow annotate {
           hmmscan_vpf(prodigal.out, vpf_db)
         }
 
-        // mashmap
         if (params.mashmap) {
             mashmap(predicted_contigs, mashmap_ref_ch)
         }
 
-        // checkV QC
         checkV(
-          select_prophage(predicted_contigs, filtered_contigs),
-          checkv_db)
-        
-        // write GFF
-        write_gff(annotation.out, checkV.out, assign.out)
+          predicted_contigs.combine(contigs.map { name, fasta -> fasta }.merge(checkv_db))
+        )
 
-        
-    predicted_contigs_filtered = predicted_contigs.map { id, set_name, fasta -> [set_name, id, fasta] }
-    plot_contig_map_filtered = plot_contig_map.out.map { id, set_name, dir, table -> [set_name, table] }
-    chromomap_ch = predicted_contigs_filtered.join(plot_contig_map_filtered).map { set_name, assembly_name, fasta, tsv -> [assembly_name, set_name, fasta, tsv]}
+        viphos_annotations = annotation.out.map { _, __, annotations -> annotations }.collect()
+        taxonomy_annotations = assign.out.map { _, __, taxonomy -> taxonomy }.collect()
+        checkv_results = checkV.out.map { _, __, quality_summary, ___ -> quality_summary }.collect()
+
+        write_gff(
+          contigs.map { name, _ -> name }.first(),
+          viphos_annotations,
+          taxonomy_annotations,
+          checkv_results
+        )
+
+        predicted_contigs_filtered = predicted_contigs.map { id, set_name, fasta -> [set_name, id, fasta] }
+        plot_contig_map_filtered = plot_contig_map.out.map { id, set_name, dir, table -> [set_name, table] }
+        chromomap_ch = predicted_contigs_filtered.join(plot_contig_map_filtered).map { set_name, assembly_name, fasta, tsv -> [assembly_name, set_name, fasta, tsv]}
 
     emit:
       assign.out
@@ -604,10 +609,10 @@ workflow {
         preprocess(fasta_input_ch)
         plot(
           annotate(
-            preprocess.out.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(filtered_fasta)},
+            fasta_input_ch,
             postprocess(
               preprocess.out.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map)}
-              ), 
+            ),
             viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db
           )
         )
@@ -615,7 +620,7 @@ workflow {
           preprocess(fasta_input_ch)
           plot(
             annotate(
-              preprocess.out.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(filtered_fasta)},
+              fasta_input_ch,
               postprocess(
                   detect(
                       preprocess.out,
@@ -630,11 +635,11 @@ workflow {
 
     // illumina data to build an assembly first
     if (params.illumina) { 
-      assemble_illumina(illumina_input_ch)   
+      assemble_illumina(illumina_input_ch)
       preprocess(assemble_illumina.out) 
       plot(
         annotate(
-          preprocess.out.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(filtered_fasta)},
+          assemble_illumina.out,
           postprocess(detect(preprocess.out, virsorter_db, virfinder_db, pprmeta_git)), 
           viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db)
       )
