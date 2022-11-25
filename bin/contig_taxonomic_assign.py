@@ -30,9 +30,19 @@ def contig_tax(annot_df, ncbi_db, min_prot, prop_annot, tax_thres):
             contig_lineage.extend([""] * 4)
         else:
             contig_hits = contig_df[pd.notnull(contig_df["Label"])]["Label"].values
+
+            def _translate(item):
+                translator_dict = ncbi.get_name_translator([item])
+                if item in translator_dict:
+                    return translator_dict[item][0]
+                return
+           
             taxid_list = [
-                ncbi.get_name_translator([item])[item][0] for item in contig_hits
+                _translate(item) for item in contig_hits 
             ]
+
+            taxid_list = list(filter(None, taxid_list))
+
             hit_lineages = [
                 {
                     y: x
