@@ -36,6 +36,7 @@ def main():
         except docker.errors.BuildError as build_ex:
             print(f"Build of {tool} with tag:{version_tag} FAILED. Exception {build_ex}", file=sys.stderr)
             print(f"Build exception {build_ex}", file=sys.stderr)
+            raise build_ex
 
 
 if __name__ == "__main__":

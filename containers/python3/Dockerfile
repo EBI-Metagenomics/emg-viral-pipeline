@@ -11,8 +11,6 @@ LABEL software.version="1.1"
 
 LABEL maintainer="MGnify team <https://www.ebi.ac.uk/support/metagenomics>"
 
-COPY requirements.txt ./
-
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir ete3==3.1.1 biopython==1.80 pandas==1.5.2
 
 CMD ["python"]
