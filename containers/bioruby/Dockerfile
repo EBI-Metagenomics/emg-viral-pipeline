@@ -10,7 +10,7 @@ LABEL about.license="https://github.com/bioruby/bioruby/blob/2.0.1/LEGAL"
 LABEL about.tags="ruby"
 LABEL about.home="https://github.com/bioruby/bioruby"
 LABEL software="bioruby"
-LABEL software.version="v2.0.1"
+LABEL software.version="2.0.1"
 
 RUN gem install bio -v $VERSION
 

@@ -10,7 +10,7 @@ LABEL about.license="SPDX:GPL-3.0-or-later"
 LABEL about.tags="visualization"
 LABEL about.home="https://github.com/fbreitwieser/sankeyD3/"
 LABEL software="sankeyD3"
-LABEL software.version="v0.12.3"
+LABEL software.version="0.12.3"
 
 LABEL maintainer="MGnify team <https://www.ebi.ac.uk/support/metagenomics>"
 

@@ -7,7 +7,7 @@ LABEL about.license_file="https://bitbucket.org/berkeleylab/checkv/src/master/LI
 LABEL about.tags="virus quality"
 LABEL about.home="https://bitbucket.org/berkeleylab/checkv"
 LABEL software="CheckV"
-LABEL software.version="0.8.1"
+LABEL software.version="0.8.1__1"
 
 ENV VERSION 0.8.1
 

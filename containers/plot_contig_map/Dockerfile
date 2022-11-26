@@ -5,7 +5,7 @@ LABEL about.summary="r visualization packages"
 LABEL about.license="SPDX:Apache-2.0"
 LABEL about.tags="r, visualization"
 
-LABEL software="plot-contig-map"
+LABEL software="virify-plot-contig-map"
 LABEL software.version="1"
 
 RUN apt update && apt install -y procps && \
