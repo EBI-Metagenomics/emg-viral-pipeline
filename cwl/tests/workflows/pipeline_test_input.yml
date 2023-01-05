@@ -35,4 +35,3 @@ ncbi_tax_db_file:
 img_blast_database_dir:
   class: Directory
   path: ../../databases/IMG_VR_2018-07-01_4
-
