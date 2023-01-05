@@ -1,0 +1,255 @@
+#!/usr/bin/env python3
+
+import logging
+import argparse
+import sys
+import gzip
+
+import pandas as pd
+from Bio import SeqIO
+
+logging.basicConfig(level=logging.INFO)
+
+
+def get_ena_contig_mapping(ena_contig_file):
+    ena_mapping = {}
+    with gzip.open(ena_contig_file, "rt") as ena_contigs:
+        for record in SeqIO.parse(ena_contigs, "fasta"):
+            ena_name = record.id
+            contig_name = record.description.split(" ")[1]
+            ena_mapping[contig_name] = ena_name
+    return ena_mapping
+
+
+def write_gff(virify_files, sample_prefix, ena_mapping=None):
+    contigs = {}
+    if ena_mapping:
+        ena_assembly_accession = list(ena_mapping.values())[0].split(".")[0]
+        output_filename = f"{ena_assembly_accession}_virify.gff"
+    else:
+        output_filename = f"{sample_prefix}_virify.gff"
+    with open(output_filename, "w") as gff:
+        gff.write(f"##gff-version 3\n")
+        #   annotation type specify this is virify confidence level
+        for vfile in virify_files:
+            virify_df = pd.read_csv(vfile, sep="\t")
+            filtered_df = virify_df[virify_df["Best_hit"] != "No hit"]
+            #   set lowest possible start and highest possible end
+            for index, row in filtered_df.iterrows():
+                if not row["Contig"] in contigs:
+                    contigs[row["Contig"]] = {"start": row["Start"], "end": row["End"]}
+                else:
+                    if contigs[row["Contig"]]["start"] > row["Start"]:
+                        contigs[row["Contig"]]["start"] = row["Start"]
+                    if contigs[row["Contig"]]["end"] < row["End"]:
+                        contigs[row["Contig"]]["end"] = row["End"]
+
+                #   remove '.faa' trailing viphog ID
+                viphog = row["Best_hit"].strip(".faa")
+                direction = "-" if row["Direction"] == "-1" else "+"
+
+                #   change contig name if ena mapping required
+                if ena_mapping:
+                    contig_name = f'{ena_mapping[row["Contig"]]}-{row["Contig"]}'
+                else:
+                    contig_name = row["Contig"]
+
+                #   ID=ERZ2271866.1-NODE-1-length-21396-cov-5.122534;viphog=ViPhOG1;viphog_taxonomy=Phaeovirus
+                annotation = (
+                    f'ID={contig_name};viphog={viphog};viphog_taxonomy={row["Label"]}'
+                )
+                #   start with: ERZ2271866.1-NODE-1-length-21396-cov-5.122534	ViPhOG	proviral_region	1020	2050	.	-	.
+                gff.write(
+                    f'{contig_name}\t{viphog}\tviral_sequence\t{row["Start"]}\t{row["End"]}\t.\t{direction}'
+                    f"\t.\t{annotation}\n"
+                )
+    return contigs
+
+
+def write_metadata(
+    checkv_files, taxonomy_files, sample_prefix, virify_contigs, ena_mapping=None
+):
+    if ena_mapping:
+        ena_assembly_accession = list(ena_mapping.values())[0].split(".")[0]
+        output_filename = f"{ena_assembly_accession}_virify_contig_viewer_metadata.tsv"
+    else:
+        output_filename = f"{sample_prefix}_virify_contig_viewer_metadata.tsv"
+    headers = (
+        "sequence_id\tcontig\tvirify_taxonomy\tstart_of_first_viphog\tend_of_last_viphog\tcheckv_provirus\t"
+        "checkv_quality\tmiuvig_quality\n"
+    )
+    checkv_dict, taxonomy_dict = {}, {}
+
+    #   parse checkv for quality
+    for cfile in checkv_files:
+        checkv_df = pd.read_csv(cfile, sep="\t")
+        for index, row in checkv_df.iterrows():
+            if row["contig_id"] in virify_contigs:
+                checkv_type = row["provirus"]
+                checkv_dict[row["contig_id"]] = {
+                    "checkv_type": checkv_type,
+                    "checkv_quality": row["checkv_quality"],
+                    "miuvig_quality": row["miuvig_quality"],
+                }
+
+    #   parse taxonomic lineage when available
+    for tfile in taxonomy_files:
+        taxonomy_df = pd.read_csv(tfile, sep="\t")
+        for index, row in taxonomy_df.iterrows():
+            if row["contig_ID"] in virify_contigs:
+                contig_lineage = []
+                for lineage in [
+                    row["order"],
+                    row["family"],
+                    row["subfamily"],
+                    row["genus"],
+                ]:
+                    if "." in str(lineage) or pd.isna(lineage):
+                        contig_lineage.append("")
+                    else:
+                        contig_lineage.append(lineage)
+                joined_lineage = ";".join(contig_lineage)
+                #   set to unclassified if all levels are empty
+                if joined_lineage == ";;;":
+                    taxonomy_dict[row["contig_ID"]] = "unclassified"
+                else:
+                    taxonomy_dict[row["contig_ID"]] = joined_lineage
+
+    with open(output_filename, "w") as metadata:
+        metadata.write(headers)
+        for contig in virify_contigs:
+            #   change contig name if ena mapping required
+            if ena_mapping:
+                contig_name = f"{ena_mapping[contig]}-{contig}"
+            else:
+                contig_name = contig
+            virify_taxonomy = taxonomy_dict[contig]
+            sequence_start = virify_contigs[contig]["start"]
+            sequence_end = virify_contigs[contig]["end"]
+            sequence_id = f"{contig_name}-start-{sequence_start}-end-{sequence_end}"
+            checkv_type = checkv_dict[contig]["checkv_type"]
+            checkv_quality = checkv_dict[contig]["checkv_quality"]
+            miuvig_quality = checkv_dict[contig]["miuvig_quality"]
+            metadata.write(
+                "\t".join(
+                    [
+                        sequence_id,
+                        contig_name,
+                        virify_taxonomy,
+                        str(sequence_start),
+                        str(sequence_end),
+                        checkv_type,
+                        str(checkv_quality),
+                        str(miuvig_quality),
+                    ]
+                )
+                + "\n"
+            )
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Generate GFF and corresponding from VIRify output files"
+    )
+    parser.add_argument(
+        "-v",
+        "--virify-files",
+        dest="virify_files",
+        help="List of virify annotation summary files",
+        nargs="+",
+        required=True,
+    )
+    parser.add_argument(
+        "-c",
+        "--checkv-files",
+        dest="checkv_files",
+        help="list of checkv summary files",
+        required=True,
+        nargs="+",
+    )
+    parser.add_argument(
+        "-t",
+        "--taxonomy-files",
+        dest="taxonomy_files",
+        help="list of virify taxonomic annotation summary files",
+        required=True,
+        nargs="+",
+    )
+    parser.add_argument(
+        "-s",
+        "--sample-id",
+        dest="sample_id",
+        help="sample_id to prefix output file name. "
+        "Ignored with --rename-contigs option",
+        required=True,
+    )
+    parser.add_argument(
+        "--rename-contigs",
+        help="True if contigs needs renaming from ERR to ERZ",
+        required=False,
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
+        "--ena-contigs",
+        dest="ena_contigs",
+        help="Path to ENA contig file if renaming needed",
+        required=False,
+    )
+
+    args = parser.parse_args()
+
+    if args.rename_contigs and not args.ena_contigs:
+        logging.error(
+            "Contig renaming selected but no contig file provided. Provide path to ENA contig "
+            "file with --ena-contigs"
+        )
+
+    virify_files = args.virify_files
+    checkv_files = args.checkv_files
+    taxonomy_files = args.taxonomy_files
+
+    logging.info(f"found virify files: {virify_files}")
+    logging.info(f"found checkV files: {checkv_files}")
+    logging.info(f"found taxonomy files: {taxonomy_files}")
+
+    # sanity check: only keep any confidence level that is present in all three folders
+    for confidence in ["high", "low", "prophage"]:
+        vf_exists = any(confidence in x for x in virify_files)
+        cf_exists = any(confidence in x for x in checkv_files)
+        tf_exists = any(confidence in x for x in taxonomy_files)
+
+        if not vf_exists or not cf_exists or not tf_exists:
+            for file_list in [virify_files, checkv_files, taxonomy_files]:
+                for f in file_list:
+                    if confidence in f:
+                        file_list.remove(f)
+
+    logging.info(f"Filtered virify files: {virify_files}")
+    logging.info(f"Filtered checkV files: {checkv_files}")
+    logging.info(f"Filtered taxonomy files: {taxonomy_files}")
+
+    if not len(virify_files):
+        logging.info("No viral predictions found.. exiting")
+        sys.exit(0)
+
+    if args.rename_contigs:
+        logging.warning(
+            "Provided sample ID is ignored with --rename-contigs option. ENA ERZ accession will be used"
+        )
+        ena_mapping = get_ena_contig_mapping(args.ena_contigs)
+    else:
+        ena_mapping = None
+
+    logging.info("Generating GFF")
+    virify_contigs = write_gff(
+        virify_files, args.sample_id, ena_mapping=ena_mapping
+    )
+    logging.info("Generating metadata")
+    write_metadata(
+        checkv_files,
+        taxonomy_files,
+        args.sample_id,
+        virify_contigs,
+        ena_mapping=ena_mapping,
+    )
