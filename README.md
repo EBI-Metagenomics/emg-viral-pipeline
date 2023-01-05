@@ -2,7 +2,6 @@
 ![](https://img.shields.io/badge/nextflow-22.04.5-brightgreen)
 ![](https://img.shields.io/badge/uses-docker-blue.svg)
 ![](https://img.shields.io/badge/uses-singularity-red.svg)
-[![Build Status](https://travis-ci.com/EBI-Metagenomics/emg-viral-pipeline.svg?branch=master)](https://travis-ci.com/EBI-Metagenomics/emg-viral-pipeline)
 
 <img align="right" width="140" height="140" src="figures/virify_logo.png">
 
@@ -114,6 +113,37 @@ The engine `conda` is not working at the moment until there is a conda recipe fo
 
 <a name="cwl"></a>
 
+## Monitoring
+
+<img align="right" width="400px" src="figures/tower.png" alt="Monitoring with Nextflow Tower" /> 
+
+To monitor your Nextflow computations, VIRify can be connected to [Nextflow Tower](https://tower.nf). You need a user access token to connect your Tower account with the pipeline. Simply [generate a login](https://tower.nf/login) using your email and then click the link sent to this address.
+
+Once logged in, click on your avatar in the top right corner and select "Your tokens." Generate a token or copy the default one and set the following environment variable:
+
+```bash
+export TOWER_ACCESS_TOKEN=<YOUR_COPIED_TOKEN>
+```
+
+You can save this variable in your `.bashrc` or `.profile` to not need to enter it again. Refresh your terminal.
+
+Now run:
+
+```bash
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.4.0 --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" --cores 4 -profile local,docker -with-tower
+```
+
+Alternatively, you can also pull the code from this repository and activate the Tower connection within the `nextflow.config` file located in the root GitHub directory:
+
+```java
+tower {
+    accessToken = ''
+    enabled = true
+} 
+```
+
+You can also directly enter your access token here instead of generating the above-mentioned environment variable.
+
 # Common Workflow Language
 VIRify was implemented in [Common Workflow Language (CWL)](https://www.commonwl.org/). 
 
@@ -144,7 +174,6 @@ Although VIRify has been benchmarked and validated with metagenomic data in mind
 **3. Post-processing:** Metatranscriptomes generate highly fragmented assemblies. Therefore, filtering contigs based on a set minimum length has a substantial impact in the number of contigs processed in VIRify. It has also been observed that the number of false-positive detections of [VirFinder](https://github.com/jessieren/VirFinder/releases) (one of the tools included in VIRify) is lower among larger contigs. The choice of a length threshold will depend on the complexity of the sample and the sequencing technology used, but in our experience any contigs <2 kb should be analysed with caution.
 
 **4. Classification:** The classification module of VIRify depends on the presence of a minimum number and proportion of phylogenetically-informative genes within each contig in order to confidently assign a taxonomic lineage. Therefore, short contigs typically obtained from metatranscriptome assemblies remain generally unclassified. For targeted classification of RNA viruses (for instance, to search for Coronavirus-related sequences), alternative DNA- or protein-based classification methods can be used. Two of the possible options are: (i) using [MashMap](https://github.com/marbl/MashMap/releases) to screen the VIRify contigs against a database of RNA viruses (e.g. Coronaviridae) or (ii) using [hmmsearch](http://hmmer.org/download.html) to screen the proteins obtained in the VIRify contigs against marker genes of the taxon of interest.
-
 
 <a name="resources"></a>
 
