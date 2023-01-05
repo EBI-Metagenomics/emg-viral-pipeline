@@ -1,0 +1,18 @@
+- name: virify - assembly.fasta
+  command: nextflow run -profile jenkins -c ./tests/config/nextflow.config virify.nf --fasta ./nextflow/test/assembly.fasta
+  files:
+    - path: "results/assembly/08-final/annotation/high_confidence_viral_contigs_prodigal_annotation.tsv"
+      md5sum: 58a1bb491707b6e4eacbc7920b6040d8
+      encoding: UTF-8
+    - path: "results/assembly/08-final/annotation/high_confidence_viral_contigs_prot_ann_table_filtered.tsv"
+      md5sum: 79712308d74361c4d2ed4b96d8fba70d
+      encoding: UTF-8
+    - path: "results/assembly/08-final/annotation/low_confidence_viral_contigs_prodigal_annotation.tsv"
+      md5sum: 87a505fd44a88f20bb502a252aea5134
+      encoding: UTF-8
+    - path: "results/assembly/08-final/annotation/low_confidence_viral_contigs_prot_ann_table_filtered.tsv"
+      md5sum: 2374c67048fd89ea90523899448e11a6
+      encoding: UTF-8
+    - path: "results/assembly/08-final/annotation/prophages_prot_ann_table_filtered.tsv"
+      md5sum: 319bb76976ef8a03a32ed67bdc91c652
+      encoding: UTF-8
