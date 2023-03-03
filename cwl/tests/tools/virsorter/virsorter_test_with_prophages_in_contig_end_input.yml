@@ -1,0 +1,10 @@
+fasta_file:
+  class: File
+  path: assembly_with_prophages_on_contig_end.fasta
+  format: http://edamontology.org/format_1929
+data_dir:
+  class: Directory
+  path: ../../../databases/virsorter-data
+  doc: |
+    Symlink to the folder. On travis this folder is cached.
+    Locally, please run ln -s /path/to/virsorter_data_dir virsorter_data_dir

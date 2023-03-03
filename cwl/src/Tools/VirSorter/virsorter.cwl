@@ -9,7 +9,7 @@ hints:
     coresMin: $(inputs.number_of_cpus)
     ramMin: 9536
   DockerRequirement:
-    dockerPull: "microbiomeinformatics/virsorter:1.0.6"
+    dockerPull: "quay.io/microbiome-informatics/virsorter:1.0.6_edfeb8c5e72"
 
 baseCommand: ["wrapper_phage_contigs_sorter_iPlant.pl"]
 
