@@ -21,136 +21,213 @@ def get_ena_contig_mapping(ena_contig_file):
     return ena_mapping
 
 
-def write_gff(virify_files, sample_prefix, ena_mapping=None):
-    contigs = {}
+def collect_annot(virify_files, sample_prefix, ena_mapping=None):
+    ## Parsing the annotation files
+    contig_protID={}
+    prot_data={}
+    contig_data={}
+    for vfile in virify_files:
+        with open(vfile,'r') as input_table:
+            next(input_table)
+            for line in input_table:
+                line_l=line.rstrip().split('\t')
+                Contig=line_l[0]
+                CDS_ID=line_l[1]
+                Start=line_l[2]
+                if Start == '0':
+                    Start=1
+                End=line_l[3]
+                Direction=line_l[4]
+                Best_hit=line_l[5]
+
+                if '|phage-circular' in Contig:
+                    Contig=Contig.replace('|phage-circular','')
+                    CDS_ID=CDS_ID.replace('|phage-circular','')
+                    desc='phage_circular'
+
+                elif '|prophage-' in Contig:
+                    desc='prophage'
+                    # Fixing CDS coordinates to the context of the whole contig
+                    prophage_start=int(Contig.split('|')[1].split('-')[1].split(':')[0])
+                    Start=int(Start)+prophage_start
+                    End=int(End)+prophage_start
+
+                else:
+                    Contig=Contig.replace('|','')
+                    CDS_ID=CDS_ID.replace('|','')
+                    desc='phage_linear'
+
+                if Contig not in contig_protID.keys():
+                    contig_protID[Contig]=[CDS_ID]
+                    contig_data[Contig]=desc
+                else:
+                    contig_protID[Contig].append(CDS_ID)
+
+                Direction=Direction.replace('-1','-').replace('1','+')
+
+                if not Best_hit == 'No hit':
+                    Best_hit=Best_hit.replace('.faa','')
+                    Label=line_l[7]
+                    annotation='viphog='+Best_hit+';'+'viphog_taxonomy=\''+Label+'\''
+                #else:
+                #    annotation='product=hypothetical_protein'
+
+                    values=(str(Start),str(End),Direction,annotation)
+                    prot_data[CDS_ID]=values
+
+    #return dictionaries
+    return contig_protID, prot_data, contig_data
+
+
+def write_gff(
+    checkv_files, taxonomy_files, sample_prefix, assembly_file, annot_dicts, ena_mapping=None
+):
+
     if ena_mapping:
         ena_assembly_accession = list(ena_mapping.values())[0].split(".")[0]
         output_filename = f"{ena_assembly_accession}_virify.gff"
     else:
         output_filename = f"{sample_prefix}_virify.gff"
-    with open(output_filename, "w") as gff:
-        gff.write(f"##gff-version 3\n")
-        #   annotation type specify this is virify confidence level
-        for vfile in virify_files:
-            virify_df = pd.read_csv(vfile, sep="\t")
-            filtered_df = virify_df[virify_df["Best_hit"] != "No hit"]
-            #   set lowest possible start and highest possible end
-            for index, row in filtered_df.iterrows():
-                if not row["Contig"] in contigs:
-                    contigs[row["Contig"]] = {"start": row["Start"], "end": row["End"]}
-                else:
-                    if contigs[row["Contig"]]["start"] > row["Start"]:
-                        contigs[row["Contig"]]["start"] = row["Start"]
-                    if contigs[row["Contig"]]["end"] < row["End"]:
-                        contigs[row["Contig"]]["end"] = row["End"]
 
-                #   remove '.faa' trailing viphog ID
-                viphog = row["Best_hit"].strip(".faa")
-                direction = "-" if row["Direction"] == "-1" else "+"
-
-                #   change contig name if ena mapping required
-                if ena_mapping:
-                    contig_name = f'{ena_mapping[row["Contig"]]}-{row["Contig"]}'
-                else:
-                    contig_name = row["Contig"]
-
-                #   ID=ERZ2271866.1-NODE-1-length-21396-cov-5.122534;viphog=ViPhOG1;viphog_taxonomy=Phaeovirus
-                annotation = (
-                    f'ID={contig_name};viphog={viphog};viphog_taxonomy={row["Label"]}'
-                )
-                #   start with: ERZ2271866.1-NODE-1-length-21396-cov-5.122534	ViPhOG	proviral_region	1020	2050	.	-	.
-                gff.write(
-                    f'{contig_name}\t{viphog}\tviral_sequence\t{row["Start"]}\t{row["End"]}\t.\t{direction}'
-                    f"\t.\t{annotation}\n"
-                )
-    return contigs
-
-
-def write_metadata(
-    checkv_files, taxonomy_files, sample_prefix, virify_contigs, ena_mapping=None
-):
-    if ena_mapping:
-        ena_assembly_accession = list(ena_mapping.values())[0].split(".")[0]
-        output_filename = f"{ena_assembly_accession}_virify_contig_viewer_metadata.tsv"
-    else:
-        output_filename = f"{sample_prefix}_virify_contig_viewer_metadata.tsv"
-    headers = (
-        "sequence_id\tcontig\tvirify_taxonomy\tstart_of_first_viphog\tend_of_last_viphog\tcheckv_provirus\t"
-        "checkv_quality\tmiuvig_quality\n"
-    )
-    checkv_dict, taxonomy_dict = {}, {}
-
+    checkv_dict, taxonomy_dict, contigs_len_dict = {}, {}, {}
     #   parse checkv for quality
     for cfile in checkv_files:
-        checkv_df = pd.read_csv(cfile, sep="\t")
-        for index, row in checkv_df.iterrows():
-            if row["contig_id"] in virify_contigs:
-                checkv_type = row["provirus"]
-                checkv_dict[row["contig_id"]] = {
-                    "checkv_type": checkv_type,
-                    "checkv_quality": row["checkv_quality"],
-                    "miuvig_quality": row["miuvig_quality"],
-                }
+        with open(cfile,'r') as input_table:
+            next(input_table)
+            for line in input_table:
+                line_l=line.rstrip().split('\t')
+                contig_id=line_l[0]
+                checkv_type=line_l[2]
+                checkv_quality=line_l[7]
+                miuvig_quality=line_l[8]
+                value='checkv_provirus='+checkv_type+';checkv_quality='+checkv_quality+';miuvig_quality='+miuvig_quality
+                checkv_dict[contig_id]=value
 
     #   parse taxonomic lineage when available
     for tfile in taxonomy_files:
-        taxonomy_df = pd.read_csv(tfile, sep="\t")
-        for index, row in taxonomy_df.iterrows():
-            if row["contig_ID"] in virify_contigs:
-                contig_lineage = []
-                for lineage in [
-                    row["order"],
-                    row["family"],
-                    row["subfamily"],
-                    row["genus"],
-                ]:
-                    if "." in str(lineage) or pd.isna(lineage):
-                        contig_lineage.append("")
-                    else:
-                        contig_lineage.append(lineage)
-                joined_lineage = ";".join(contig_lineage)
-                #   set to unclassified if all levels are empty
-                if joined_lineage == ";;;":
-                    taxonomy_dict[row["contig_ID"]] = "unclassified"
-                else:
-                    taxonomy_dict[row["contig_ID"]] = joined_lineage
+        with open(tfile,'r') as input_table:
+            next(input_table)
+            for line in input_table:
+                line_l=line.rstrip().split('\t')
+                Contig=line_l.pop(0)
 
-    with open(output_filename, "w") as metadata:
-        metadata.write(headers)
-        for contig in virify_contigs:
-            #   change contig name if ena mapping required
-            if ena_mapping:
-                contig_name = f"{ena_mapping[contig]}-{contig}"
+                if '|phage-circular' in Contig:
+                    Contig=Contig.replace('|phage-circular','')
+                elif '|prophage-' in Contig:
+                    desc='prophage'
+                else:
+                    Contig=Contig.replace('|','')
+
+                lineage=[]
+                for element in line_l:
+                    if len(element)>0:
+                        try:
+                            float(element)
+                        except:
+                            lineage.append(element)
+                if len(lineage)>0:
+                    taxo_string=';'.join(lineage)
+                else:
+                    taxo_string='unclassified'
+
+                taxonomy_dict[Contig]=taxo_string
+
+    # Saving the original contig length
+    for record in SeqIO.parse(assembly_file, "fasta"):
+        contig_id=str(record.id)
+        seq_len=len(str(record.seq))
+        contigs_len_dict[contig_id]=str(seq_len)
+
+    contig_protID=annot_dicts[0]
+    prot_data=annot_dicts[1]
+    contig_data=annot_dicts[2]
+    # Writing the gff file
+    with open(output_filename, "w") as gff:
+        gff.write("##gff-version 3\n")
+        contig_protID=annot_dicts[0]
+        prot_data=annot_dicts[1]
+        contig_data=annot_dicts[2]
+
+        # Writing the gff header
+        printed_contig=[]
+        for element in contig_protID.keys():
+            if 'prophage' in element:
+                clean_id=element.split('|')[0]
             else:
-                contig_name = contig
-            virify_taxonomy = taxonomy_dict[contig]
-            sequence_start = virify_contigs[contig]["start"]
-            sequence_end = virify_contigs[contig]["end"]
-            sequence_id = f"{contig_name}-start-{sequence_start}-end-{sequence_end}"
-            checkv_type = checkv_dict[contig]["checkv_type"]
-            checkv_quality = checkv_dict[contig]["checkv_quality"]
-            miuvig_quality = checkv_dict[contig]["miuvig_quality"]
-            metadata.write(
-                "\t".join(
-                    [
-                        sequence_id,
-                        contig_name,
-                        virify_taxonomy,
-                        str(sequence_start),
-                        str(sequence_end),
-                        checkv_type,
-                        str(checkv_quality),
-                        str(miuvig_quality),
-                    ]
-                )
-                + "\n"
-            )
+                clean_id=element
+
+            if clean_id not in printed_contig:
+                printed_contig.append(clean_id)
+                element_len=contigs_len_dict[clean_id]
+                gff.write('##sequence-region '+clean_id+' 1 '+element_len+'\n')
+
+        # Writing the mobile genetic elements coordinates and attributes
+        phage_counter=0
+        phage_ids={}
+        for element in contig_protID.keys():
+            phage_counter+=1
+            element_id='phage_'+str(phage_counter)
+            phage_ids[element]=element_id
+            if 'prophage' in element:
+                seq_type='prophage'
+                seqid=element.split('|')[0]
+                start=element.split('|')[1].split('-')[1].split(':')[0]
+                if start=='0':
+                    start='1'
+                region_end=element.split('|')[1].split('-')[1].split(':')[1]
+                if int(region_end) > int(contigs_len_dict[seqid]):
+                    region_end=str(contigs_len_dict[seqid])
+            else:
+                seq_type='viral_sequence'
+                seqid=element
+                start='1'
+                region_end=contigs_len_dict[element]
+            
+            if element in taxonomy_dict.keys():
+                attributes='ID='+element_id+';gbkey=mobile_element;mobile_element_type='+contig_data[element]+';'+checkv_dict[element]+';taxonomy=\''+taxonomy_dict[element]+'\''
+            else:
+                attributes='ID='+element_id+';gbkey=mobile_element;mobile_element_type='+contig_data[element]+';'+checkv_dict[element]
+
+            source='VIRify'
+            score='.'
+            strand='.'
+            phase='.'
+
+            tsv_line=[seqid,source,seq_type,start,region_end,score,strand,phase,attributes]
+            tsv_line='\t'.join(tsv_line)
+            gff.write(tsv_line+'\n')
+
+            for protein in contig_protID[element]:
+                if protein in prot_data.keys():
+                    source='Prodigal'
+                    seq_type='CDS'
+                    start=prot_data[protein][0]
+                    end=prot_data[protein][1]
+                    if int(end) > int(region_end):
+                        end=region_end
+                    score='.'
+                    strand=prot_data[protein][2]
+                    phase='0'
+                    #attributes='ID='+protein+';Parent='+element_id+';gbkey=CDS;'+prot_data[protein][3]
+                    attributes='ID='+protein+';gbkey=CDS;'+prot_data[protein][3]
+
+                    tsv_line=[seqid,source,seq_type,start,end,score,strand,phase,attributes]
+                    tsv_line='\t'.join(tsv_line)
+                    gff.write(tsv_line+'\n')
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Generate GFF and corresponding from VIRify output files"
     )
+    parser.add_argument(
+        "-a",
+        "--assembly",
+        dest="assembly_file",
+        help="Original assembly fasta file",
+        required=True,
+    )
+
     parser.add_argument(
         "-v",
         "--virify-files",
@@ -205,10 +282,12 @@ if __name__ == "__main__":
             "file with --ena-contigs"
         )
 
+    assembly_file = args.assembly_file
     virify_files = args.virify_files
     checkv_files = args.checkv_files
     taxonomy_files = args.taxonomy_files
 
+    logging.info(f"found assembly file: {assembly_file}")
     logging.info(f"found virify files: {virify_files}")
     logging.info(f"found checkV files: {checkv_files}")
     logging.info(f"found taxonomy files: {taxonomy_files}")
@@ -233,6 +312,10 @@ if __name__ == "__main__":
         logging.info("No viral predictions found.. exiting")
         sys.exit(0)
 
+    if not len(assembly_file):
+        logging.info("No contigs in assembly file.. exiting")
+        sys.exit(0)
+
     if args.rename_contigs:
         logging.warning(
             "Provided sample ID is ignored with --rename-contigs option. ENA ERZ accession will be used"
@@ -241,15 +324,16 @@ if __name__ == "__main__":
     else:
         ena_mapping = None
 
-    logging.info("Generating GFF")
-    virify_contigs = write_gff(
+    logging.info("Collecting annotation data")
+    annot_dicts = collect_annot(
         virify_files, args.sample_id, ena_mapping=ena_mapping
     )
-    logging.info("Generating metadata")
-    write_metadata(
+    logging.info("Generating the gff output")
+    write_gff(
         checkv_files,
         taxonomy_files,
         args.sample_id,
-        virify_contigs,
+        args.assembly_file,
+        annot_dicts,
         ena_mapping=ena_mapping,
     )

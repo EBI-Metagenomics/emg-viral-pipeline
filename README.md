@@ -144,6 +144,21 @@ tower {
 
 You can also directly enter your access token here instead of generating the above-mentioned environment variable.
 
+
+### GFF output files
+
+The outputs generated from viral prediction tools, ViPhOG annotation, taxonomy assign, and CheckV quality are integrated and summarized in a validated gff file. You can find such output on the 08-final/gff/ folder.
+
+The labels used in the Type column of the gff file corresponds to the following nomenclature according to the [Sequence Ontology resource](http://www.sequenceontology.org/browser/current_svn/term/SO:0000001):
+
+| Type in gff file  | Sequence ontology ID |
+| ------------- | ------------- |
+| viral_sequence  | [SO:0001041](http://www.sequenceontology.org/browser/current_svn/term/SO:0001041) |
+| prophage  | [SO:0001006](http://www.sequenceontology.org/browser/current_svn/term/SO:0001006) |
+| CDS | [SO:0000316](http://www.sequenceontology.org/browser/current_svn/term/SO:0000316) |
+
+Note that CDS are reported only when a ViPhOG match has been found. 
+
 # Common Workflow Language
 VIRify was implemented in [Common Workflow Language (CWL)](https://www.commonwl.org/). 
 

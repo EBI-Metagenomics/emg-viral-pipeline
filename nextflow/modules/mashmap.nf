@@ -13,6 +13,7 @@ process mashmap {
     
     script:
     """
+    sed -i "s/ /|/" ${fasta}
     mashmap -q ${fasta} -r ${reference} -t ${task.cpus} -o ${confidence_set_name}_mashmap_hits.tsv --noSplit -s ${params.mashmap_len}
     """
 }
