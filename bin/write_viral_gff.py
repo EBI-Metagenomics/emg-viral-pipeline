@@ -5,7 +5,6 @@ import argparse
 import sys
 import gzip
 
-import pandas as pd
 from Bio import SeqIO
 
 logging.basicConfig(level=logging.INFO)
