@@ -67,7 +67,7 @@ def collect_annot(virify_files, sample_prefix, ena_mapping=None):
                 if not Best_hit == 'No hit':
                     Best_hit=Best_hit.replace('.faa','')
                     Label=line_l[7]
-                    annotation='viphog='+Best_hit+';'+'viphog_taxonomy=\''+Label+'\''
+                    annotation='viphog='+Best_hit+';'+'viphog_taxonomy='+Label
                 #else:
                 #    annotation='product=hypothetical_protein'
 
@@ -125,7 +125,7 @@ def write_gff(
                         except:
                             lineage.append(element)
                 if len(lineage)>0:
-                    taxo_string=';'.join(lineage)
+                    taxo_string='%3B'.join(lineage)
                 else:
                     taxo_string='unclassified'
 
@@ -183,7 +183,7 @@ def write_gff(
                 region_end=contigs_len_dict[element]
             
             if element in taxonomy_dict.keys():
-                attributes='ID='+element_id+';gbkey=mobile_element;mobile_element_type='+contig_data[element]+';'+checkv_dict[element]+';taxonomy=\''+taxonomy_dict[element]+'\''
+                attributes='ID='+element_id+';gbkey=mobile_element;mobile_element_type='+contig_data[element]+';'+checkv_dict[element]+';taxonomy='+taxonomy_dict[element]
             else:
                 attributes='ID='+element_id+';gbkey=mobile_element;mobile_element_type='+contig_data[element]+';'+checkv_dict[element]
 
