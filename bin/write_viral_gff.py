@@ -22,66 +22,72 @@ def get_ena_contig_mapping(ena_contig_file):
 
 def collect_annot(virify_files, sample_prefix, ena_mapping=None):
     ## Parsing the annotation files
-    contig_protID={}
-    prot_data={}
-    contig_data={}
+    contig_protID = {}
+    prot_data = {}
+    contig_data = {}
     for vfile in virify_files:
-        with open(vfile,'r') as input_table:
+        with open(vfile, "r") as input_table:
             next(input_table)
             for line in input_table:
-                line_l=line.rstrip().split('\t')
-                Contig=line_l[0]
-                CDS_ID=line_l[1]
-                Start=line_l[2]
-                if Start == '0':
-                    Start=1
-                End=line_l[3]
-                Direction=line_l[4]
-                Best_hit=line_l[5]
+                line_l = line.rstrip().split("\t")
+                contig = line_l[0]
+                CDS_ID = line_l[1]
+                start = line_l[2]
+                if start == "0":
+                    start = "1"
+                end = line_l[3]
+                direction = line_l[4]
+                best_hit = line_l[5]
 
-                if '|phage-circular' in Contig:
-                    Contig=Contig.replace('|phage-circular','')
-                    CDS_ID=CDS_ID.replace('|phage-circular','')
-                    desc='phage_circular'
+                if "|phage-circular" in contig:
+                    contig = contig.replace("|phage-circular", "")
+                    CDS_ID = CDS_ID.replace("|phage-circular", "")
+                    desc = "phage_circular"
 
-                elif '|prophage-' in Contig:
-                    desc='prophage'
+                elif "|prophage-" in contig:
+                    desc = "prophage"
                     # Fixing CDS coordinates to the context of the whole contig
-                    prophage_start=int(Contig.split('|')[1].split('-')[1].split(':')[0])
-                    Start=int(Start)+prophage_start
-                    End=int(End)+prophage_start
+                    # Current coordinates corresponds to the prophage region:
+                    # contig_1|prophage-132033:161324	contig_1|prophage-132033:161324_1	2	256	1	No hit	NA
+                    prophage_start = int(
+                        contig.split("|")[1].split("-")[1].split(":")[0]
+                    )
+                    start = int(start) + prophage_start
+                    end = int(end) + prophage_start
 
                 else:
-                    Contig=Contig.replace('|','')
-                    CDS_ID=CDS_ID.replace('|','')
-                    desc='phage_linear'
+                    contig = contig.replace("|", "")
+                    CDS_ID = CDS_ID.replace("|", "")
+                    desc = "phage_linear"
 
-                if Contig not in contig_protID.keys():
-                    contig_protID[Contig]=[CDS_ID]
-                    contig_data[Contig]=desc
+                if contig not in contig_protID.keys():
+                    contig_protID[contig] = [CDS_ID]
+                    contig_data[contig] = desc
                 else:
-                    contig_protID[Contig].append(CDS_ID)
+                    contig_protID[contig].append(CDS_ID)
 
-                Direction=Direction.replace('-1','-').replace('1','+')
+                direction = direction.replace("-1", "-").replace("1", "+")
 
-                if not Best_hit == 'No hit':
-                    Best_hit=Best_hit.replace('.faa','')
-                    Label=line_l[7]
-                    annotation='viphog='+Best_hit+';'+'viphog_taxonomy='+Label
-                #else:
-                #    annotation='product=hypothetical_protein'
+                if not best_hit == "No hit":
+                    best_hit = best_hit.replace(".faa", "")
+                    label = line_l[7]
+                    annotation = "viphog=" + best_hit + ";" + "viphog_taxonomy=" + label
 
-                    values=(str(Start),str(End),Direction,annotation)
-                    prot_data[CDS_ID]=values
+                    values = (str(start), str(end), direction, annotation)
+                    prot_data[CDS_ID] = values
 
-    #return dictionaries
+    # return dictionaries
     return contig_protID, prot_data, contig_data
 
 
 def write_gff(
-    checkv_files, taxonomy_files, sample_prefix, assembly_file, annot_dicts, ena_mapping=None
+    checkv_files,
+    taxonomy_files,
+    sample_prefix,
+    assembly_file,
+    annot_dicts,
+    ena_mapping=None,
 ):
-
     if ena_mapping:
         ena_assembly_accession = list(ena_mapping.values())[0].split(".")[0]
         output_filename = f"{ena_assembly_accession}_virify.gff"
@@ -91,128 +97,156 @@ def write_gff(
     checkv_dict, taxonomy_dict, contigs_len_dict = {}, {}, {}
     #   parse checkv for quality
     for cfile in checkv_files:
-        with open(cfile,'r') as input_table:
+        with open(cfile, "r") as input_table:
             next(input_table)
             for line in input_table:
-                line_l=line.rstrip().split('\t')
-                contig_id=line_l[0]
-                checkv_type=line_l[2]
-                checkv_quality=line_l[7]
-                miuvig_quality=line_l[8]
-                value='checkv_provirus='+checkv_type+';checkv_quality='+checkv_quality+';miuvig_quality='+miuvig_quality
-                checkv_dict[contig_id]=value
+                line_l = line.rstrip().split("\t")
+                contig_id = line_l[0]
+                checkv_type = line_l[2]
+                checkv_quality = line_l[7]
+                miuvig_quality = line_l[8]
+                checkv_info = ";".join([
+                    f"checkv_provirus={checkv_type}",
+                    f"checkv_quality={checkv_quality}",
+                    f"miuvig_quality={miuvig_quality}"
+                ])
+                checkv_dict[contig_id] = checkv_info
 
-    #   parse taxonomic lineage when available
+    # Recovering taxonomic information and integrating the lineage as Uroviricota;Caudoviricetes,Caudovirales;
     for tfile in taxonomy_files:
-        with open(tfile,'r') as input_table:
+        with open(tfile, "r") as input_table:
             next(input_table)
             for line in input_table:
-                line_l=line.rstrip().split('\t')
-                Contig=line_l.pop(0)
+                line_l = line.rstrip().split("\t")
+                contig = line_l.pop(0)
 
-                if '|phage-circular' in Contig:
-                    Contig=Contig.replace('|phage-circular','')
-                elif '|prophage-' in Contig:
-                    desc='prophage'
+                if "|phage-circular" in contig:
+                    contig = contig.replace("|phage-circular", "")
+                elif "|prophage-" in contig:
+                    desc = "prophage"
                 else:
-                    Contig=Contig.replace('|','')
+                    contig = contig.replace("|", "")
 
-                lineage=[]
+                lineage = []
                 for element in line_l:
-                    if len(element)>0:
+                    if len(element) > 0:
                         try:
                             float(element)
                         except:
                             lineage.append(element)
-                if len(lineage)>0:
-                    taxo_string='%3B'.join(lineage)
+                if len(lineage) > 0:
+                    taxo_string = "%3B".join(lineage)
                 else:
-                    taxo_string='unclassified'
+                    taxo_string = "unclassified"
 
-                taxonomy_dict[Contig]=taxo_string
+                taxonomy_dict[contig] = taxo_string
 
     # Saving the original contig length
     for record in SeqIO.parse(assembly_file, "fasta"):
-        contig_id=str(record.id)
-        seq_len=len(str(record.seq))
-        contigs_len_dict[contig_id]=str(seq_len)
+        contig_id = str(record.id)
+        seq_len = len(str(record.seq))
+        contigs_len_dict[contig_id] = str(seq_len)
 
-    contig_protID=annot_dicts[0]
-    prot_data=annot_dicts[1]
-    contig_data=annot_dicts[2]
+    contig_protID, prot_data, contig_data = annot_dicts
+
     # Writing the gff file
     with open(output_filename, "w") as gff:
         gff.write("##gff-version 3\n")
-        contig_protID=annot_dicts[0]
-        prot_data=annot_dicts[1]
-        contig_data=annot_dicts[2]
 
         # Writing the gff header
-        printed_contig=[]
-        for element in contig_protID.keys():
-            if 'prophage' in element:
-                clean_id=element.split('|')[0]
-            else:
-                clean_id=element
+        printed_contig = []
+        for prediction in contig_protID.keys():
+            clean_id = prediction
+            if "prophage" in prediction:
+                clean_id = prediction.split("|")[0]
 
             if clean_id not in printed_contig:
                 printed_contig.append(clean_id)
-                element_len=contigs_len_dict[clean_id]
-                gff.write('##sequence-region '+clean_id+' 1 '+element_len+'\n')
+                element_len = contigs_len_dict[clean_id]
+                gff.write("##sequence-region " + clean_id + " 1 " + element_len + "\n")
 
         # Writing the mobile genetic elements coordinates and attributes
-        phage_counter=0
-        phage_ids={}
-        for element in contig_protID.keys():
-            phage_counter+=1
-            element_id='phage_'+str(phage_counter)
-            phage_ids[element]=element_id
-            if 'prophage' in element:
-                seq_type='prophage'
-                seqid=element.split('|')[0]
-                start=element.split('|')[1].split('-')[1].split(':')[0]
-                if start=='0':
-                    start='1'
-                region_end=element.split('|')[1].split('-')[1].split(':')[1]
+        phage_counter = 0
+        phage_ids = {}
+        for prediction in contig_protID.keys():
+            phage_counter += 1
+            element_id = "phage_" + str(phage_counter)
+            phage_ids[prediction] = element_id
+            if "prophage" in prediction:
+                seq_type = "prophage"
+                seqid = prediction.split("|")[0]
+                start = prediction.split("|")[1].split("-")[1].split(":")[0]
+                if start == "0":
+                    start = "1"
+                region_end = prediction.split("|")[1].split("-")[1].split(":")[1]
                 if int(region_end) > int(contigs_len_dict[seqid]):
-                    region_end=str(contigs_len_dict[seqid])
+                    region_end = str(contigs_len_dict[seqid])
             else:
-                seq_type='viral_sequence'
-                seqid=element
-                start='1'
-                region_end=contigs_len_dict[element]
-            
-            if element in taxonomy_dict.keys():
-                attributes='ID='+element_id+';gbkey=mobile_element;mobile_element_type='+contig_data[element]+';'+checkv_dict[element]+';taxonomy='+taxonomy_dict[element]
-            else:
-                attributes='ID='+element_id+';gbkey=mobile_element;mobile_element_type='+contig_data[element]+';'+checkv_dict[element]
+                seq_type = "viral_sequence"
+                seqid = prediction
+                start = "1"
+                region_end = contigs_len_dict[prediction]
 
-            source='VIRify'
-            score='.'
-            strand='.'
-            phase='.'
+            attributes = ";".join([
+                f"ID={element_id}",
+                'gbkey=mobile_element',
+                f"mobile_element_type={contig_data[prediction]}",
+                checkv_dict[prediction]
+            ])
 
-            tsv_line=[seqid,source,seq_type,start,region_end,score,strand,phase,attributes]
-            tsv_line='\t'.join(tsv_line)
-            gff.write(tsv_line+'\n')
+            if prediction in taxonomy_dict.keys():
+                attributes = (
+                    attributes
+                    + ';'
+                    + 'taxonomy='
+                    + taxonomy_dict[prediction]
+                )
+        
+            source = "VIRify"
+            score = "."
+            strand = "."
+            phase = "."
 
-            for protein in contig_protID[element]:
+            tsv_line = [
+                seqid,
+                source,
+                seq_type,
+                start,
+                region_end,
+                score,
+                strand,
+                phase,
+                attributes,
+            ]
+            tsv_line = "\t".join(tsv_line)
+            gff.write(tsv_line + "\n")
+
+            for protein in contig_protID[prediction]:
                 if protein in prot_data.keys():
-                    source='Prodigal'
-                    seq_type='CDS'
-                    start=prot_data[protein][0]
-                    end=prot_data[protein][1]
+                    source = "Prodigal"
+                    seq_type = "CDS"
+                    start = prot_data[protein][0]
+                    end = prot_data[protein][1]
                     if int(end) > int(region_end):
-                        end=region_end
-                    score='.'
-                    strand=prot_data[protein][2]
-                    phase='0'
-                    #attributes='ID='+protein+';Parent='+element_id+';gbkey=CDS;'+prot_data[protein][3]
-                    attributes='ID='+protein+';gbkey=CDS;'+prot_data[protein][3]
+                        end = region_end
+                    score = "."
+                    strand = prot_data[protein][2]
+                    phase = "0"
+                    attributes = "ID=" + protein + ";gbkey=CDS;" + prot_data[protein][3]
 
-                    tsv_line=[seqid,source,seq_type,start,end,score,strand,phase,attributes]
-                    tsv_line='\t'.join(tsv_line)
-                    gff.write(tsv_line+'\n')
+                    tsv_line = [
+                        seqid,
+                        source,
+                        seq_type,
+                        start,
+                        end,
+                        score,
+                        strand,
+                        phase,
+                        attributes,
+                    ]
+                    tsv_line = "\t".join(tsv_line)
+                    gff.write(tsv_line + "\n")
 
 
 if __name__ == "__main__":
@@ -324,9 +358,7 @@ if __name__ == "__main__":
         ena_mapping = None
 
     logging.info("Collecting annotation data")
-    annot_dicts = collect_annot(
-        virify_files, args.sample_id, ena_mapping=ena_mapping
-    )
+    annot_dicts = collect_annot(virify_files, args.sample_id, ena_mapping=ena_mapping)
     logging.info("Generating the gff output")
     write_gff(
         checkv_files,
