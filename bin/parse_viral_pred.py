@@ -39,12 +39,36 @@ class Record:
         """
         seq_record = copy(self.seq_record)
         if self.category == "prophage" and len(self.prange):
-            seq_record.id += f" prophage-{self.prange[0]}:{self.prange[1]}"
+            seq_record.id += f"|prophage-{self.prange[0]}:{self.prange[1]}"
         if self.circular:
-            seq_record.id += " phage-circular"
+            seq_record.id += "|phage-circular"
         # clean
         seq_record.description = ""
         return seq_record
+    
+    @staticmethod
+    def get_prophage_metadata_from_contig(contig_header):
+        """Obtain the prophage start and end positions.
+        As well as if the prophage is circular.
+        This method returns None,None,None if the header doesn't
+        have a prophage.
+        :param contig_header: A fasta header
+        :return: (int) start, (int) end, (bool) circular
+        """
+        if "prophage" in contig_header:
+            prange = contig_header.split("|")[1].replace("prophage-", "")
+            start, end = map(int, prange.split(":"))
+            circular = "phage-circular" in contig_header
+            return start, end, circular
+        return None, None, None
+    
+    @staticmethod
+    def remove_prophage_from_contig(contig_header):
+        if "prophage" in contig_header:
+            contig_header = re.sub(r'\|prophage\-\d+\:\d+', "", contig_header)
+        if "phage-circular" in contig_header:
+            contig_header = contig_header.replace("|phage-circular", "")
+        return contig_header.replace("|", "")
 
     def __hash__(self):
         return hash(self.seq_id)
