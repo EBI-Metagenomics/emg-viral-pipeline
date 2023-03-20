@@ -12,7 +12,6 @@ process write_gff {
 
     output:
        file("${name}_virify.gff")
-       file("validated_${name}_virify.gff")
 
     script:
     """
