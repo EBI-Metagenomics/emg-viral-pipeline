@@ -23,43 +23,46 @@ def get_ena_contig_mapping(ena_contig_file):
     return ena_mapping
 
 
-def collect_annotations(virify_annotation_files):
-    """Collect all the virify annotations into a single data structure for
+def aggregate_annotations(virify_annotation_files):
+    """Aggregate all the virify annotations into a single data structure for
     easier handling when writing the GFF file.
-    All the annotations will be collapsed into a single dictionary:
-    {
-        "contig_name": [ // without any prophage metadata
-            [
-                cds_id,
-                "prophage | phage_circular | phage_linear",
-                start,
-                end,
-                direction,
-                viphog_annotation string ("viphog=VIPHOGYY;viphog_taxonomy=XX")
-            ]
-        ]...]
-    }
+
     :param virify_annotation_files: The virify 08-final/*.annotations tsv files
-    :return: A dict with all the annotations per contig
+    :return: 2 dicts, one with the viral_sequences elements, and one for the cds
     """
-    annotations_dict = {}
+    # structure of the viral_sequences
+    # {
+    #   contig_name: [
+    #       "phage_circular" or "prophage" or "phage_linear",
+    #       ...
+    #   ]
+    # }
+    viral_sequences = {}
+
+    # structure of the cds_annotations
+    # {
+    #   contig_name: [
+    #       cds_id,
+    #       start,
+    #       end,
+    #       direction,
+    #       viphog_annotation,
+    #   ]
+    # }
+    cds_annotations = {}
 
     for virify_summary in virify_annotation_files:
         with open(virify_summary, "r") as table_handle:
             csv_reader = csv.DictReader(table_handle, delimiter="\t")
             for row in csv_reader:
                 contig = row["Contig"]
-                clean_contig = Record.remove_prophage_from_contig(contig)
-                cds_id = Record.remove_prophage_from_contig(row["CDS_ID"])
                 start = int(row["Start"])
+                # FIXME: validate this
                 # Correct the index for GFF
-                start -= 1
-
+                # start -= 1
                 end = int(row["End"])
                 direction = row["Direction"]
-                best_hit = row["Best_hit"]
-
-                prophage_description = ""
+                viral_sequence_type = "phage_linear"
 
                 (
                     prophage_start,
@@ -68,43 +71,46 @@ def collect_annotations(virify_annotation_files):
                 ) = Record.get_prophage_metadata_from_contig(contig)
 
                 if circular is True:
-                    prophage_description = "phage_circular"
+                    viral_sequence_type = "phage_circular"
 
                 if prophage_start is not None and prophage_end is not None:
-                    prophage_description = "prophage"
                     # Fixing CDS coordinates to the context of the whole contig
                     # Current coordinates corresponds to the prophage region:
                     # contig_1|prophage-132033:161324	contig_1|prophage-132033:161324_1	2	256	1	No hit	NA
                     start = start + prophage_start
                     end = end + prophage_end
+                    viral_sequence_type = f"prophage-{prophage_start}:{prophage_end}"
 
-                # No prophage information in the contig name #
-                else:
-                    prophage_description = "phage_linear"
+                # We use the contig name without any extra annotations
+                # This also collapses multiples prophages annotations
+                # per contig, if any.
+                viral_sequences.setdefault(contig, set()).add(viral_sequence_type)
 
+                best_hit = row["Best_hit"]
+                cds_id = row["CDS_ID"]
                 direction = direction.replace("-1", "-").replace("1", "+")
 
                 # viphog hits #
                 viphog_annotation = ""
+                ## The best hit contains the ViPhOGXXX.faa that matches
                 if best_hit != "No hit":
-                    ## The best hit contains the ViPhOGXXX.faa that matches
                     best_hit = best_hit.replace(".faa", "")
                     viphog_annotation = ";".join(
                         [f"viphog={best_hit}", f'viphog_taxonomy={row["Label"]}']
                     )
+                    # We need to remove all the virify prophage annotations, if any
+                    contig_name_clean = Record.remove_prophage_from_contig(contig)
+                    cds_annotations.setdefault(contig_name_clean, []).append(
+                        [
+                            cds_id,
+                            start,
+                            end,
+                            direction,
+                            viphog_annotation,
+                        ]
+                    )
 
-                annotations_dict.setdefault(clean_contig, []).append(
-                    [
-                        cds_id,
-                        prophage_description,
-                        start,
-                        end,
-                        direction,
-                        viphog_annotation,
-                    ]
-                )
-
-    return annotations_dict
+    return viral_sequences, cds_annotations
 
 
 def write_gff(
@@ -112,7 +118,8 @@ def write_gff(
     taxonomy_files,
     sample_prefix,
     assembly_file,
-    collected_annotations,
+    viral_sequences,
+    cds_annotations,
     ena_mapping=None,
 ):
     if ena_mapping:
@@ -121,13 +128,15 @@ def write_gff(
     else:
         output_filename = f"{sample_prefix}_virify.gff"
 
+    # Auxiliary dictionaries to collect some more contig related data
     checkv_dict, taxonomy_dict, contigs_len_dict = {}, {}, {}
-    # parse checkv for quality
+
+    # Getting the checkv evaluation of each contig
     for checkv_file in checkv_files:
         with open(checkv_file, "r") as file_handle:
             csv_reader = csv.DictReader(file_handle, delimiter="\t")
             for row in csv_reader:
-                contig_id = Record.remove_prophage_from_contig(row["contig_id"])
+                contig_id = row["contig_id"]
                 checkv_type = row["provirus"]
                 checkv_quality = row["checkv_quality"]
                 miuvig_quality = row["miuvig_quality"]
@@ -143,21 +152,33 @@ def write_gff(
     # Recovering taxonomic information and integrating the lineage
     # as Uroviricota;Caudoviricetes,Caudovirales;
     taxonomy_dict = {}
+
+    def empty_if_number(string):
+        try:
+            float(string)
+            return ""
+        except ValueError:
+            return string
+
     for taxonomy_file in taxonomy_files:
         with open(taxonomy_file, "r") as file_handle:
             csv_reader = csv.DictReader(file_handle, delimiter="\t")
             for row in csv_reader:
-                contig = Record.remove_prophage_from_contig(row["contig_ID"])
+                contig = row["contig_ID"]
                 lineage = [
-                    row.get("genus", ""),
-                    row.get("subfamily", ""),
-                    row.get("family", ""),
-                    row.get("order", ""),
+                    empty_if_number(row.get("genus", "")),
+                    empty_if_number(row.get("subfamily", "")),
+                    empty_if_number(row.get("family", "")),
+                    empty_if_number(row.get("order", "")),
                 ]
                 if all(level == "" for level in lineage):
                     taxonomy_string = "unclassified"
                 else:
-                    taxonomy_string = "%3B".join(lineage)
+                    # %3B is ';', it's part of the GFF3 - col 9 encoding
+                    # https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
+                    taxonomy_string = "%3B".join(
+                        [line for line in lineage if line != ""]
+                    )
                 taxonomy_dict[contig] = taxonomy_string
 
     # Read unmodified contig length from the renamed assembly file
@@ -172,41 +193,45 @@ def write_gff(
         SCORE = "."
 
         # Writing the gff header
-        for contig_name in collected_annotations.keys():
-            contig_length = contigs_len_dict[contig_name]
-            print(f"##sequence-region {contig_length} 1 {contig_length}", file=gff)
+        for contig_name in viral_sequences.keys():
+            clean_contig_name = Record.remove_prophage_from_contig(contig_name)
+            contig_length = contigs_len_dict[clean_contig_name]
+            print(
+                "\t".join(
+                    [
+                        "##sequence-region",
+                        clean_contig_name,
+                        "1",
+                        str(contig_length),
+                    ]
+                ),
+                file=gff,
+            )
 
-        # Writing the mobile genetic elements coordinates and attributes
-        phage_counter = 0
-        for contig_name, contig_cds_list in collected_annotations.items():
-            for contig_data in contig_cds_list:
-                (
-                    cds_id,
-                    prophage_description,
-                    start,
-                    end,
-                    direction,
-                    viphog_annotation,
-                ) = contig_data
+        # Writing the mobile genetic elements (viral sequences)
+        # coordinates and attributes
+        for contig_name, viral_sequence_types in viral_sequences.items():
+            clean_contig_name = Record.remove_prophage_from_contig(contig_name)
+            for viral_seq_type in viral_sequence_types:
+                element_category = "viral_sequence"
 
-                phage_counter += 1
-                gff_element_id = f"phage_{phage_counter}"
+                id_ = f"ID={clean_contig_name}|viral_sequence"
+                start = "1"
+                end = contigs_len_dict[clean_contig_name]
+                mobile_element_type = viral_seq_type
 
-                seq_type = ""
-
-                if prophage_description == "prophage":
-                    seq_type = ""
-                    if end > contigs_len_dict[contig_name]:
-                        end = contigs_len_dict[contig_name]
-                else:
-                    seq_type = "viral_sequence"
-                    start = "1"
-                    end = contigs_len_dict[contig_name]
+                if "prophage" in viral_seq_type:
+                    id_ = f"ID={clean_contig_name}|{viral_seq_type}"
+                    # Prophages include the start and the end in the string
+                    # encoding: prophage:{prophage_start}-{prophage_end}
+                    start, end = viral_seq_type.split("prophage-")[1].split(":")
+                    element_category = "prophage"
+                    mobile_element_type = "prophage"
 
                 mobile_element_attributes = [
-                    f"ID={gff_element_id}",
+                    id_,
                     "gbkey=mobile_element",
-                    f"mobile_element_type={prophage_description}",
+                    f"mobile_element_type={mobile_element_type}",
                     checkv_dict[contig_name],
                 ]
 
@@ -214,41 +239,42 @@ def write_gff(
                 if taxonomy:
                     mobile_element_attributes.append(f"taxonomy={taxonomy}")
 
-                strand = "."
-                phase = "."
-
                 mobile_elements_line = [
-                    contig_name,
+                    clean_contig_name,
                     "VIRify",
-                    seq_type,
+                    element_category,
                     start,
                     end,
                     SCORE,
-                    strand,
-                    phase,
+                    ".",
+                    ".",
                     ";".join(mobile_element_attributes),
                 ]
+
                 print("\t".join(map(str, mobile_elements_line)), file=gff)
 
-                if len(viphog_annotation):
-                    phase = "0"
+        # Write the CDS for the viral sequences
+        for contig_name, contig_cds in cds_annotations.items():
+            for cds_data in contig_cds:
+                cds_id, start, end, direction, viphog_annotation = cds_data
 
-                    # TODO: review this rule.
-                    # assert end <= contigs_len_dict[contig_id]
+                # TODO: review this rule.
+                if end > contigs_len_dict[contig_name]:
+                    end = contigs_len_dict[contig_name]
 
-                    cds_attributes = [f"ID={cds_id}", "gbkey=CDS", viphog_annotation]
-                    cds_line = [
-                        contig_name,
-                        "Prodigal",
-                        "CDS",
-                        start,
-                        end,
-                        SCORE,
-                        direction,
-                        phase,
-                        ";".join(cds_attributes),
-                    ]
-                    print("\t".join(map(str, cds_line)), file=gff)
+                cds_attributes = [f"ID={cds_id}", "gbkey=CDS", viphog_annotation]
+                cds_line = [
+                    contig_name,
+                    "Prodigal",
+                    "CDS",
+                    start,
+                    end,
+                    SCORE,
+                    direction,
+                    "0",  # phase
+                    ";".join(cds_attributes),
+                ]
+                print("\t".join(map(str, cds_line)), file=gff)
 
 
 if __name__ == "__main__":
@@ -291,7 +317,7 @@ if __name__ == "__main__":
         "-s",
         "--sample-id",
         dest="sample_id",
-        help="sample_id to prefix output file name. "
+        help="sample_id to prefix output file name."
         "Ignored with --rename-contigs option",
         required=True,
     )
@@ -365,7 +391,8 @@ if __name__ == "__main__":
         ena_mapping = None
 
     logging.info("Collecting annotation data")
-    annot_dicts = collect_annotations(virify_files)
+
+    viral_sequences, cds_annotations = aggregate_annotations(virify_files)
 
     logging.info("Generating the gff output")
     write_gff(
@@ -373,6 +400,7 @@ if __name__ == "__main__":
         taxonomy_files,
         args.sample_id,
         args.assembly_file,
-        annot_dicts,
+        viral_sequences,
+        cds_annotations,
         ena_mapping=ena_mapping,
     )

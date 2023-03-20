@@ -23,10 +23,6 @@ process write_gff {
     -s ${name} \
     -a ${fasta}
 
-    gt gff3 \
-    -retainids yes \
-    -checkids yes \
-    -o validated_${name}_virify.gff \
-    ${name}_virify.gff
+    gt gff3validator ${name}_virify.gff
     """
 }

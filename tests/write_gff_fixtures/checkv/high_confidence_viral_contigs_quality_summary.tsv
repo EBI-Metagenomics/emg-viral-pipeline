@@ -1,0 +1,7 @@
+contig_id	contig_length	provirus	proviral_length	gene_count	viral_genes	host_genes	checkv_quality	miuvig_quality	completeness	completeness_method	contamination	kmer_freq	warnings
+pos.phage.1	58871	No	NA	97	21	0	Medium-quality	Genome-fragment	80.05	HMM-based (lower-bound)	0.0	1.0	
+pos.phage.2	58560	No	NA	95	20	0	Medium-quality	Genome-fragment	80.21	HMM-based (lower-bound)	0.0	1.0	
+pos.phage.5	43293	No	NA	69	55	0	High-quality	High-quality	92.39	HMM-based (lower-bound)	0.0	1.0	
+pos.phage.6	43851	No	NA	53	30	0	Medium-quality	Genome-fragment	89.87	HMM-based (lower-bound)	0.0	1.0	
+pos.phage.7	44262	No	NA	54	31	0	High-quality	High-quality	90.47	HMM-based (lower-bound)	0.0	1.0	
+pos.phage.8	41865	No	NA	60	57	0	Medium-quality	Genome-fragment	84.9	HMM-based (lower-bound)	0.0	1.0	

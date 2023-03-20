@@ -35,8 +35,7 @@ class Record:
         return [self.seq_id, self.category, self.circular, *self.prange]
 
     def get_seq_record(self):
-        """Get the SeqRecord with the category and prange encoded in the header.
-        """
+        """Get the SeqRecord with the category and prange encoded in the header."""
         seq_record = copy(self.seq_record)
         if self.category == "prophage" and len(self.prange):
             seq_record.id += f"|prophage-{self.prange[0]}:{self.prange[1]}"
@@ -45,7 +44,7 @@ class Record:
         # clean
         seq_record.description = ""
         return seq_record
-    
+
     @staticmethod
     def get_prophage_metadata_from_contig(contig_header):
         """Obtain the prophage start and end positions.
@@ -55,17 +54,26 @@ class Record:
         :param contig_header: A fasta header
         :return: (int) start, (int) end, (bool) circular
         """
+        circular = "phage-circular" in contig_header
         if "prophage" in contig_header:
             prange = contig_header.split("|")[1].replace("prophage-", "")
-            start, end = map(int, prange.split(":"))
-            circular = "phage-circular" in contig_header
+            match = re.search(
+                "(?P<start>\d+):(?P<end>\d+)", prange, re.IGNORECASE
+            ).groupdict()
+            start = int(match["start"])
+            end = int(match["end"])
             return start, end, circular
-        return None, None, None
-    
+        return None, None, circular
+
     @staticmethod
     def remove_prophage_from_contig(contig_header):
+        """Remove any prophage annotations from a contig header
+
+        :param contig_header: The contig header
+        :return: The same contig header without prophage annotations
+        """
         if "prophage" in contig_header:
-            contig_header = re.sub(r'\|prophage\-\d+\:\d+', "", contig_header)
+            contig_header = re.sub(r"\|prophage\-\d+\:\d+", "", contig_header)
         if "phage-circular" in contig_header:
             contig_header = contig_header.replace("|phage-circular", "")
         return contig_header.replace("|", "")
@@ -78,16 +86,15 @@ class Record:
 
 
 def parse_pprmeta(file_name):
-    """Extract phage hits from PPR-Meta.
-    """
+    """Extract phage hits from PPR-Meta."""
     lc_ids = set()
 
     if isfile(file_name):
         result_df = pd.read_csv(file_name, sep=",")
 
-        lc_ids = set(result_df[
-            (result_df["Possible_source"] == "phage")
-        ]["Header"].values)
+        lc_ids = set(
+            result_df[(result_df["Possible_source"] == "phage")]["Header"].values
+        )
 
     print(f"PPR-Meta found {len(lc_ids)} low confidence contigs.")
 
@@ -95,8 +102,7 @@ def parse_pprmeta(file_name):
 
 
 def parse_virus_finder(file_name):
-    """Extract high and low confidence contigs from virus finder results.
-    """
+    """Extract high and low confidence contigs from virus finder results."""
     hc_ids = set()
     lc_ids = set()
 
@@ -104,14 +110,18 @@ def parse_virus_finder(file_name):
         result_df = pd.read_csv(file_name, sep="\t")
 
         hc_ids = set(
-            result_df[(result_df["pvalue"] < 0.05) &
-                      (result_df["score"] >= 0.90)]["name"].values)
+            result_df[(result_df["pvalue"] < 0.05) & (result_df["score"] >= 0.90)][
+                "name"
+            ].values
+        )
 
-        lc_ids = set(result_df[
-            (result_df["pvalue"] < 0.05) &
-            (result_df["score"] >= 0.70) &
-            (result_df["score"] < 0.9)
-        ]["name"].values)
+        lc_ids = set(
+            result_df[
+                (result_df["pvalue"] < 0.05)
+                & (result_df["score"] >= 0.70)
+                & (result_df["score"] < 0.9)
+            ]["name"].values
+        )
 
     print(f"Virus Finder found {len(hc_ids)} high confidence contigs.")
     print(f"Virus Finder found {len(lc_ids)} low confidence contigs.")
@@ -164,7 +174,8 @@ def parse_virus_sorter(sorter_files):
             elif category in ["4", "5"]:
                 # add the prophage position within the contig
                 prophages.setdefault(record.id, []).append(
-                    Record(record, "prophage", circular, prange))
+                    Record(record, "prophage", circular, prange)
+                )
             else:
                 print(f"Contig has an invalid category : {category}")
 
@@ -216,15 +227,26 @@ def merge_annotations(pprmeta, finder, sorter, assembly):
         elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
             lc_predictions_contigs.append(seq_record)
 
-    return hc_predictions_contigs, lc_predictions_contigs, prophage_predictions_contigs, \
-        sorter_hc, sorter_lc, sorter_prophages
+    return (
+        hc_predictions_contigs,
+        lc_predictions_contigs,
+        prophage_predictions_contigs,
+        sorter_hc,
+        sorter_lc,
+        sorter_prophages,
+    )
 
 
 def main(pprmeta, finder, sorter, assembly, outdir, prefix=False):
-    """Parse VirSorter, VirFinder and PPR-Meta outputs and merge the results.
-    """
-    hc_contigs, lc_contigs, prophage_contigs, sorter_hc, sorter_lc, sorter_prophages = \
-        merge_annotations(pprmeta, finder, sorter, assembly)
+    """Parse VirSorter, VirFinder and PPR-Meta outputs and merge the results."""
+    (
+        hc_contigs,
+        lc_contigs,
+        prophage_contigs,
+        sorter_hc,
+        sorter_lc,
+        sorter_prophages,
+    ) = merge_annotations(pprmeta, finder, sorter, assembly)
 
     at_least_one = False
     name_prefix = ""
@@ -234,16 +256,23 @@ def main(pprmeta, finder, sorter, assembly, outdir, prefix=False):
     outdir_path = Path(outdir)
 
     if len(hc_contigs):
-        SeqIO.write(hc_contigs, 
-            outdir / Path(name_prefix + "high_confidence_viral_contigs.fna"), "fasta")
+        SeqIO.write(
+            hc_contigs,
+            outdir / Path(name_prefix + "high_confidence_viral_contigs.fna"),
+            "fasta",
+        )
         at_least_one = True
     if len(lc_contigs):
-        SeqIO.write(lc_contigs, 
-            outdir / Path(name_prefix + "low_confidence_viral_contigs.fna"), "fasta")
+        SeqIO.write(
+            lc_contigs,
+            outdir / Path(name_prefix + "low_confidence_viral_contigs.fna"),
+            "fasta",
+        )
         at_least_one = True
     if len(prophage_contigs):
-        SeqIO.write(prophage_contigs,
-            outdir / Path(name_prefix + "prophages.fna"), "fasta")
+        SeqIO.write(
+            prophage_contigs, outdir / Path(name_prefix + "prophages.fna"), "fasta"
+        )
         at_least_one = True
 
     # VirSorter provides some metadata on each annotation
@@ -251,8 +280,13 @@ def main(pprmeta, finder, sorter, assembly, outdir, prefix=False):
     # - prophage start and end within a contig
     if sorter_hc or sorter_lc or sorter_prophages:
         with open(outdir_path / Path("virsorter_metadata.tsv"), "w") as pm_tsv_file:
-            header = ["contig", "category", "circular",
-                      "prophage_start", "prophage_end"]
+            header = [
+                "contig",
+                "category",
+                "circular",
+                "prophage_start",
+                "prophage_end",
+            ]
             tsv_writer = csv.writer(pm_tsv_file, delimiter="\t")
             tsv_writer.writerow(header)
             tsv_writer.writerows([shc.to_tsv() for _, shc in sorter_hc.items()])
@@ -261,8 +295,11 @@ def main(pprmeta, finder, sorter, assembly, outdir, prefix=False):
                 tsv_writer.writerows([ph.to_tsv() for ph in plist])
 
     if not at_least_one:
-        print("Overall, no putative _viral contigs or prophages were detected"
-              " in the analysed metagenomic assembly", file=sys.stderr)
+        print(
+            "Overall, no putative _viral contigs or prophages were detected"
+            " in the analysed metagenomic assembly",
+            file=sys.stderr,
+        )
         exit(1)
 
 
@@ -274,25 +311,59 @@ if __name__ == "__main__":
     """
     parser = argparse.ArgumentParser(
         description="Write fasta files with predicted _viral contigs sorted in "
-                    "categories and putative prophages")
-    parser.add_argument("-a", "--assemb", dest="assembly",
-                        help="Metagenomic assembly fasta file", required=True)
-    parser.add_argument("-f", "--vfout", dest="finder", help="Absolute or "
-                        "relative path to VirFinder output file",
-                        required=False)
-    parser.add_argument("-s", "--vsfiles", dest="sorter", nargs='+',
-                        help="VirSorter .fasta files (i.e. VIRSorter_cat-1.fasta)"
-                        " VirSorter output", required=False)
-    parser.add_argument("-p", "--pmout", dest="pprmeta",
-                        help="Absolute or relative path to PPR-Meta output file"
-                        " PPR-Meta output", required=False)
-    parser.add_argument("-r", "--prefix", dest="prefix",
-                        help="Use the assembly filename as prefix for the outputs",
-                        action="store_true")
-    parser.add_argument("-o", "--outdir", dest="outdir",
-                        help="Absolute or relative path of directory where output"
-                        " _viral prediction files should be stored (default: cwd)",
-                        default=".")
+        "categories and putative prophages"
+    )
+    parser.add_argument(
+        "-a",
+        "--assemb",
+        dest="assembly",
+        help="Metagenomic assembly fasta file",
+        required=True,
+    )
+    parser.add_argument(
+        "-f",
+        "--vfout",
+        dest="finder",
+        help="Absolute or " "relative path to VirFinder output file",
+        required=False,
+    )
+    parser.add_argument(
+        "-s",
+        "--vsfiles",
+        dest="sorter",
+        nargs="+",
+        help="VirSorter .fasta files (i.e. VIRSorter_cat-1.fasta)" " VirSorter output",
+        required=False,
+    )
+    parser.add_argument(
+        "-p",
+        "--pmout",
+        dest="pprmeta",
+        help="Absolute or relative path to PPR-Meta output file" " PPR-Meta output",
+        required=False,
+    )
+    parser.add_argument(
+        "-r",
+        "--prefix",
+        dest="prefix",
+        help="Use the assembly filename as prefix for the outputs",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-o",
+        "--outdir",
+        dest="outdir",
+        help="Absolute or relative path of directory where output"
+        " _viral prediction files should be stored (default: cwd)",
+        default=".",
+    )
     args = parser.parse_args()
 
-    main(args.pprmeta, args.finder, args.sorter, args.assembly, args.outdir, prefix=args.prefix)
+    main(
+        args.pprmeta,
+        args.finder,
+        args.sorter,
+        args.assembly,
+        args.outdir,
+        prefix=args.prefix,
+    )
