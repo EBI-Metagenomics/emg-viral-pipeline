@@ -11,3 +11,4 @@ dependencies:
   - pandas=1.0.0
   - xlrd=1.2.0
   - ete3=3.1.1
+  - genometools-genometools=1.6.2

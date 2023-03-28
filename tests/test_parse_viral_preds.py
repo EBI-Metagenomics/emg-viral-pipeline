@@ -196,7 +196,7 @@ class ParseViralPredictions(unittest.TestCase):
                                  hashlib.md5(lc_e.read()).hexdigest())
 
         with open(test_dir + "/prophages.fna", "rb") as p_f:
-            self.assertEqual(p_f.readline(), b">seq1 prophage-21696:135184\n")
+            self.assertEqual(p_f.readline(), b">seq1|prophage-21696:135184\n")
             p_f.seek(0)
             with open(
                 self._build_path("/virsorter_precedence/expected/"

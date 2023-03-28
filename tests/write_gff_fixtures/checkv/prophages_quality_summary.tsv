@@ -1,0 +1,2 @@
+contig_id	contig_length	provirus	proviral_length	gene_count	viral_genes	host_genes	checkv_quality	miuvig_quality	completeness	completeness_method	contamination	kmer_freq	warnings
+pos.phage.0|prophage-21696:135184	113488	No	NA	160	96	1	Medium-quality	Genome-fragment	70.55	HMM-based (lower-bound)	0.0	1.0	
