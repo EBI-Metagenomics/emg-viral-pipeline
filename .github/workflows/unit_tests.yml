@@ -25,4 +25,5 @@ jobs:
         pip install -r requirements-test.txt
     - name: Unit tests
       run: |
-        python -m unittest discover tests
+        # TODO, improve the pythonpath handling
+        PYTHONPATH="$PYTHONPATH:bin" python -m unittest discover tests
