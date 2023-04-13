@@ -192,21 +192,23 @@ def write_gff(
         SCORE = "."
 
         # Writing the gff header
+        used_contigs=[]
         for contig_name in viral_sequences.keys():
             clean_contig_name = Record.remove_prophage_from_contig(contig_name)
-            #print(clean_contig_name,contig_name)
             contig_length = contigs_len_dict[clean_contig_name]
-            print(
-                "\t".join(
-                    [
-                        "##sequence-region",
-                        clean_contig_name,
-                        "1",
-                        str(contig_length),
-                    ]
-                ),
-                file=gff,
-            )
+            if clean_contig_name not in used_contigs:
+                used_contigs.append(clean_contig_name)
+                print(
+                    "\t".join(
+                        [
+                            "##sequence-region",
+                            clean_contig_name,
+                            "1",
+                            str(contig_length),
+                        ]
+                    ),
+                    file=gff,
+                )
 
         # Writing the mobile genetic elements (viral sequences)
         # coordinates and attributes
