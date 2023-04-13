@@ -265,6 +265,8 @@ def write_gff(
             for cds_data in contig_cds:
                 cds_id, start, end, direction, viphog_annotation = cds_data
 
+                cds_id=cds_id.replace('prophage-0:','prophage-1:')
+
                 # TODO: review this rule.
                 if end > contigs_len_dict[contig_name]:
                     end = contigs_len_dict[contig_name]
