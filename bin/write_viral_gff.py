@@ -63,7 +63,6 @@ def aggregate_annotations(virify_annotation_files):
                 end = int(row["End"])
                 direction = row["Direction"]
                 viral_sequence_type = "phage_linear"
-
                 (
                     prophage_start,
                     prophage_end,
@@ -78,7 +77,7 @@ def aggregate_annotations(virify_annotation_files):
                     # Current coordinates corresponds to the prophage region:
                     # contig_1|prophage-132033:161324	contig_1|prophage-132033:161324_1	2	256	1	No hit	NA
                     start = start + prophage_start
-                    end = end + prophage_end
+                    end = end + prophage_start
                     viral_sequence_type = f"prophage-{prophage_start}:{prophage_end}"
 
                 # We use the contig name without any extra annotations
@@ -195,6 +194,7 @@ def write_gff(
         # Writing the gff header
         for contig_name in viral_sequences.keys():
             clean_contig_name = Record.remove_prophage_from_contig(contig_name)
+            #print(clean_contig_name,contig_name)
             contig_length = contigs_len_dict[clean_contig_name]
             print(
                 "\t".join(

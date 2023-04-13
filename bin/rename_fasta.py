@@ -71,12 +71,20 @@ def restore(args):
                 if line.startswith(">"):
                     mod, *metadata = _parse_name(line)
                     # prophage metada removal
+                    flag=0
+                    if '|' in mod:
+                        flag=1
+                        mod=mod.replace('|','')
+
                     original = mapping.get(mod, None)
                     if not original:
                         print(f"Missing sequence in mapping for {mod}. Header: {line}",
                               file=sys.stderr)
                         original = mod
-                    fasta_out.write(f">{original} {''.join(metadata)}\n")
+                    if flag==1:
+                        fasta_out.write(f">{original}|{''.join(metadata)}\n")
+                    else:
+                        fasta_out.write(f">{original}\n")
                 else:
                     fasta_out.write(line)
 

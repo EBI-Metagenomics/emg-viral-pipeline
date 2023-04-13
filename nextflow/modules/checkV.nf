@@ -12,7 +12,6 @@ process checkV {
     script:
     if (confidence_set_name == 'prophages') {
         """
-	sed -i "s/ /|/" ${fasta}
 	checkv end_to_end ${fasta} -d ${database} -t ${task.cpus} ${confidence_set_name}
         cp ${confidence_set_name}/quality_summary.tsv ${confidence_set_name}_quality_summary.tsv 
         """
