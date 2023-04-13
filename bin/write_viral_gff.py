@@ -227,6 +227,11 @@ def write_gff(
                     # Prophages include the start and the end in the string
                     # encoding: prophage:{prophage_start}-{prophage_end}
                     start, end = viral_seq_type.split("prophage-")[1].split(":")
+
+                    if int(start) == 0:
+                        start = '1'
+                        id_=id_.replace('prophage-0:','prophage-1:')
+
                     element_category = "prophage"
                     mobile_element_type = "prophage"
 
