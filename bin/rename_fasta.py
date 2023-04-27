@@ -16,13 +16,23 @@ def _parse_name(seq):
     if not seq:
         return seq
     clean = seq.replace(">", "").replace("\n", "")
+    phage_data = clean.split("|")
+    seq_name = phage_data[0]
+    phage_circular = "phage-circular" if "phage-circular" in seq else ""
 
-    clean = clean.replace("phage-circular", "")
-    match = re.search(r"prophage-\d+:\d+", clean)
-    prophage = match[0] if match else ""
+    metadata = []
+    if phage_circular:
+        metadata.append(phage_circular)
 
-    return clean.replace(prophage, "").strip(), \
-        "phage-circular" if "phage-circular" in seq else "", prophage
+    if len(phage_data) == 1:
+        return seq_name.strip(), metadata
+
+    for phage_metadata in phage_data[1:]:
+        match = re.search(r"prophage-\d+:\d+", phage_metadata)
+        if match:
+            metadata.append(match[0])
+
+    return seq_name.strip(), metadata
 
 
 def rename(args):
@@ -38,7 +48,7 @@ def rename(args):
             for line in fasta_in:
                 if line.startswith(">"):
                     fasta_out.write(f">{args.prefix}{count}\n")
-                    name, *_ = _parse_name(line)
+                    name, _ = _parse_name(line)
                     tsv_map.writerow([name, f"{args.prefix}{count}"])
                     count += 1
                 else:
@@ -69,20 +79,17 @@ def restore(args):
         with open(args.output, "w") as fasta_out:
             for line in fasta_in:
                 if line.startswith(">"):
-                    mod, *metadata = _parse_name(line)
+                    mod, metadata = _parse_name(line)
                     # prophage metada removal
-                    flag=0
-                    if '|' in mod:
-                        flag=1
-                        mod=mod.replace('|','')
-
                     original = mapping.get(mod, None)
                     if not original:
-                        print(f"Missing sequence in mapping for {mod}. Header: {line}",
-                              file=sys.stderr)
+                        print(
+                            f"Missing sequence in mapping for {mod}. Header: {line}",
+                            file=sys.stderr,
+                        )
                         original = mod
-                    if flag==1:
-                        fasta_out.write(f">{original}|{''.join(metadata)}\n")
+                    if len(metadata):
+                        fasta_out.write(f">{original}|{'|'.join(metadata)}\n")
                     else:
                         fasta_out.write(f">{original}\n")
                 else:
@@ -92,20 +99,30 @@ def restore(args):
 def main():
     """Multi fasta rename and restore."""
     parser = argparse.ArgumentParser(
-        description="Rename multi fastas and restore the names tools.")
+        description="Rename multi fastas and restore the names tools."
+    )
     parser.add_argument(
-        "-i", "--input", help="indicate input FASTA file", required=False)
+        "-i", "--input", help="indicate input FASTA file", required=False
+    )
     parser.add_argument(
-        "-m", "--map", help="Map current names with the renames", type=str,
-        default="fasta_map.tsv")
+        "-m",
+        "--map",
+        help="Map current names with the renames",
+        type=str,
+        default="fasta_map.tsv",
+    )
     parser.add_argument(
-        "-o", "--output", help="indicate output FASTA file", required=True)
+        "-o", "--output", help="indicate output FASTA file", required=True
+    )
     subparser = parser.add_subparsers()
 
     rename_parser = subparser.add_parser("rename")
     rename_parser.add_argument(
-        "--prefix", help="string pre fasta count, i.e. default is seq such as seq1, seq2...",
-        type=str, default="seq")
+        "--prefix",
+        help="string pre fasta count, i.e. default is seq such as seq1, seq2...",
+        type=str,
+        default="seq",
+    )
     rename_parser.set_defaults(func=rename)
 
     restore_parser = subparser.add_parser("restore")
