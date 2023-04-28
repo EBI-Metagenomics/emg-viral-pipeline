@@ -11,15 +11,8 @@ process checkV {
 
     script:
     if (confidence_set_name == 'prophages') {
-        // We need to get the full-length contigs for the prohpages. 
-        // The prophages are reported in a slightly different way, 
-        // i.e. any given contig may have more than one prophage, which results in a prophages.fna 
-        // with repeated contigs this doesn't work properly with checkV.
         """
-        grep '>' ${fasta} | cut -d' ' -f1 | sed 's/>//g' | sort -u > prophage_contigs.txt
-        seqtk subseq ${contigs} prophage_contigs.txt > prophage_checkv_contigs.fasta
-
-        checkv end_to_end prophage_checkv_contigs.fasta -d ${database} -t ${task.cpus} ${confidence_set_name} 
+	checkv end_to_end ${fasta} -d ${database} -t ${task.cpus} ${confidence_set_name}
         cp ${confidence_set_name}/quality_summary.tsv ${confidence_set_name}_quality_summary.tsv 
         """
     } else {

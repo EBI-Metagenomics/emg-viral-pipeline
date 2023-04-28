@@ -413,8 +413,8 @@ Also runs additional HMM from further databases if defined and can also run a si
 Then, all results are summarized for reporting and plotting. 
 */
 workflow annotate {
-    take:   
-            contigs
+    take:
+            contigs   
             predicted_contigs
             viphog_db
             ncbi_db
@@ -475,7 +475,7 @@ workflow annotate {
         checkv_results = checkV.out.map { _, __, quality_summary, ___ -> quality_summary }.collect()
 
         write_gff(
-          contigs.map { name, _ -> name }.first(),
+          contigs.first(),
           viphos_annotations,
           taxonomy_annotations,
           checkv_results

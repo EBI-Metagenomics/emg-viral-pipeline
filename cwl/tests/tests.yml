@@ -226,20 +226,160 @@
         size: 0
         location: Any
         path: Any
-    stderr:
-      class: File
-      basename: stderr.txt
-      checksum: Any
-      location: Any
-      path: Any
-      size: Any
-    stdout:
-      class: File
-      basename: stdout.txt
-      checksum: Any
-      location: Any
-      path: Any
-      size: Any
+
+- job: tools/virsorter/virsorter_test_with_prophages_input.yml
+  tool: ../src/Tools/VirSorter/virsorter.cwl
+  short_name: virsorter.cwl
+  doc: VirSorter - prophages
+  output:
+    virsorter_fastas:
+      - basename: VIRSorter_cat-1.fasta
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_1929
+        location: Any
+        nameext: .fasta
+        nameroot: VIRSorter_cat-1
+        size: 0
+      - basename: VIRSorter_cat-2.fasta
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_1929
+        location: Any
+        nameext: .fasta
+        nameroot: VIRSorter_cat-2
+        size: 0
+      - basename: VIRSorter_cat-3.fasta
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_1929
+        location: Any
+        nameext: .fasta
+        nameroot: VIRSorter_cat-3
+        size: 0
+      - basename: VIRSorter_prophages_cat-4.fasta
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_1929
+        location: Any
+        nameext: .fasta
+        nameroot: VIRSorter_prophages_cat-4
+        size: 0
+      - basename: VIRSorter_prophages_cat-5.fasta
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_1929
+        location: Any
+        nameext: .fasta
+        nameroot: VIRSorter_prophages_cat-5
+        size: 61537
+      - basename: VIRSorter_prophages_cat-6.fasta
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_1929
+        location: Any
+        nameext: .fasta
+        nameroot: VIRSorter_prophages_cat-6
+        size: 0
+    virsorter_genebanks:
+      - basename: VIRSorter_cat-1.gb
+        checksum: Any
+        class: File
+        location: Any
+        nameext: .gb
+        nameroot: VIRSorter_cat-1
+        size: 0
+      - basename: VIRSorter_cat-2.gb
+        checksum: Any
+        class: File
+        location: Any
+        nameext: .gb
+        nameroot: VIRSorter_cat-2
+        size: 0
+      - basename: VIRSorter_cat-3.gb
+        checksum: Any
+        class: File
+        location: Any
+        nameext: .gb
+        nameroot: VIRSorter_cat-3
+        size: 0
+      - basename: VIRSorter_prophages_cat-4.gb
+        checksum: Any
+        class: File
+        location: Any
+        nameext: .gb
+        nameroot: VIRSorter_prophages_cat-4
+        size: 0
+      - basename: VIRSorter_prophages_cat-5.gb
+        checksum: Any
+        class: File
+        location: Any
+        nameext: .gb
+        nameroot: VIRSorter_prophages_cat-5
+        size: 154987
+      - basename: VIRSorter_prophages_cat-6.gb
+        checksum: Any
+        class: File
+        location: Any
+        nameext: .gb
+        nameroot: VIRSorter_prophages_cat-6
+        size: 0
+
+- job: tools/virsorter/virsorter_test_with_prophages_in_contig_end_input.yml
+  tool: ../src/Tools/VirSorter/virsorter.cwl
+  short_name: virsorter.cwl
+  doc: VirSorter - prophages - on contig end
+  output:
+    virsorter_fastas:
+      - basename: VIRSorter_cat-1.fasta
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_1929
+        location: Any
+        nameext: .fasta
+        nameroot: VIRSorter_cat-1
+        size: 0
+      - basename: VIRSorter_cat-2.fasta
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_1929
+        location: Any
+        nameext: .fasta
+        nameroot: VIRSorter_cat-2
+        size: 0
+      - basename: VIRSorter_cat-3.fasta
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_1929
+        location: Any
+        nameext: .fasta
+        nameroot: VIRSorter_cat-3
+        size: 0
+      - basename: VIRSorter_prophages_cat-4.fasta
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_1929
+        location: Any
+        nameext: .fasta
+        nameroot: VIRSorter_prophages_cat-4
+        size: 0
+      - basename: VIRSorter_prophages_cat-5.fasta
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_1929
+        location: Any
+        nameext: .fasta
+        nameroot: VIRSorter_prophages_cat-5
+        size: 11563
+      - basename: VIRSorter_prophages_cat-6.fasta
+        checksum: Any
+        class: File
+        format: http://edamontology.org/format_1929
+        location: Any
+        nameext: .fasta
+        nameroot: VIRSorter_prophages_cat-6
+        size: 0
+    virsorter_genebanks: Any
 
 # Krona
 - job: tools/krona/krona_test_input.yml

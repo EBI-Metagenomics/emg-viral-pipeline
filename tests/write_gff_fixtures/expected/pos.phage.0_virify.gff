@@ -1,0 +1,122 @@
+##gff-version 3
+##sequence-region	pos.phage.0	1	146647
+##sequence-region	pos.phage.1	1	58871
+##sequence-region	pos.phage.2	1	58560
+##sequence-region	pos.phage.5	1	43293
+##sequence-region	pos.phage.6	1	43851
+##sequence-region	pos.phage.7	1	44262
+##sequence-region	pos.phage.8	1	41865
+##sequence-region	pos.phage.3	1	59443
+##sequence-region	pos.phage.4	1	51290
+##sequence-region	pos.phage.9	1	221908
+pos.phage.0	VIRify	prophage	21696	135184	.	.	.	ID=pos.phage.0|prophage-21696:135184;gbkey=mobile_element;mobile_element_type=prophage;checkv_provirus=No;checkv_quality=Medium-quality;miuvig_quality=Genome-fragment;taxonomy=Vequintavirinae%3BMyoviridae%3BCaudovirales
+pos.phage.1	VIRify	viral_sequence	1	58871	.	.	.	ID=pos.phage.1|viral_sequence;gbkey=mobile_element;mobile_element_type=phage_linear;checkv_provirus=No;checkv_quality=Medium-quality;miuvig_quality=Genome-fragment;taxonomy=unclassified
+pos.phage.2	VIRify	viral_sequence	1	58560	.	.	.	ID=pos.phage.2|viral_sequence;gbkey=mobile_element;mobile_element_type=phage_linear;checkv_provirus=No;checkv_quality=Medium-quality;miuvig_quality=Genome-fragment;taxonomy=unclassified
+pos.phage.5	VIRify	viral_sequence	1	43293	.	.	.	ID=pos.phage.5|viral_sequence;gbkey=mobile_element;mobile_element_type=phage_linear;checkv_provirus=No;checkv_quality=High-quality;miuvig_quality=High-quality;taxonomy=Caudovirales
+pos.phage.6	VIRify	viral_sequence	1	43851	.	.	.	ID=pos.phage.6|viral_sequence;gbkey=mobile_element;mobile_element_type=phage_linear;checkv_provirus=No;checkv_quality=Medium-quality;miuvig_quality=Genome-fragment;taxonomy=Pradovirus%3BAutographiviridae%3BCaudovirales
+pos.phage.7	VIRify	viral_sequence	1	44262	.	.	.	ID=pos.phage.7|viral_sequence;gbkey=mobile_element;mobile_element_type=phage_linear;checkv_provirus=No;checkv_quality=High-quality;miuvig_quality=High-quality;taxonomy=Pradovirus%3BAutographiviridae%3BCaudovirales
+pos.phage.8	VIRify	viral_sequence	1	41865	.	.	.	ID=pos.phage.8|viral_sequence;gbkey=mobile_element;mobile_element_type=phage_linear;checkv_provirus=No;checkv_quality=Medium-quality;miuvig_quality=Genome-fragment;taxonomy=Jerseyvirus%3BGuernseyvirinae%3BSiphoviridae%3BCaudovirales
+pos.phage.3	VIRify	viral_sequence	1	59443	.	.	.	ID=pos.phage.3|viral_sequence;gbkey=mobile_element;mobile_element_type=phage_linear;checkv_provirus=No;checkv_quality=High-quality;miuvig_quality=High-quality;taxonomy=unclassified
+pos.phage.4	VIRify	viral_sequence	1	51290	.	.	.	ID=pos.phage.4|viral_sequence;gbkey=mobile_element;mobile_element_type=phage_linear;checkv_provirus=No;checkv_quality=Medium-quality;miuvig_quality=Genome-fragment;taxonomy=unclassified
+pos.phage.9	VIRify	viral_sequence	1	221908	.	.	.	ID=pos.phage.9|viral_sequence;gbkey=mobile_element;mobile_element_type=phage_linear;checkv_provirus=No;checkv_quality=High-quality;miuvig_quality=High-quality;taxonomy=unclassified
+pos.phage.0	Prodigal	CDS	22445	23257	.	-	0	ID=pos.phage.0|prophage-21696:135184_3;gbkey=CDS;viphog=ViPhOG6738;viphog_taxonomy=Vequintavirinae
+pos.phage.0	Prodigal	CDS	23245	23799	.	-	0	ID=pos.phage.0|prophage-21696:135184_4;gbkey=CDS;viphog=ViPhOG29691;viphog_taxonomy=Myoviridae
+pos.phage.0	Prodigal	CDS	31742	32395	.	-	0	ID=pos.phage.0|prophage-21696:135184_22;gbkey=CDS;viphog=ViPhOG29954;viphog_taxonomy=Phicbkvirus
+pos.phage.0	Prodigal	CDS	34638	35471	.	-	0	ID=pos.phage.0|prophage-21696:135184_28;gbkey=CDS;viphog=ViPhOG15345;viphog_taxonomy=Klosneuvirinae
+pos.phage.0	Prodigal	CDS	35468	36022	.	-	0	ID=pos.phage.0|prophage-21696:135184_29;gbkey=CDS;viphog=ViPhOG30233;viphog_taxonomy=Myoviridae
+pos.phage.0	Prodigal	CDS	38751	38969	.	-	0	ID=pos.phage.0|prophage-21696:135184_36;gbkey=CDS;viphog=ViPhOG29189;viphog_taxonomy=Certrevirus
+pos.phage.0	Prodigal	CDS	43458	44429	.	-	0	ID=pos.phage.0|prophage-21696:135184_42;gbkey=CDS;viphog=ViPhOG13613;viphog_taxonomy=Vequintavirinae
+pos.phage.0	Prodigal	CDS	47764	48798	.	-	0	ID=pos.phage.0|prophage-21696:135184_49;gbkey=CDS;viphog=ViPhOG24765;viphog_taxonomy=Vequintavirinae
+pos.phage.0	Prodigal	CDS	50388	51110	.	-	0	ID=pos.phage.0|prophage-21696:135184_53;gbkey=CDS;viphog=ViPhOG23648;viphog_taxonomy=Vequintavirinae
+pos.phage.0	Prodigal	CDS	53571	54503	.	-	0	ID=pos.phage.0|prophage-21696:135184_60;gbkey=CDS;viphog=ViPhOG23646;viphog_taxonomy=Vequintavirinae
+pos.phage.0	Prodigal	CDS	65194	65367	.	+	0	ID=pos.phage.0|prophage-21696:135184_78;gbkey=CDS;viphog=ViPhOG6732;viphog_taxonomy=Caudovirales
+pos.phage.0	Prodigal	CDS	66078	68162	.	+	0	ID=pos.phage.0|prophage-21696:135184_81;gbkey=CDS;viphog=ViPhOG22769;viphog_taxonomy=Avunavirus
+pos.phage.0	Prodigal	CDS	71540	71932	.	+	0	ID=pos.phage.0|prophage-21696:135184_85;gbkey=CDS;viphog=ViPhOG23633;viphog_taxonomy=Vequintavirinae
+pos.phage.0	Prodigal	CDS	78089	78316	.	+	0	ID=pos.phage.0|prophage-21696:135184_95;gbkey=CDS;viphog=ViPhOG24564;viphog_taxonomy=Vequintavirinae
+pos.phage.0	Prodigal	CDS	80434	81150	.	+	0	ID=pos.phage.0|prophage-21696:135184_97;gbkey=CDS;viphog=ViPhOG11720;viphog_taxonomy=Vequintavirinae
+pos.phage.0	Prodigal	CDS	93487	94116	.	+	0	ID=pos.phage.0|prophage-21696:135184_109;gbkey=CDS;viphog=ViPhOG13517;viphog_taxonomy=Vequintavirinae
+pos.phage.0	Prodigal	CDS	103592	104539	.	-	0	ID=pos.phage.0|prophage-21696:135184_118;gbkey=CDS;viphog=ViPhOG23567;viphog_taxonomy=Vequintavirinae
+pos.phage.0	Prodigal	CDS	106217	108796	.	-	0	ID=pos.phage.0|prophage-21696:135184_122;gbkey=CDS;viphog=ViPhOG12031;viphog_taxonomy=Pakpunavirus
+pos.phage.0	Prodigal	CDS	109293	111065	.	-	0	ID=pos.phage.0|prophage-21696:135184_124;gbkey=CDS;viphog=ViPhOG12037;viphog_taxonomy=Autographivirinae
+pos.phage.0	Prodigal	CDS	124374	125231	.	-	0	ID=pos.phage.0|prophage-21696:135184_149;gbkey=CDS;viphog=ViPhOG30118;viphog_taxonomy=Myoviridae
+pos.phage.0	Prodigal	CDS	131082	131516	.	-	0	ID=pos.phage.0|prophage-21696:135184_157;gbkey=CDS;viphog=ViPhOG6726;viphog_taxonomy=Tevenvirinae
+pos.phage.0	Prodigal	CDS	131529	132101	.	-	0	ID=pos.phage.0|prophage-21696:135184_158;gbkey=CDS;viphog=ViPhOG20555;viphog_taxonomy=Certrevirus
+pos.phage.5	Prodigal	CDS	1934	3370	.	+	0	ID=pos.phage.5_3;gbkey=CDS;viphog=ViPhOG1981;viphog_taxonomy=Arquatrovirinae
+pos.phage.5	Prodigal	CDS	13526	15382	.	+	0	ID=pos.phage.5_19;gbkey=CDS;viphog=ViPhOG9461;viphog_taxonomy=Twortvirinae
+pos.phage.5	Prodigal	CDS	15397	18063	.	+	0	ID=pos.phage.5_20;gbkey=CDS;viphog=ViPhOG9903;viphog_taxonomy=Picovirinae
+pos.phage.5	Prodigal	CDS	18063	19595	.	+	0	ID=pos.phage.5_21;gbkey=CDS;viphog=ViPhOG9462;viphog_taxonomy=Twortvirinae
+pos.phage.5	Prodigal	CDS	22518	23501	.	+	0	ID=pos.phage.5_26;gbkey=CDS;viphog=ViPhOG27646;viphog_taxonomy=Picovirinae
+pos.phage.5	Prodigal	CDS	37511	37756	.	+	0	ID=pos.phage.5_54;gbkey=CDS;viphog=ViPhOG9436;viphog_taxonomy=Klosneuvirinae
+pos.phage.5	Prodigal	CDS	37765	38172	.	+	0	ID=pos.phage.5_55;gbkey=CDS;viphog=ViPhOG1970;viphog_taxonomy=Sepvirinae
+pos.phage.5	Prodigal	CDS	40637	40816	.	+	0	ID=pos.phage.5_62;gbkey=CDS;viphog=ViPhOG4695;viphog_taxonomy=Twortvirinae
+pos.phage.6	Prodigal	CDS	3	353	.	-	0	ID=pos.phage.6_1;gbkey=CDS;viphog=ViPhOG1185;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	386	1210	.	-	0	ID=pos.phage.6_2;gbkey=CDS;viphog=ViPhOG1183;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	4329	4844	.	-	0	ID=pos.phage.6_13;gbkey=CDS;viphog=ViPhOG1176;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	7687	8013	.	-	0	ID=pos.phage.6_17;gbkey=CDS;viphog=ViPhOG26559;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	8823	10631	.	-	0	ID=pos.phage.6_20;gbkey=CDS;viphog=ViPhOG2079;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	10624	10914	.	-	0	ID=pos.phage.6_21;gbkey=CDS;viphog=ViPhOG1211;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	11107	11673	.	-	0	ID=pos.phage.6_23;gbkey=CDS;viphog=ViPhOG24289;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	11670	12605	.	-	0	ID=pos.phage.6_24;gbkey=CDS;viphog=ViPhOG24288;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	13816	14940	.	-	0	ID=pos.phage.6_26;gbkey=CDS;viphog=ViPhOG30511;viphog_taxonomy=Pradovirus
+pos.phage.6	Prodigal	CDS	14999	19909	.	-	0	ID=pos.phage.6_27;gbkey=CDS;viphog=ViPhOG1204;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	19921	22278	.	-	0	ID=pos.phage.6_28;gbkey=CDS;viphog=ViPhOG1203;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	23172	25676	.	-	0	ID=pos.phage.6_30;gbkey=CDS;viphog=ViPhOG1201;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	25686	26303	.	-	0	ID=pos.phage.6_31;gbkey=CDS;viphog=ViPhOG1200;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	27682	28524	.	-	0	ID=pos.phage.6_34;gbkey=CDS;viphog=ViPhOG1199;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	28521	30053	.	-	0	ID=pos.phage.6_35;gbkey=CDS;viphog=ViPhOG21586;viphog_taxonomy=Pradovirus
+pos.phage.6	Prodigal	CDS	36930	37862	.	-	0	ID=pos.phage.6_46;gbkey=CDS;viphog=ViPhOG11995;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	38017	38916	.	-	0	ID=pos.phage.6_48;gbkey=CDS;viphog=ViPhOG1189;viphog_taxonomy=Autographivirinae
+pos.phage.6	Prodigal	CDS	39313	41781	.	-	0	ID=pos.phage.6_49;gbkey=CDS;viphog=ViPhOG1186;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	1088	5998	.	-	0	ID=pos.phage.7_2;gbkey=CDS;viphog=ViPhOG1204;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	6010	8367	.	-	0	ID=pos.phage.7_3;gbkey=CDS;viphog=ViPhOG1203;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	9251	11755	.	-	0	ID=pos.phage.7_5;gbkey=CDS;viphog=ViPhOG1201;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	11765	12382	.	-	0	ID=pos.phage.7_6;gbkey=CDS;viphog=ViPhOG1200;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	13761	14603	.	-	0	ID=pos.phage.7_9;gbkey=CDS;viphog=ViPhOG1199;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	14600	16132	.	-	0	ID=pos.phage.7_10;gbkey=CDS;viphog=ViPhOG21586;viphog_taxonomy=Pradovirus
+pos.phage.7	Prodigal	CDS	23601	24533	.	-	0	ID=pos.phage.7_22;gbkey=CDS;viphog=ViPhOG11995;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	24688	25587	.	-	0	ID=pos.phage.7_24;gbkey=CDS;viphog=ViPhOG1189;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	25584	28067	.	-	0	ID=pos.phage.7_25;gbkey=CDS;viphog=ViPhOG1186;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	28836	30122	.	-	0	ID=pos.phage.7_28;gbkey=CDS;viphog=ViPhOG1185;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	30515	31339	.	-	0	ID=pos.phage.7_29;gbkey=CDS;viphog=ViPhOG1183;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	34437	34952	.	-	0	ID=pos.phage.7_40;gbkey=CDS;viphog=ViPhOG1176;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	38042	38365	.	-	0	ID=pos.phage.7_46;gbkey=CDS;viphog=ViPhOG26559;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	39175	40983	.	-	0	ID=pos.phage.7_49;gbkey=CDS;viphog=ViPhOG2079;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	40976	41266	.	-	0	ID=pos.phage.7_50;gbkey=CDS;viphog=ViPhOG1211;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	41459	42025	.	-	0	ID=pos.phage.7_52;gbkey=CDS;viphog=ViPhOG24289;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	42022	42957	.	-	0	ID=pos.phage.7_53;gbkey=CDS;viphog=ViPhOG24288;viphog_taxonomy=Autographivirinae
+pos.phage.7	Prodigal	CDS	42954	44165	.	-	0	ID=pos.phage.7_54;gbkey=CDS;viphog=ViPhOG30512;viphog_taxonomy=Pradovirus
+pos.phage.8	Prodigal	CDS	4207	4623	.	+	0	ID=pos.phage.8_7;gbkey=CDS;viphog=ViPhOG11619;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	4629	4988	.	+	0	ID=pos.phage.8_8;gbkey=CDS;viphog=ViPhOG11620;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	4981	7314	.	+	0	ID=pos.phage.8_9;gbkey=CDS;viphog=ViPhOG11622;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	7316	7816	.	+	0	ID=pos.phage.8_10;gbkey=CDS;viphog=ViPhOG11623;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	7813	8328	.	+	0	ID=pos.phage.8_11;gbkey=CDS;viphog=ViPhOG1897;viphog_taxonomy=Jerseyvirus
+pos.phage.8	Prodigal	CDS	8325	8690	.	+	0	ID=pos.phage.8_12;gbkey=CDS;viphog=ViPhOG11624;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	8681	11239	.	+	0	ID=pos.phage.8_13;gbkey=CDS;viphog=ViPhOG1902;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	13391	13552	.	-	0	ID=pos.phage.8_16;gbkey=CDS;viphog=ViPhOG16720;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	15452	15643	.	-	0	ID=pos.phage.8_19;gbkey=CDS;viphog=ViPhOG11627;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	16049	19147	.	-	0	ID=pos.phage.8_21;gbkey=CDS;viphog=ViPhOG27235;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	21923	22459	.	-	0	ID=pos.phage.8_25;gbkey=CDS;viphog=ViPhOG11629;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	22826	25012	.	-	0	ID=pos.phage.8_27;gbkey=CDS;viphog=ViPhOG11630;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	25069	25302	.	-	0	ID=pos.phage.8_28;gbkey=CDS;viphog=ViPhOG11632;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	26879	27043	.	+	0	ID=pos.phage.8_32;gbkey=CDS;viphog=ViPhOG16647;viphog_taxonomy=Jerseyvirus
+pos.phage.8	Prodigal	CDS	27104	27307	.	+	0	ID=pos.phage.8_33;gbkey=CDS;viphog=ViPhOG16644;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	27304	27675	.	+	0	ID=pos.phage.8_34;gbkey=CDS;viphog=ViPhOG11635;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	28150	28476	.	+	0	ID=pos.phage.8_36;gbkey=CDS;viphog=ViPhOG11636;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	28478	28765	.	+	0	ID=pos.phage.8_37;gbkey=CDS;viphog=ViPhOG11637;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	29418	29603	.	+	0	ID=pos.phage.8_39;gbkey=CDS;viphog=ViPhOG16642;viphog_taxonomy=Siphoviridae
+pos.phage.8	Prodigal	CDS	29600	29755	.	+	0	ID=pos.phage.8_40;gbkey=CDS;viphog=ViPhOG568;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	29752	29931	.	+	0	ID=pos.phage.8_41;gbkey=CDS;viphog=ViPhOG599;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	29928	30155	.	+	0	ID=pos.phage.8_42;gbkey=CDS;viphog=ViPhOG598;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	30467	30697	.	+	0	ID=pos.phage.8_44;gbkey=CDS;viphog=ViPhOG16725;viphog_taxonomy=Jerseyvirus
+pos.phage.8	Prodigal	CDS	30792	31337	.	+	0	ID=pos.phage.8_45;gbkey=CDS;viphog=ViPhOG4834;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	32611	34077	.	+	0	ID=pos.phage.8_47;gbkey=CDS;viphog=ViPhOG5664;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	34110	34760	.	-	0	ID=pos.phage.8_48;gbkey=CDS;viphog=ViPhOG16718;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	34937	35980	.	+	0	ID=pos.phage.8_49;gbkey=CDS;viphog=ViPhOG8402;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	35983	36441	.	+	0	ID=pos.phage.8_50;gbkey=CDS;viphog=ViPhOG11606;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	36760	37146	.	+	0	ID=pos.phage.8_51;gbkey=CDS;viphog=ViPhOG11607;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	37340	38041	.	+	0	ID=pos.phage.8_52;gbkey=CDS;viphog=ViPhOG11611;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	39838	40026	.	+	0	ID=pos.phage.8_56;gbkey=CDS;viphog=ViPhOG11613;viphog_taxonomy=Guernseyvirinae
+pos.phage.8	Prodigal	CDS	40542	41147	.	+	0	ID=pos.phage.8_58;gbkey=CDS;viphog=ViPhOG11615;viphog_taxonomy=Guernseyvirinae
+pos.phage.4	Prodigal	CDS	9514	9981	.	+	0	ID=pos.phage.4_12;gbkey=CDS;viphog=ViPhOG5603;viphog_taxonomy=Peduovirinae
+pos.phage.4	Prodigal	CDS	18796	20910	.	+	0	ID=pos.phage.4_22;gbkey=CDS;viphog=ViPhOG10981;viphog_taxonomy=Guernseyvirinae
+pos.phage.9	Prodigal	CDS	35949	39545	.	+	0	ID=pos.phage.9_49;gbkey=CDS;viphog=ViPhOG23316;viphog_taxonomy=Brockvirinae

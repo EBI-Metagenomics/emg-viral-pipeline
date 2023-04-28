@@ -16,6 +16,7 @@ process blast {
     script:
     if (task.attempt.toString() == '1')
     """
+      sed -i "s/ /|/" ${fasta}
       HEADER_BLAST="qseqid\\tsseqid\\tpident\\tlength\\tmismatch\\tgapopen\\tqstart\\tqend\\tqlen\\tsstart\\tsend\\tevalue\\tbitscore\\tslen"
       printf "\$HEADER_BLAST\\n" > ${confidence_set_name}.blast
 
@@ -24,6 +25,7 @@ process blast {
     """
     else if (task.attempt.toString() == '2')
     """
+      sed -i "s/ /|/" ${fasta}
       HEADER_BLAST="qseqid\\tsseqid\\tpident\\tlength\\tmismatch\\tgapopen\\tqstart\\tqend\\tqlen\\tsstart\\tsend\\tevalue\\tbitscore\\tslen"
       printf "\$HEADER_BLAST\\n" > ${confidence_set_name}.blast
 

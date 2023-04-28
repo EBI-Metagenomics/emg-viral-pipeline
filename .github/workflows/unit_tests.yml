@@ -1,0 +1,29 @@
+name: Python unit tests
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master", "dev" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        pip install -r requirements-test.txt
+    - name: Unit tests
+      run: |
+        # TODO, improve the pythonpath handling
+        PYTHONPATH="$PYTHONPATH:bin" python -m unittest discover tests
