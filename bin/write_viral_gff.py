@@ -63,7 +63,6 @@ def aggregate_annotations(virify_annotation_files):
                 end = int(row["End"])
                 direction = row["Direction"]
                 viral_sequence_type = "phage_linear"
-
                 (
                     prophage_start,
                     prophage_end,
@@ -78,7 +77,7 @@ def aggregate_annotations(virify_annotation_files):
                     # Current coordinates corresponds to the prophage region:
                     # contig_1|prophage-132033:161324	contig_1|prophage-132033:161324_1	2	256	1	No hit	NA
                     start = start + prophage_start
-                    end = end + prophage_end
+                    end = end + prophage_start
                     viral_sequence_type = f"prophage-{prophage_start}:{prophage_end}"
 
                 # We use the contig name without any extra annotations
@@ -193,20 +192,23 @@ def write_gff(
         SCORE = "."
 
         # Writing the gff header
+        used_contigs=[]
         for contig_name in viral_sequences.keys():
             clean_contig_name = Record.remove_prophage_from_contig(contig_name)
             contig_length = contigs_len_dict[clean_contig_name]
-            print(
-                "\t".join(
-                    [
-                        "##sequence-region",
-                        clean_contig_name,
-                        "1",
-                        str(contig_length),
-                    ]
-                ),
-                file=gff,
-            )
+            if clean_contig_name not in used_contigs:
+                used_contigs.append(clean_contig_name)
+                print(
+                    "\t".join(
+                        [
+                            "##sequence-region",
+                            clean_contig_name,
+                            "1",
+                            str(contig_length),
+                        ]
+                    ),
+                    file=gff,
+                )
 
         # Writing the mobile genetic elements (viral sequences)
         # coordinates and attributes
@@ -225,6 +227,11 @@ def write_gff(
                     # Prophages include the start and the end in the string
                     # encoding: prophage:{prophage_start}-{prophage_end}
                     start, end = viral_seq_type.split("prophage-")[1].split(":")
+
+                    if int(start) == 0:
+                        start = '1'
+                        id_=id_.replace('prophage-0:','prophage-1:')
+
                     element_category = "prophage"
                     mobile_element_type = "prophage"
 
@@ -257,6 +264,8 @@ def write_gff(
         for contig_name, contig_cds in cds_annotations.items():
             for cds_data in contig_cds:
                 cds_id, start, end, direction, viphog_annotation = cds_data
+
+                cds_id=cds_id.replace('prophage-0:','prophage-1:')
 
                 # TODO: review this rule.
                 if end > contigs_len_dict[contig_name]:

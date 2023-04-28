@@ -8,7 +8,7 @@ process ratio_evalue {
       file(model_metadata)
     
     output:
-      tuple val(name), val(set_name), file("${set_name}_modified_informative.tsv"), file(faa)
+      tuple val(name), val(set_name), file("${set_name}_modified_informative.tsv"), file(faa), optional: true
     
     script:
     """

@@ -13,7 +13,6 @@ process prodigal {
     
     script:
     """
-    sed -i "s/ /|/" ${fasta}
     prodigal -p "meta" -a ${confidence_set_name}_prodigal.faa -i ${fasta}
     """
 }
