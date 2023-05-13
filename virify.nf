@@ -425,6 +425,7 @@ workflow annotate {
             imgvr_db
             additional_model_data
             checkv_db
+            factor_file
 
     main:
         // ORF detection --> prodigal
@@ -445,7 +446,7 @@ workflow annotate {
         plot_contig_map(annotation.out)
 
         // assign lineages
-        assign(annotation.out, ncbi_db)
+        assign(annotation.out, ncbi_db, factor_file)
 
         // blast IMG/VR for more information
         if (params.blastextend) {
@@ -603,6 +604,8 @@ workflow {
     //kaiju_db = download_kaiju_db.out
     /**************************************************************/
 
+    factor_file = file(params.factor)
+
     // only detection based on an assembly
     if (params.fasta) {
       // only annotate the FASTA
@@ -614,7 +617,7 @@ workflow {
             postprocess(
               preprocess.out.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map)}
             ),
-            viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db
+            viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db, factor_file
           )
         )
       } else {
@@ -628,7 +631,7 @@ workflow {
                       virsorter_db, virfinder_db, pprmeta_git
                   )
               ), 
-              viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db
+              viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db, factor_file
           )
         )
       }
@@ -709,6 +712,7 @@ def helpMSG() {
     --onlyannotate      Only annotate the input FASTA (no virus prediction, only contig length filtering) [default: $params.onlyannotate]
     --mashmap           Map the viral contigs against the provided reference ((fasta/fastq)[.gz]) with mashmap [default: $params.mashmap]
     --mashmap_len       Mashmap mapping segment length, shorter sequences will be ignored [default: $params.mashmap_len]
+    --factor            Path to file with viral assemblies metadata, including taxon-specific factors [default: $params.factor]
 
     ${c_yellow}Developing:${c_reset}
     --viphog_version    define the ViPhOG db version to be used [default: $params.viphog_version]
@@ -717,7 +721,8 @@ def helpMSG() {
                         v3: --cut_ga, like v2 but seq-specific GA trimmed by 3 bits if second best score is 'nan' (current default)
     --meta_version      define the metadata table version to be used [default: $params.meta_version]
                         v1: older version of the meta data table using an outdated NCBI virus taxonomy, for reproducibility 
-                        v2: 2020 version of NCBI virus taxonomy (current default)
+                        v2: 2020 version of NCBI virus taxonomy
+                        v3: 2022 version of NCBI virus taxonomy
 
     ${c_dim}Nextflow options:
     -with-report rep.html    cpu / ram usage (may cause errors)
