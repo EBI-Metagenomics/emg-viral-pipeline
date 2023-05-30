@@ -74,6 +74,10 @@ if (params.illumina == '' &&  params.fasta == '' ) {
         if (params.mashmap) { mashmap_ref_ch = Channel
                 .fromPath( params.mashmap, checkIfExists: true)
               }
+              
+    // factor file input
+        if (params.factor) { factor_file = file( params.factor, checkIfExists: true) }
+
 
 /************************** 
 * MODULES
@@ -603,8 +607,6 @@ workflow {
     //download_kaiju_db()
     //kaiju_db = download_kaiju_db.out
     /**************************************************************/
-
-    factor_file = file(params.factor)
 
     // only detection based on an assembly
     if (params.fasta) {
