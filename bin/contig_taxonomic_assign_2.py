@@ -19,7 +19,7 @@ def contig_tax(annot_df, ncbi_db, tax_thres, taxon_factor_dict):
     provides the taxonomic lineage of each viral contig, based on the corresponding ViPhOG annotations"""
 
     ncbi = NCBITaxa(dbfile=ncbi_db)
-    tax_rank_order = ["genus", "subfamily", "family", "order"]
+    tax_rank_order = ["genus", "subfamily", "family", "order", "class"]
     contig_set = set(annot_df["Contig"])
 
     for contig in contig_set:
@@ -38,11 +38,11 @@ def contig_tax(annot_df, ncbi_db, tax_thres, taxon_factor_dict):
                 {
                     y: ncbi.get_taxid_translator([x])[x]
                     for x, y in ncbi.get_rank(ncbi.get_lineage(item)).items()
-                    if y in tax_rank_order
+                    if y in tax_rank_order[:-1]
                 }
                 for item in taxid_list
             ]
-            for rank in tax_rank_order:
+            for rank in tax_rank_order[:-1]:
                 taxon_list = [item.get(rank) for item in hit_lineages]
                 total_hits = sum(pd.notnull(taxon_list))
                 if total_hits == 0:
@@ -129,7 +129,7 @@ if __name__ == "__main__":
         csv_reader = csv.reader(infile)
         next(csv_reader)
         factor_dict = {name:{'avg_cds':float(avg_cds), 'std_cds':float(std_cds), 'factor':float(mult_factor)} for name, *_, avg_cds, std_cds, _, mult_factor in csv_reader}
-    file_header = ["contig_ID", "genus", "subfamily", "family", "order"]
+    file_header = ["contig_ID", "genus", "subfamily", "family", "order", "class"]
     output_gen = contig_tax(
         input_df, args.ncbi_db, args.tax_thres, factor_dict
     )

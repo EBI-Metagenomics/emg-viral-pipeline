@@ -6,13 +6,14 @@ process assign {
     input:
       tuple val(name), val(set_name), file(tab)
       file(db)
+      file(factor)
     
     output:
       tuple val(name), val(set_name), file("*_taxonomy.tsv")
     
     script:
     """
-    contig_taxonomic_assign.py -i ${tab} -d ${db} --prop ${params.prop} --taxthres ${params.taxthres}
+    contig_taxonomic_assign_2.py -i ${tab} -d ${db} --factor ${factor} --taxthres ${params.taxthres}
     """
 }
 
