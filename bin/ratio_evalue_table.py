@@ -106,7 +106,7 @@ if __name__ == "__main__":
                         help="domtbl generated with Generate_vphmm_hmmer_matrix.py",
                         required=True)
     parser.add_argument("-t", "--taxa", dest="taxa_tsv",
-                        help="TSV file: additional_data_vpHMMs_v{1,2}.tsv", required=True)
+                        help="TSV file: additional_data_vpHMMs_v{1,2,3}.tsv", required=True)
     parser.add_argument("-o", "--outfile", dest="out_file",
                         help="Output table name (default: cwd)",
                         default=".")
