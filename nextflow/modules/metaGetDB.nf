@@ -22,5 +22,9 @@ process metaGetDB {
     # v2 of metadata file
     wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/additional_data_vpHMMs_v2.tsv
     """
-    
+    else if (params.meta_version.toString() == 'v3')
+    """
+    # v2 of metadata file
+    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/additional_data_vpHMMs_v3.tsv
+    """
 }
