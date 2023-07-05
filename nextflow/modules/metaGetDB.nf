@@ -12,19 +12,8 @@ process metaGetDB {
       file("additional_data_vpHMMs_${params.meta_version}.tsv")
     
     script:
-    if (params.meta_version.toString() == 'v1')
     """
-    # v1 of metadata file
-    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/additional_data_vpHMMs_v1.tsv
-    """
-    else if (params.meta_version.toString() == 'v2')
-    """
-    # v2 of metadata file
-    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/additional_data_vpHMMs_v2.tsv
-    """
-    else if (params.meta_version.toString() == 'v3')
-    """
-    # v2 of metadata file
-    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/additional_data_vpHMMs_v3.tsv
+    echo "Downloading ${params.meta_version} of the metadata"
+    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/additional_data_vpHMMs_${params.meta_version}.tsv
     """
 }

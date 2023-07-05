@@ -38,12 +38,14 @@ println "\033[2mDev Meta database: $params.meta_version\u001B[0m"
 println " "
 println "\033[2mOnly run annotation: $params.onlyannotate\u001B[0m"
 println " "
-        
+
 if (params.help) { exit 0, helpMSG() }
 if (params.profile) {
   exit 1, "--profile is WRONG use -profile" }
 if (params.illumina == '' &&  params.fasta == '' ) {
   exit 1, "input missing, use [--illumina] or [--fasta]"}
+
+if (params.meta_version == "v4") { printMetadataV4Warning() }
 
 /************************** 
 * INPUT CHANNELS 
@@ -652,6 +654,34 @@ workflow {
     }
 }
 
+def printMetadataV4Warning() {
+    c_yellow = "\033[0;33m";
+    c_reset = "\033[0m";
+
+    println """
+    ${c_yellow}Warning: --meta_version v4 does not include the following discontinued virus taxa 
+    (according to ICTV) anymore and they have been excluded from the dataset.${c_reset}
+
+    Siphoviridae
+    Podoviridae
+    Myoviridae
+    Caudovirales
+    Allolevivirus
+    Autographivirinae
+    Buttersvirus
+    Chungbukvirus
+    Incheonvirus
+    Leviviridae
+    Levivirus
+    Mandarivirus
+    Pbi1virus
+    Phicbkvirus
+    Radnorvirus
+    Sitaravirus
+    Vidavervirus
+    """.stripIndent()
+}
+
 /*************  
 * --help
 *************/
@@ -725,6 +755,7 @@ def helpMSG() {
                         v1: older version of the meta data table using an outdated NCBI virus taxonomy, for reproducibility 
                         v2: 2020 version of NCBI virus taxonomy
                         v3: 2022 version of NCBI virus taxonomy
+                        v4: 2022 version of NCBI virus taxonomy
 
     ${c_dim}Nextflow options:
     -with-report rep.html    cpu / ram usage (may cause errors)
