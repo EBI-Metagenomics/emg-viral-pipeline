@@ -661,24 +661,35 @@ def printMetadataV4Warning() {
     println """
     ${c_yellow}Warning: --meta_version v4 does not include the following discontinued virus taxa 
     (according to ICTV) anymore and they have been excluded from the dataset.${c_reset}
-
-    Siphoviridae
-    Podoviridae
-    Myoviridae
-    Caudovirales
-    Allolevivirus
-    Autographivirinae
-    Buttersvirus
-    Chungbukvirus
-    Incheonvirus
-    Leviviridae
-    Levivirus
-    Mandarivirus
-    Pbi1virus
-    Phicbkvirus
-    Radnorvirus
-    Sitaravirus
-    Vidavervirus
+    - Allolevivirus
+    - Autographivirinae
+    - Buttersvirus
+    - Caudovirales
+    - Chungbukvirus
+    - Incheonvirus
+    - Leviviridae
+    - Levivirus
+    - Mandarivirus
+    - Pbi1virus
+    - Phicbkvirus
+    - Radnorvirus
+    - Sitaravirus
+    - Vidavervirus
+    - Myoviridae
+    - Siphoviridae
+    - Podoviridae
+    - Viunavirus
+    - Orthohepevirus
+    - Klosneuvirus
+    - Hendrixvirus
+    - Rubulavirus
+    - Avulavirus
+    - Catovirus
+    - Nucleorhabdovirus
+    - Viunavirus
+    - Gammalipothrixvirus
+    - Peduovirinae
+    - Sedoreovirinae
     """.stripIndent()
 }
 
