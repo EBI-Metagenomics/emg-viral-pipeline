@@ -1,13 +1,13 @@
-FROM rocker/r-ver:3.5.0
+FROM rocker/r-ver:4.3
 
-LABEL base_image="rocker/verse:3.5.0"
-LABEL version="0.2"
+LABEL base_image="rocker/verse:4.3"
+LABEL version="0.3"
 LABEL about.summary="r visualization packages"
 LABEL about.license="SPDX:Apache-2.0"
 LABEL about.tags="r, visualization"
 LABEL about.home="https://cran.r-project.org/web/packages/chromoMap/, https://cran.r-project.org/web/packages/ggplot2/, https://cran.r-project.org/web/packages/plotly/"
 LABEL software="r_chromoMap"
-LABEL software.version="3.15"
+LABEL software.version="4.1.1"
 
 LABEL maintainer="MGnify team https://www.ebi.ac.uk/support/metagenomics"
 

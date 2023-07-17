@@ -1,4 +1,3 @@
-![](https://img.shields.io/badge/CWL-1.2-green)
 ![](https://img.shields.io/badge/nextflow-22.04.5-brightgreen)
 ![](https://img.shields.io/badge/uses-docker-blue.svg)
 ![](https://img.shields.io/badge/uses-singularity-red.svg)
@@ -7,7 +6,7 @@
 
 1. [ The VIRify pipeline ](#virify)
 2. [ Nextflow execution ](#nf)
-3. [ CWL execution ](#cwl)
+3. [ CWL execution (discontinued) ](#cwl)
 4. [ Pipeline overview ](#overview)
 5. [ Detour: Metatranscriptomics ](#metatranscriptome)
 6. [ Resources ](#resources)
@@ -16,12 +15,14 @@
 <a name="virify"></a>
 
 # VIRify
-![Sankey plot](nextflow/figures/sankey.png)
+![Sankey plot](nextflow/figures/2023-sankey-neto.png)
 
 ## General
-VIRify is a recently developed pipeline for the detection, annotation, and taxonomic classification of viral contigs in metagenomic and metatranscriptomic assemblies. The pipeline is part of the repertoire of analysis services offered by [MGnify](https://www.ebi.ac.uk/metagenomics/). VIRify's taxonomic classification relies on the detection of taxon-specific profile hidden Markov models (HMMs), built upon a set of 22,013 orthologous protein domains and [referred to as ViPhOGs](https://doi.org/10.3390/v13061164). 
+VIRify is a pipeline for the detection, annotation, and taxonomic classification of viral contigs in metagenomic and metatranscriptomic assemblies. The pipeline is part of the repertoire of analysis services offered by [MGnify](https://www.ebi.ac.uk/metagenomics/). VIRify's taxonomic classification relies on the detection of taxon-specific profile hidden Markov models (HMMs), built upon a set of 22,013 orthologous protein domains and [referred to as ViPhOGs](https://doi.org/10.3390/v13061164). 
 
-The pipeline is implemented and available in [CWL](#cwl) and [Nextflow](#nf). You only need [CWL](#cwl) or [Nextflow](#nf) to run the pipeline (plus Docker or Singularity, as described below). For local execution and on HPCs we recommend the usage of [Nextflow](#nf). Details about installation and usage are given below.  
+The pipeline is implemented in [Nextflow](#nf) and additionally only Docker or Singularity are needed to run VIRify. Details about installation and usage are given below.
+
+**Please note**, that until v1.0 the pipeline was also implemented in [CWL](#cwl) as an alternative to [Nextflow](#nf). However, later updates were only included in the [Nextflow](#nf) version of the pipeline. 
 
 
 <a name="nf"></a>
@@ -110,9 +111,6 @@ Don't forget, especially on an HPC, to define further important parameters such 
 
 The engine `conda` is not working at the moment until there is a conda recipe for PPR-Meta or we switch the tool. Sorry. Use Docker. Or Singularity. Please. Or install PPR-Meta by yourself and then use the `conda` profile (not recommended).  
 
-
-<a name="cwl"></a>
-
 ## Monitoring
 
 <img align="right" width="400px" src="figures/tower.png" alt="Monitoring with Nextflow Tower" /> 
@@ -147,9 +145,9 @@ You can also directly enter your access token here instead of generating the abo
 
 ### GFF output files
 
-The outputs generated from viral prediction tools, ViPhOG annotation, taxonomy assign, and CheckV quality are integrated and summarized in a validated gff file. You can find such output on the 08-final/gff/ folder.
+The outputs generated from viral prediction tools, ViPhOG annotation, taxonomy assign, and CheckV quality are integrated and summarized in a validated gff file. You can find such output in the `08-final/gff/` folder.
 
-The labels used in the Type column of the gff file corresponds to the following nomenclature according to the [Sequence Ontology resource](http://www.sequenceontology.org/browser/current_svn/term/SO:0000001):
+The labels used in the Type column of the gff file correspond to the following nomenclature according to the [Sequence Ontology resource](http://www.sequenceontology.org/browser/current_svn/term/SO:0000001):
 
 | Type in gff file  | Sequence ontology ID |
 | ------------- | ------------- |
@@ -159,11 +157,15 @@ The labels used in the Type column of the gff file corresponds to the following 
 
 Note that CDS are reported only when a ViPhOG match has been found. 
 
-# Common Workflow Language
-VIRify was implemented in [Common Workflow Language (CWL)](https://www.commonwl.org/). 
+
+<a name="cwl"></a>
+
+# Common Workflow Language (discontinued)
+
+**Until VIRify v1.0**, VIRify was implemented in [Common Workflow Language (CWL)](https://www.commonwl.org/) next to the Nextflow implementation. Both Workflow Management Systems were previously supported. 
 
 ## What do I need?
-The current implementation uses CWL version 1.2. It was tested using Toil version 5.3.0 as the workflow engine and conda to manage the software dependencies.
+The implementation until v1.0 of VIRify uses CWL version 1.2. It was tested using Toil version 5.3.0 as the workflow engine and conda to manage the software dependencies.
 
 ## How?
 For instructions go to the [CWL README](cwl/README.md).
@@ -196,12 +198,14 @@ Although VIRify has been benchmarked and validated with metagenomic data in mind
 
 Additional material (assemblies used for benchmarking in the paper, ...) as well as the ViPhOG HMMs with model-specific bit score thresholds used in VIRify are available at [osf.io/fbrxy](https://osf.io/fbrxy/).
 
-Here, we also list databases used and automatically downloaded by the pipeline (in v1.0.0) when it is first run. We deposited database files on a separate FTP to ensure their accessibility. The files can be also downloaded manually and then used as an input for the pipeline to prevent the auto-download (see `--help` in the Nextflow pipeline).
+Here, we also list databases used and automatically downloaded by the pipeline **(in v2.0.0)** when it is first run. We deposited database files on a separate FTP to ensure their accessibility. The files can be also downloaded manually and then used as an input for the pipeline to prevent the auto-download (see `--help` in the Nextflow pipeline).
 
 ### Virus-specific protein profile HMMs
 
 * **ViPhOGs** (mandatory, used for taxonomy assignment)
     * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vpHMM_database_v3.tar.gz`
+    * Additional metadata file for filtering the ViPhOGs (according to taxonomy updates by the [ICTV](https://ictv.global/taxonomy))
+        * `wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/additional_data_vpHMMs_v4.tsv`
     * [Publication](https://www.mdpi.com/1999-4915/13/6/1164)
 * **pVOGs** (optional)
     * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/pvogs.tar.gz`
@@ -234,7 +238,7 @@ Here, we also list databases used and automatically downloaded by the pipeline (
 ### Taxonomy annotation
 
 * **NCBI taxonomy**
-    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/2020-07-01_ete3_ncbi_tax.sqlite.gz`
+    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/2022-11-01_ete3_ncbi_tax.sqlite.gz`
 
 ### Additional blast-based assignment (optional, super slow)
 

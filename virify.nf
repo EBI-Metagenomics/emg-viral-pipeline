@@ -38,12 +38,14 @@ println "\033[2mDev Meta database: $params.meta_version\u001B[0m"
 println " "
 println "\033[2mOnly run annotation: $params.onlyannotate\u001B[0m"
 println " "
-        
+
 if (params.help) { exit 0, helpMSG() }
 if (params.profile) {
   exit 1, "--profile is WRONG use -profile" }
 if (params.illumina == '' &&  params.fasta == '' ) {
   exit 1, "input missing, use [--illumina] or [--fasta]"}
+
+if (params.meta_version == "v4") { printMetadataV4Warning() }
 
 /************************** 
 * INPUT CHANNELS 
@@ -74,6 +76,10 @@ if (params.illumina == '' &&  params.fasta == '' ) {
         if (params.mashmap) { mashmap_ref_ch = Channel
                 .fromPath( params.mashmap, checkIfExists: true)
               }
+              
+    // factor file input
+        if (params.factor) { factor_file = file( params.factor, checkIfExists: true) }
+
 
 /************************** 
 * MODULES
@@ -425,6 +431,7 @@ workflow annotate {
             imgvr_db
             additional_model_data
             checkv_db
+            factor_file
 
     main:
         // ORF detection --> prodigal
@@ -445,7 +452,7 @@ workflow annotate {
         plot_contig_map(annotation.out)
 
         // assign lineages
-        assign(annotation.out, ncbi_db)
+        assign(annotation.out, ncbi_db, factor_file)
 
         // blast IMG/VR for more information
         if (params.blastextend) {
@@ -614,7 +621,7 @@ workflow {
             postprocess(
               preprocess.out.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map)}
             ),
-            viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db
+            viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db, factor_file
           )
         )
       } else {
@@ -628,7 +635,7 @@ workflow {
                       virsorter_db, virfinder_db, pprmeta_git
                   )
               ), 
-              viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db
+              viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db, factor_file
           )
         )
       }
@@ -645,6 +652,45 @@ workflow {
           viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db)
       )
     }
+}
+
+def printMetadataV4Warning() {
+    c_yellow = "\033[0;33m";
+    c_reset = "\033[0m";
+
+    println """
+    ${c_yellow}Warning: --meta_version v4 does not include the following discontinued virus taxa 
+    (according to ICTV) anymore and they have been excluded from the dataset.${c_reset}
+    - Allolevivirus
+    - Autographivirinae
+    - Buttersvirus
+    - Caudovirales
+    - Chungbukvirus
+    - Incheonvirus
+    - Leviviridae
+    - Levivirus
+    - Mandarivirus
+    - Pbi1virus
+    - Phicbkvirus
+    - Radnorvirus
+    - Sitaravirus
+    - Vidavervirus
+    - Myoviridae
+    - Siphoviridae
+    - Podoviridae
+    - Viunavirus
+    - Orthohepevirus
+    - Klosneuvirus
+    - Hendrixvirus
+    - Rubulavirus
+    - Avulavirus
+    - Catovirus
+    - Nucleorhabdovirus
+    - Viunavirus
+    - Gammalipothrixvirus
+    - Peduovirinae
+    - Sedoreovirinae
+    """.stripIndent()
 }
 
 /*************  
@@ -709,6 +755,7 @@ def helpMSG() {
     --onlyannotate      Only annotate the input FASTA (no virus prediction, only contig length filtering) [default: $params.onlyannotate]
     --mashmap           Map the viral contigs against the provided reference ((fasta/fastq)[.gz]) with mashmap [default: $params.mashmap]
     --mashmap_len       Mashmap mapping segment length, shorter sequences will be ignored [default: $params.mashmap_len]
+    --factor            Path to file with viral assemblies metadata, including taxon-specific factors [default: $params.factor]
 
     ${c_yellow}Developing:${c_reset}
     --viphog_version    define the ViPhOG db version to be used [default: $params.viphog_version]
@@ -717,7 +764,9 @@ def helpMSG() {
                         v3: --cut_ga, like v2 but seq-specific GA trimmed by 3 bits if second best score is 'nan' (current default)
     --meta_version      define the metadata table version to be used [default: $params.meta_version]
                         v1: older version of the meta data table using an outdated NCBI virus taxonomy, for reproducibility 
-                        v2: 2020 version of NCBI virus taxonomy (current default)
+                        v2: 2020 version of NCBI virus taxonomy
+                        v3: 2022 version of NCBI virus taxonomy
+                        v4: 2022 version of NCBI virus taxonomy
 
     ${c_dim}Nextflow options:
     -with-report rep.html    cpu / ram usage (may cause errors)
