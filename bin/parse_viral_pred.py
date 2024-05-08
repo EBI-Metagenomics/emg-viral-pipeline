@@ -300,7 +300,7 @@ def main(pprmeta, finder, sorter, assembly, outdir, prefix=False):
             " in the analysed metagenomic assembly",
             file=sys.stderr,
         )
-        exit(1)
+        exit(0)
 
 
 if __name__ == "__main__":
