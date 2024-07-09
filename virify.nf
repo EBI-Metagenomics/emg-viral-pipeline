@@ -91,6 +91,7 @@ if (params.meta_version == "v4") { printMetadataV4Warning() }
 include {pprmetaGet} from './nextflow/modules/pprmeta' 
 include {metaGetDB} from './nextflow/modules/metaGetDB'
 include {virsorterGetDB} from './nextflow/modules/virsorterGetDB' 
+include {virsorter2GetDB} from './nextflow/modules/virsorter2GetDB' 
 include {viphogGetDB} from './nextflow/modules/viphogGetDB' 
 include {ncbiGetDB} from './nextflow/modules/ncbiGetDB' 
 include {rvdbGetDB} from './nextflow/modules/rvdbGetDB' 
@@ -113,6 +114,7 @@ include {spades} from './nextflow/modules/spades'
 
 //detection
 include {virsorter} from './nextflow/modules/virsorter' 
+include {virsorter2} from './nextflow/modules/virsorter2' 
 include {virfinder; virfinderGetDB} from './nextflow/modules/virfinder' 
 include {pprmeta} from './nextflow/modules/pprmeta'
 include {length_filtering} from './nextflow/modules/length_filtering' 
@@ -195,6 +197,19 @@ workflow download_virsorter_db {
       db_preload = file("${params.databases}/virsorter/virsorter-data")
       if (db_preload.exists()) { db = db_preload }
       else  { virsorterGetDB(); db = virsorterGetDB.out } 
+    }
+  emit: db    
+}
+
+workflow download_virsorter2_db {
+    main:
+    // local storage via storeDir
+    if (!params.cloudProcess) { virsorter2GetDB(); db = virsorter2GetDB.out }
+    // cloud storage via db_preload.exists()
+    if (params.cloudProcess) {
+      db_preload = file("${params.databases}/virsorter2/virsorter2-data")
+      if (db_preload.exists()) { db = db_preload }
+      else  { virsorter2GetDB(); db = virsorter2GetDB.out } 
     }
   emit: db    
 }
@@ -399,12 +414,19 @@ workflow detect {
         length_filtered_ch = assembly_renamed_length_filtered.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, contig_number)}
 
         // virus detection --> VirSorter, VirFinder and PPR-Meta
-        virsorter(length_filtered_ch, virsorter_db)     
+        if (!params.use_virsorter2) {
+          virsorter(length_filtered_ch, virsorter_db) 
+          virsorter_out = virsorter.out
+        }
+        else { 
+          virsorter2(length_filtered_ch) 
+          virsorter_out = virsorter2.out
+        }
         virfinder(length_filtered_ch, virfinder_db)
         pprmeta(length_filtered_ch, pprmeta_git)
 
         // parsing predictions
-        parse(length_filtered_ch.join(virfinder.out).join(virsorter.out).join(pprmeta.out))
+        parse(length_filtered_ch.join(virfinder.out).join(virsorter_out).join(pprmeta.out))
 
     emit:
         parse.out.join(renamed_ch).transpose().map{name, fasta, vs_meta, log, renamed_fasta, map -> tuple (name, fasta, map)}
@@ -576,6 +598,12 @@ workflow {
     if (params.virsorter) { virsorter_db = file(params.virsorter)} 
     else { download_virsorter_db(); virsorter_db = download_virsorter_db.out }
 
+    // the container already comes with the databases needed to run virsorter2
+    if (workflow.profile.contains('conda')){
+      if (params.virsorter2) { virsorter2_db = file(params.virsorter2)} 
+      else { download_virsorter2_db(); virsorter2_db = download_virsorter2_db.out }
+    }
+
     if (params.virfinder) { virfinder_db = file(params.virfinder)} 
     else { download_virfinder_db(); virfinder_db = download_virfinder_db.out }
 
@@ -723,6 +751,7 @@ def helpMSG() {
 
     ${c_yellow}Databases (automatically downloaded by default):${c_reset}
     --virsorter         a virsorter database provided as 'virsorter/virsorter-data' [default: $params.virsorter]
+    --virsorter2        a virsorter2 database provided as 'virsorter2/virsorter2-data' [default: $params.virsorter2]
     --virfinder         a virfinder model [default: $params.virfinder]
     --viphog            the ViPhOG database, hmmpress'ed [default: $params.viphog]
     --rvdb              the RVDB, hmmpress'ed [default: $params.rvdb]
