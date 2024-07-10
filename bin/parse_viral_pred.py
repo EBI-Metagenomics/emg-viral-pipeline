@@ -186,7 +186,55 @@ def parse_virus_sorter(sorter_files):
     return high_confidence, low_confidence, prophages
 
 
-def merge_annotations(pprmeta, finder, sorter, assembly):
+def parse_virus_sorter2(sorter_files):
+    """Extract high, low and prophages confidence Records from virus sorter results.
+    High confidence are contigs in the categories 1 and 2
+    Low confidence are contigs in the category 3
+    Putative prophages are in categories 4 and 5
+    (which correspond to VirSorter confidence categories 1 and 2)
+    """
+    high_confidence = dict()
+    low_confidence = dict()
+    prophages = dict()
+
+    if not sorter_files:
+        print('WARNING: no result files from Virus Sorter 2 were found, skipping now.')
+    else:
+        boundary_df = pd.read_csv([filename for filename in sorter_files if 'boundary' in filename][0], sep='\t', index_col = 'seqname_new')
+        score_df = pd.read_csv([filename for filename in sorter_files if 'score' in filename][0], sep='\t', index_col = 'seqname')
+        meta = score_df.merge(boundary_df, left_index=True, right_index=True, how='left', suffixes = ('_score', '_boundary'))
+
+        for record in SeqIO.parse([filename for filename in sorter_files if 'combined' in filename][0], "fasta"):
+
+            max_score = meta.loc[record.id, 'max_score']
+            clean_name = record.id.split('|')[0]
+            circular =  meta.loc[record.id, 'shape'].startswith('c')
+            prange = [meta.loc[record.id, 'trim_bp_start'], meta.loc[record.id, 'trim_bp_end']]
+            
+            if 'partial' in record.id:
+                # add the prophage position within the contig
+                prophages.setdefault(clean_name, []).append(
+                    Record(record, "prophage", circular, prange)
+                )
+            
+            record.id = clean_name
+
+            if float(max_score) >= float(args.vs_cutoff):
+                high_confidence[record.id] = Record(record, "high_confidence", circular)
+            else:
+                low_confidence[record.id] = Record(record, "low_confidence", circular)
+
+
+
+
+    print(f"Virus Sorter found {len(high_confidence)} high confidence contigs.")
+    print(f"Virus Sorter found {len(low_confidence)} low confidence contigs.")
+    print(f"Virus Sorter found {len(prophages)} putative prophages contigs.")
+
+    return high_confidence, low_confidence, prophages
+
+
+def merge_annotations(pprmeta, finder, sorter, sorter2, assembly):
     """Parse VirSorter, VirFinder and PPR-Meta outputs and merge the results.
     High confidence viral contigs:
     -  VirSorter reported as categories 1 and 2
@@ -206,7 +254,7 @@ def merge_annotations(pprmeta, finder, sorter, assembly):
 
     pprmeta_lc = parse_pprmeta(pprmeta)
     finder_lc, finder_lowestc = parse_virus_finder(finder)
-    sorter_hc, sorter_lc, sorter_prophages = parse_virus_sorter(sorter)
+    sorter_hc, sorter_lc, sorter_prophages = parse_virus_sorter(sorter) if sorter is not None else parse_virus_sorter2(sorter2)
 
     for seq_record in SeqIO.parse(assembly, "fasta"):
         # HC
@@ -237,7 +285,7 @@ def merge_annotations(pprmeta, finder, sorter, assembly):
     )
 
 
-def main(pprmeta, finder, sorter, assembly, outdir, prefix=False):
+def main(pprmeta, finder, sorter, sorter2, assembly, outdir, vs_cutoff, prefix=False):
     """Parse VirSorter, VirFinder and PPR-Meta outputs and merge the results."""
     (
         hc_contigs,
@@ -246,7 +294,7 @@ def main(pprmeta, finder, sorter, assembly, outdir, prefix=False):
         sorter_hc,
         sorter_lc,
         sorter_prophages,
-    ) = merge_annotations(pprmeta, finder, sorter, assembly)
+    ) = merge_annotations(pprmeta, finder, sorter, sorter2, assembly)
 
     at_least_one = False
     name_prefix = ""
@@ -336,6 +384,14 @@ if __name__ == "__main__":
         required=False,
     )
     parser.add_argument(
+        "-z",
+        "--vs2files",
+        dest="sorter2",
+        nargs="+",
+        help='VirSorter2 .tsv files (i.e. final-viral-{boundary,score}.tsv, final-viral-combined.fa)' " VirSorter2 output",
+        required=False,
+    )
+    parser.add_argument(
         "-p",
         "--pmout",
         dest="pprmeta",
@@ -357,13 +413,22 @@ if __name__ == "__main__":
         " _viral prediction files should be stored (default: cwd)",
         default=".",
     )
+    parser.add_argument(
+        "-y",
+        "--vs_cutoff",
+        dest="vs_cutoff",
+        help="Cutoff to categorize sequences identified by VirSorter2 to high or low confidence (default: 0.9).",
+        default="0.9",
+    )
     args = parser.parse_args()
 
     main(
         args.pprmeta,
         args.finder,
         args.sorter,
+        args.sorter2,
         args.assembly,
         args.outdir,
+        args.vs_cutoff,
         prefix=args.prefix,
     )

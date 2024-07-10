@@ -14,6 +14,12 @@ process parse {
       tuple val(name), file("*.fna"), file('virsorter_metadata.tsv'), file("${name}_virus_predictions.log"), optional: true
     
     script:
+    if (params.use_virsorter2)
+        """
+    touch virsorter_metadata.tsv
+    parse_viral_pred.py -a ${fasta} -f ${virfinder} -p ${pprmeta} -z ${virsorter} &> ${name}_virus_predictions.log
+    """
+    else
     """
     touch virsorter_metadata.tsv
     parse_viral_pred.py -a ${fasta} -f ${virfinder} -p ${pprmeta} -s ${virsorter}/Predicted_viral_sequences/*.fasta &> ${name}_virus_predictions.log
