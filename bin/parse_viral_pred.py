@@ -274,7 +274,7 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly):
             lc_predictions_contigs.append(sorter_lc.get(seq_record.id).get_seq_record())
         elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
             lc_predictions_contigs.append(seq_record)
-
+    
     return (
         hc_predictions_contigs,
         lc_predictions_contigs,
@@ -310,6 +310,9 @@ def main(pprmeta, finder, sorter, sorter2, assembly, outdir, vs_cutoff, prefix=F
             "fasta",
         )
         at_least_one = True
+    else:
+        print('No high confidence viral contigs found, skipping output file.')
+
     if len(lc_contigs):
         SeqIO.write(
             lc_contigs,
@@ -317,11 +320,17 @@ def main(pprmeta, finder, sorter, sorter2, assembly, outdir, vs_cutoff, prefix=F
             "fasta",
         )
         at_least_one = True
+    else:
+        print('No low confidence viral contigs found, skipping output file.')
+
     if len(prophage_contigs):
         SeqIO.write(
             prophage_contigs, outdir / Path(name_prefix + "prophages.fna"), "fasta"
         )
         at_least_one = True
+    else:
+        print('No prophage contigs found, skipping output file.')
+
 
     # VirSorter provides some metadata on each annotation
     # - is circular
