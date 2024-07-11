@@ -427,10 +427,9 @@ workflow detect {
 
         // parsing predictions
         parse(length_filtered_ch.join(virfinder.out).join(virsorter_out).join(pprmeta.out))
-        parse.out.view{ it -> "$it" }
 
     emit:
-        parse.out.join(renamed_ch).view().transpose().map{name, fasta, vs_meta, log, renamed_fasta, map -> tuple (name, fasta, map)}
+        parse.out.join(renamed_ch).transpose().map{name, fasta, vs_meta, log, renamed_fasta, map -> tuple (name, fasta, map)}
 }
 
 

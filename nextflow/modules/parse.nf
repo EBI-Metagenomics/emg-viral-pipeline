@@ -11,7 +11,7 @@ process parse {
       contig_number.toInteger() > 0 
 
     output:
-      tuple val(name), file("*.fna"), file('virsorter_metadata.tsv'), file("${name}_virus_predictions.log"), optional: false
+      tuple val(name), file("*.fna"), file('virsorter_metadata.tsv'), file("${name}_virus_predictions.log"), optional: true
     
     script:
     if (params.use_virsorter2)
