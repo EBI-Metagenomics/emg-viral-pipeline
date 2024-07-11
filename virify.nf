@@ -427,6 +427,7 @@ workflow detect {
 
         // parsing predictions
         parse(length_filtered_ch.join(virfinder.out).join(virsorter_out).join(pprmeta.out))
+        parse.out.view{ it -> "$it" }
 
     emit:
         parse.out.join(renamed_ch).view().transpose().map{name, fasta, vs_meta, log, renamed_fasta, map -> tuple (name, fasta, map)}
@@ -647,7 +648,7 @@ workflow {
           annotate(
             fasta_input_ch,
             postprocess(
-              preprocess.out.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map)}.view()
+              preprocess.out.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map)}
             ),
             viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db, factor_file
           )
