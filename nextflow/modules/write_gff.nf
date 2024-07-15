@@ -1,14 +1,14 @@
 process write_gff {
     publishDir "${params.output}/${name}/${params.finaldir}/gff", mode: 'copy' , pattern: "*.gff"
 
-    errorStrategy 'ignore'
+    //errorStrategy 'ignore'
     label 'python3'
 
     input:
        tuple val(name), file(fasta)
-       path(viphos_annotations)
-       path(taxonomies)
-       path(quality_summaries)
+       path 'high_confidence_viral_contigs_prodigal_annotation*.tsv'
+       path 'high_confidence_viral_contigs_prodigal_annotation_taxonomy*.tsv'
+       path 'prophages_quality_summary*.tsv'
 
     output:
        file("${name}_virify.gff")
@@ -16,9 +16,9 @@ process write_gff {
     script:
     """
     write_viral_gff.py \
-    -v ${viphos_annotations.join(' ')} \
-    -c ${quality_summaries.join(' ')} \
-    -t ${taxonomies.join(' ')} \
+    -v high_confidence_viral_contigs_prodigal_annotation* \
+    -c prophages_quality_summary* \
+    -t high_confidence_viral_contigs_prodigal_annotation_taxonomy* \
     -s ${name} \
     -a ${fasta}
 

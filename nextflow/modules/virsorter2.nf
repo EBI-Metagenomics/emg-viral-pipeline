@@ -1,5 +1,5 @@
 process virsorter2 {
-      publishDir "${params.output}/${name}/${params.virusdir}/", mode: 'copy', pattern: "virsorter2/*"
+      publishDir "${params.output}/${name}/${params.virusdir}/", mode: 'copy', pattern: "virsorter2/*.{tsv,fasta}"
       label 'virsorter2'
 
     input:
@@ -9,7 +9,7 @@ process virsorter2 {
       contig_number.toInteger() > 0 
 
     output:
-      tuple val(name), file("virsorter2/*")
+      tuple val(name), file("virsorter2/*.{tsv,fa}")
     
     script:
       """
