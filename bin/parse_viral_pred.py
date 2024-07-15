@@ -188,10 +188,10 @@ def parse_virus_sorter(sorter_files):
 
 def parse_virus_sorter2(sorter_files):
     """Extract high, low and prophages confidence Records from virus sorter results.
-    High confidence are contigs in the categories 1 and 2
-    Low confidence are contigs in the category 3
-    Putative prophages are in categories 4 and 5
-    (which correspond to VirSorter confidence categories 1 and 2)
+    High confidence are contigs with confidence score >= confidence cutoff (0.9 per default).
+    Low confidence are contigs with confidence score < confidence cutoff and > 0.5.
+    Putative prophages are contigs with partial viral sequences. According to the VirSorter2 author
+    partial viral sequences can only occur as prophages, full viral sequences can occur due to prophages or other origins though.
     """
     high_confidence = dict()
     low_confidence = dict()
