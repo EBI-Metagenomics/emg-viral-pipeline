@@ -13,10 +13,10 @@ process virsorter2GetDB {
   script:
     """
     # just in case there is a failed attemp before; 
-    #   remove the whole diretory specified by -d
+    # remove the whole diretory specified by -d
     rm -rf virsorter2-data
-    # run setup
-    #virsorter setup -d virsorter2-data -j ${task.cpus}
+    
+    # download virsorter2 database and extract
     wget https://osf.io/v46sc/download
     mkdir virsorter2-data
     tar -xzf db.tgz -C virsorter2-data

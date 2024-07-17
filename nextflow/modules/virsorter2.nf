@@ -13,7 +13,6 @@ process virsorter2 {
     
     script:
       """
-      #virsorter config --init-source --db-dir=${params.databases}/virsorter2/virsorter2-data
       virsorter run -w virsorter2 -i ${fasta}  -j ${task.cpus} all
       """
 }
