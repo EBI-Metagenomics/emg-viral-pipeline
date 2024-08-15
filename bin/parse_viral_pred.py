@@ -427,7 +427,8 @@ if __name__ == "__main__":
         "--vs_cutoff",
         dest="vs_cutoff",
         help="Cutoff to categorize sequences identified by VirSorter2 to high or low confidence (default: 0.9).",
-        default="0.9",
+        default=0.9,
+        type=float
     )
     args = parser.parse_args()
 
