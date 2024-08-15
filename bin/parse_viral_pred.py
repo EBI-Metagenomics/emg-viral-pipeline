@@ -225,9 +225,6 @@ if ["final-viral-boundary.tsv", "final-viral-score.tsv", "final-viral-combined.f
             else:
                 low_confidence[record.id] = Record(record, "low_confidence", circular)
 
-
-
-
     print(f"Virus Sorter found {len(high_confidence)} high confidence contigs.")
     print(f"Virus Sorter found {len(low_confidence)} low confidence contigs.")
     print(f"Virus Sorter found {len(prophages)} putative prophages contigs.")
