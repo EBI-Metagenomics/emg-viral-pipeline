@@ -193,37 +193,46 @@ def parse_virus_sorter2(sorter_files):
     Putative prophages are contigs with partial viral sequences. According to the VirSorter2 author
     partial viral sequences can only occur as prophages, full viral sequences can occur due to prophages or other origins though.
     """
+    
+    boundary_columns = ['seqname', 'trim_orf_index_start', 'trim_orf_index_end', 
+                        'trim_bp_start', 'trim_bp_end', 'trim_pr', 
+                        'partial', 'pr_full', 'hallmark_cnt', 'group']
+    
+    boundary_dtypes = {'seqname': 'object', 'trim_orf_index_start': 'int64', 'trim_orf_index_end': 'int64',
+                       'trim_bp_start': 'int64', 'trim_bp_end': 'int64', 'trim_pr': 'float64',
+                       'partial': 'int64', 'pr_full': 'float64', 'hallmark_cnt': 'int64', 'group': 'object'}
+    
     high_confidence = dict()
     low_confidence = dict()
     prophages = dict()
 
-    if not sorter_files:
-        print('WARNING: no result files from Virus Sorter 2 were found, skipping now.')
-    else:
-if ["final-viral-boundary.tsv", "final-viral-score.tsv", "final-viral-combined.fa"] not in sorter_files:
-    print('ERROR: The result files of Virus Sorter 3 are incomplete. The code expects the files final-viral-{boundary,score}.tsv and final-viral-combined.fa.', file=sys.stderr)
-        score_df = pd.read_csv([filename for filename in sorter_files if 'score' in filename][0], sep='\t', index_col = 'seqname')
-        meta = score_df.merge(boundary_df, left_index=True, right_index=True, how='left', suffixes = ('_score', '_boundary'))
+    if ["final-viral-boundary.tsv", "final-viral-score.tsv", "final-viral-combined.fa"] not in sorter_files:
+        print('ERROR: The result files of Virus Sorter 3 are incomplete. The code expects the files final-viral-{boundary,score}.tsv and final-viral-combined.fa.', file=sys.stderr)
+        return high_confidence, low_confidence, prophages
+    
+    boundary_df = pd.read_csv([filename for filename in sorter_files if 'boundary' in filename][0], sep='\t', index_col = 'seqname_new', usecols = boundary_columns, dtype = boundary_dtypes)
+    score_df = pd.read_csv([filename for filename in sorter_files if 'score' in filename][0], sep='\t', index_col = 'seqname')
+    meta = score_df.merge(boundary_df, left_index=True, right_index=True, how='left', suffixes = ('_score', '_boundary'))
 
-        for record in SeqIO.parse([filename for filename in sorter_files if 'combined' in filename][0], "fasta"):
+    for record in SeqIO.parse([filename for filename in sorter_files if 'combined' in filename][0], "fasta"):
 
-            max_score = meta.loc[record.id, 'max_score']
-            clean_name = record.id.split('|')[0]
-            circular =  meta.loc[record.id, 'shape'].startswith('c')
-            prange = [meta.loc[record.id, 'trim_bp_start'], meta.loc[record.id, 'trim_bp_end']]
-            
-            if 'partial' in record.id:
-                # add the prophage position within the contig
-                prophages.setdefault(clean_name, []).append(
-                    Record(record, "prophage", circular, prange)
-                )
-            
-            record.id = clean_name
+        max_score = meta.loc[record.id, 'max_score']
+        clean_name = record.id.split('|')[0]
+        circular =  meta.loc[record.id, 'shape'].startswith('c')
+        prange = [meta.loc[record.id, 'trim_bp_start'], meta.loc[record.id, 'trim_bp_end']]
+        
+        if 'partial' in record.id:
+            # add the prophage position within the contig
+            prophages.setdefault(clean_name, []).append(
+                Record(record, "prophage", circular, prange)
+            )
+        
+        record.id = clean_name
 
-            if float(max_score) >= float(args.vs_cutoff):
-                high_confidence[record.id] = Record(record, "high_confidence", circular)
-            else:
-                low_confidence[record.id] = Record(record, "low_confidence", circular)
+        if float(max_score) >= float(args.vs_cutoff):
+            high_confidence[record.id] = Record(record, "high_confidence", circular)
+        else:
+            low_confidence[record.id] = Record(record, "low_confidence", circular)
 
     print(f"Virus Sorter found {len(high_confidence)} high confidence contigs.")
     print(f"Virus Sorter found {len(low_confidence)} low confidence contigs.")
@@ -426,7 +435,7 @@ if __name__ == "__main__":
         dest="vs_cutoff",
         help="Cutoff to categorize sequences identified by VirSorter2 to high or low confidence (default: 0.9).",
         default=0.9,
-        type=float
+        type=float,
     )
     args = parser.parse_args()
 
