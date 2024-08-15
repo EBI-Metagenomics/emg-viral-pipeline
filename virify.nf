@@ -504,9 +504,9 @@ workflow annotate {
         def k = 1 
 
         // enumerate collected files to prevent file collision
-        viphos_annotations = annotation.out.map { _, __, annotations -> tuple(annotations, i++) }.collect(){it -> it[0]} //{ annotations, count -> "$annotations".replace('.', '_' + count + '.') }
-        taxonomy_annotations = assign.out.map { _, __, taxonomy -> tuple(taxonomy, j++) }.collect(){it -> it[0]} //{ taxonomy, count -> "$taxonomy".replace('.', '_' + count + '.') }
-        checkv_results = checkV.out.map { _, __, quality_summary, ___ -> tuple(quality_summary, k++) }.collect(){it -> it[0]} //{ quality_summary, count -> "$quality_summary".replace('.', '_' + count + '.') }
+        viphos_annotations = annotation.out.map { _, __, annotations -> tuple(annotations, i++) }.collect(){it -> it[0]}
+        taxonomy_annotations = assign.out.map { _, __, taxonomy -> tuple(taxonomy, j++) }.collect(){it -> it[0]}
+        checkv_results = checkV.out.map { _, __, quality_summary, ___ -> tuple(quality_summary, k++) }.collect(){it -> it[0]}
 
         write_gff(
           // when using --list with multiple samples and the first assembly is bad by chance this generates one bad GFF file right?
