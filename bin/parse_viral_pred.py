@@ -200,7 +200,8 @@ def parse_virus_sorter2(sorter_files):
     if not sorter_files:
         print('WARNING: no result files from Virus Sorter 2 were found, skipping now.')
     else:
-        boundary_df = pd.read_csv([filename for filename in sorter_files if 'boundary' in filename][0], sep='\t', index_col = 'seqname_new')
+if ["final-viral-boundary.tsv", "final-viral-score.tsv", "final-viral-combined.fa"] not in sorter_files:
+    print('ERROR: The result files of Virus Sorter 3 are incomplete. The code expects the files final-viral-{boundary,score}.tsv and final-viral-combined.fa.', file=sys.stderr)
         score_df = pd.read_csv([filename for filename in sorter_files if 'score' in filename][0], sep='\t', index_col = 'seqname')
         meta = score_df.merge(boundary_df, left_index=True, right_index=True, how='left', suffixes = ('_score', '_boundary'))
 
