@@ -87,7 +87,7 @@ nextflow info EBI-Metagenomics/emg-viral-pipeline
 
 Run annotation for a small assembly file (10 contigs, 0.78 Mbp) on your local Linux machine using Docker containers (per default `--cores 4`; takes approximately 10 min on a 8 core i7 laptop + time for database download; ~19 GB):
 ```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.4.0 --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" --cores 4 -profile local,docker
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.4.0 --fasta "$HOME/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" --cores 4 -profile local,docker
 ```
 
 __Please note__ that in particular the following parameters are important to handle where Nextflow writes files. 
@@ -128,7 +128,7 @@ You can save this variable in your `.bashrc` or `.profile` to not need to enter 
 Now run:
 
 ```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.4.0 --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" --cores 4 -profile local,docker -with-tower
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.4.0 --fasta "$HOME/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" --cores 4 -profile local,docker -with-tower
 ```
 
 Alternatively, you can also pull the code from this repository and activate the Tower connection within the `nextflow.config` file located in the root GitHub directory:
