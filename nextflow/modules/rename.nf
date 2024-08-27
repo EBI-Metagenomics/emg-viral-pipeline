@@ -1,6 +1,7 @@
 process rename {
       publishDir "${params.output}/${name}/", mode: 'copy', pattern: "${name}_renamed.fasta"
       label 'python3'
+      tag "$name"
 
     input:
       tuple val(name), file(fasta) 
