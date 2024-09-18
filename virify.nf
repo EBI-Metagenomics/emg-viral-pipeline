@@ -1,10 +1,4 @@
 #!/usr/bin/env nextflow
-nextflow.enable.dsl=2
-
-/*
-* Nextflow -- Virus Analysis Pipeline
-* Author: hoelzer.martin@gmail.com
-*/
 
 /************************** 
 * Help messages & user inputs & checks
@@ -88,415 +82,64 @@ if (params.meta_version == "v4") { printMetadataV4Warning() }
 /* Comment section: */
 
 //db
-include {pprmetaGet} from './nextflow/modules/pprmeta' 
-include {metaGetDB} from './nextflow/modules/metaGetDB'
-include {virsorterGetDB} from './nextflow/modules/virsorterGetDB' 
-include {viphogGetDB} from './nextflow/modules/viphogGetDB' 
-include {ncbiGetDB} from './nextflow/modules/ncbiGetDB' 
-include {rvdbGetDB} from './nextflow/modules/rvdbGetDB' 
-include {pvogsGetDB} from './nextflow/modules/pvogsGetDB' 
-include {vogdbGetDB} from './nextflow/modules/vogdbGetDB' 
-include {vpfGetDB} from './nextflow/modules/vpfGetDB'
-include {imgvrGetDB} from './nextflow/modules/imgvrGetDB'
-include {checkvGetDB} from './nextflow/modules/checkvGetDB'
+include {pprmetaGet} from 'modules/pprmeta' 
+include {metaGetDB} from 'modules/metaGetDB'
+include {virsorterGetDB} from 'modules/virsorterGetDB' 
+include {viphogGetDB} from 'modules/viphogGetDB' 
+include {ncbiGetDB} from 'modules/ncbiGetDB' 
+include {rvdbGetDB} from 'modules/rvdbGetDB' 
+include {pvogsGetDB} from 'modules/pvogsGetDB' 
+include {vogdbGetDB} from 'modules/vogdbGetDB' 
+include {vpfGetDB} from 'modules/vpfGetDB'
+include {imgvrGetDB} from 'modules/imgvrGetDB'
+include {checkvGetDB} from 'modules/checkvGetDB'
 //include './modules/kaijuGetDB' params(cloudProcess: params.cloudProcess, databases: params.databases)
 
 //preprocessing
-include {rename} from './nextflow/modules/rename'
-include {restore} from './nextflow/modules/restore'
+include { rename} from 'modules/rename'
+include { restore} from 'modules/restore'
 
 //assembly (optional)
-include {fastp} from './nextflow/modules/fastp'
-include {fastqc} from './nextflow/modules/fastqc'
-include {multiqc} from './nextflow/modules/multiqc' 
-include {spades} from './nextflow/modules/spades' 
+include { fastp} from 'modules/fastp'
+include { fastqc} from 'modules/fastqc'
+include { multiqc} from 'modules/multiqc' 
+include { spades} from 'modules/spades' 
 
 //detection
-include {virsorter} from './nextflow/modules/virsorter' 
-include {virfinder; virfinderGetDB} from './nextflow/modules/virfinder' 
-include {pprmeta} from './nextflow/modules/pprmeta'
-include {length_filtering} from './nextflow/modules/length_filtering' 
-include {parse} from './nextflow/modules/parse' 
-include {prodigal} from './nextflow/modules/prodigal'
-//include phanotate from './modules/phanotate' 
-include {hmmscan as hmmscan_viphogs} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.viphog_version)
-include {hmmscan as hmmscan_rvdb} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'rvdb', version: params.viphog_version)
-include {hmmscan as hmmscan_pvogs} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'pvogs', version: params.viphog_version)
-include {hmmscan as hmmscan_vogdb} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vogdb', version: params.viphog_version)
-include {hmmscan as hmmscan_vpf} from './nextflow/modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vpf', version: params.viphog_version)
-include {hmm_postprocessing} from './nextflow/modules/hmm_postprocessing'
-include {ratio_evalue} from './nextflow/modules/ratio_evalue' 
-include {annotation} from './nextflow/modules/annotation' 
-include {assign} from './nextflow/modules/assign' 
-include {blast} from './nextflow/modules/blast' 
-include {blast_filter} from './nextflow/modules/blast_filter'
-include {mashmap} from './nextflow/modules/mashmap'
+include { virsorter} from 'modules/virsorter' 
+include { virfinder; virfinderGetDB} from 'modules/virfinder' 
+include { pprmeta} from 'modules/pprmeta'
+include { length_filtering} from 'modules/length_filtering' 
+include { parse} from 'modules/parse' 
+include { prodigal} from 'modules/prodigal'
+include { hmmscan as hmmscan_viphogs} from 'modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.viphog_version)
+include { hmmscan as hmmscan_rvdb} from 'modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'rvdb', version: params.viphog_version)
+include { hmmscan as hmmscan_pvogs} from 'modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'pvogs', version: params.viphog_version)
+include { hmmscan as hmmscan_vogdb} from 'modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vogdb', version: params.viphog_version)
+include { hmmscan as hmmscan_vpf} from 'modules/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vpf', version: params.viphog_version)
+include { hmm_postprocessing} from 'modules/hmm_postprocessing'
+include { ratio_evalue} from 'modules/ratio_evalue' 
+include { annotation} from 'modules/annotation' 
+include { assign} from 'modules/assign' 
+include { blast} from 'modules/blast' 
+include { blast_filter} from 'modules/blast_filter'
+include { mashmap} from 'modules/mashmap'
 
 //visuals
-include {plot_contig_map} from './nextflow/modules/plot_contig_map' 
-include {generate_krona_table} from './nextflow/modules/krona' 
-include {generate_sankey_table} from './nextflow/modules/sankey'
-include {generate_chromomap_table} from './nextflow/modules/chromomap'
-include {krona} from './nextflow/modules/krona'
-include {sankey} from './nextflow/modules/sankey'
-include {chromomap} from './nextflow/modules/chromomap'
-include {balloon} from './nextflow/modules/balloon'
-
-//qc
-include { checkV } from './nextflow/modules/checkV'
-
-//gff
-include { write_gff } from './nextflow/modules/write_gff'
-
-//include './modules/kaiju' params(output: params.output, illumina: params.illumina, fasta: params.fasta)
-//include './modules/filter_reads' params(output: params.output)
-
-
-/************************** 
-* DATABASES
-**************************/
-
-/* Comment section:
-The Database Section is designed to "auto-get" pre prepared databases.
-It is written for local use and cloud use.*/
-
-workflow download_pprmeta {
-    main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { pprmetaGet(); git = pprmetaGet.out }
-    // cloud storage via preload.exists()
-    if (params.cloudProcess) {
-      preload = file("${params.databases}/pprmeta")
-      if (preload.exists()) { git = preload }
-      else  { pprmetaGet(); git = pprmetaGet.out } 
-    }
-  emit: git
-}
-
-workflow download_model_meta {
-    main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { metaGetDB(); db = metaGetDB.out }
-    // cloud storage via preload.exists()
-    if (params.cloudProcess) {
-      preload = file("${params.databases}/models/additional_data_vpHMMs_${params.meta_version}.tsv")
-      if (preload.exists()) { db = preload }
-      else  { metaGetDB(); db = metaGetDB.out } 
-    }
-  emit: db
-}
-
-workflow download_virsorter_db {
-    main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { virsorterGetDB(); db = virsorterGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.databases}/virsorter/virsorter-data")
-      if (db_preload.exists()) { db = db_preload }
-      else  { virsorterGetDB(); db = virsorterGetDB.out } 
-    }
-  emit: db    
-}
-
-workflow download_virfinder_db {
-    main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { virfinderGetDB(); db = virfinderGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.databases}/virfinder/VF.modEPV_k8.rda")
-      if (db_preload.exists()) { db = db_preload }
-      else  { virfinderGetDB(); db = virfinderGetDB.out } 
-    }
-  emit: db    
-}
-
-workflow download_viphog_db {
-    main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { viphogGetDB(); db = viphogGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.databases}/vpHMM_database_${params.viphog_version}")
-      if (db_preload.exists()) { db = db_preload }
-      else  { viphogGetDB(); db = viphogGetDB.out } 
-    }
-  emit: db    
-}
-
-workflow download_ncbi_db {
-    main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { ncbiGetDB(); db = ncbiGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.databases}/ncbi/ete3_ncbi_tax.sqlite")
-      if (db_preload.exists()) { db = db_preload }
-      else  { ncbiGetDB(); db = ncbiGetDB.out } 
-    }
-  emit: db    
-}
-
-workflow download_rvdb_db {
-    main:
-    if (params.hmmextend) {
-      // local storage via storeDir
-      if (!params.cloudProcess) { rvdbGetDB(); db = rvdbGetDB.out }
-      // cloud storage via db_preload.exists()
-      if (params.cloudProcess) {
-        db_preload = file("${params.databases}/rvdb")
-        if (db_preload.exists()) { db = db_preload }
-        else  { rvdbGetDB(); db = rvdbGetDB.out } 
-      }
-    } else {
-      db = Channel.empty()
-    }
-  emit: db    
-}
-
-workflow download_pvogs_db {
-    main:
-    if (params.hmmextend) {
-      // local storage via storeDir
-      if (!params.cloudProcess) { pvogsGetDB(); db = pvogsGetDB.out }
-      // cloud storage via db_preload.exists()
-      if (params.cloudProcess) {
-        db_preload = file("${params.databases}/pvogs")
-        if (db_preload.exists()) { db = db_preload }
-        else  { pvogsGetDB(); db = pvogsGetDB.out } 
-      }
-    } else {
-      db = Channel.empty()
-    }
-  emit: db    
-}
-
-workflow download_vogdb_db {
-    main:
-    if (params.hmmextend) {
-      // local storage via storeDir
-      if (!params.cloudProcess) { vogdbGetDB(); db = vogdbGetDB.out }
-      // cloud storage via db_preload.exists()
-      if (params.cloudProcess) {
-        db_preload = file("${params.databases}/vogdb")
-        if (db_preload.exists()) { db = db_preload }
-        else  { vogdbGetDB(); db = vogdbGetDB.out } 
-      }
-    } else {
-      db = Channel.empty()
-    }
-  emit: db    
-}
-
-workflow download_vpf_db {
-    main:
-    if (params.hmmextend) {
-      // local storage via storeDir
-      if (!params.cloudProcess) { vpfGetDB(); db = vpfGetDB.out }
-      // cloud storage via db_preload.exists()
-      if (params.cloudProcess) {
-        db_preload = file("${params.databases}/vpf")
-        if (db_preload.exists()) { db = db_preload }
-        else  { vpfGetDB(); db = vpfGetDB.out } 
-      }
-    } else {
-      db = Channel.empty()
-    }
-  emit: db    
-}
-
-workflow download_imgvr_db {
-    main:
-    if (params.blastextend) {
-      // local storage via storeDir
-      if (!params.cloudProcess) { imgvrGetDB(); db = imgvrGetDB.out }
-      // cloud storage via db_preload.exists()
-      if (params.cloudProcess) {
-        db_preload = file("${params.databases}/imgvr/IMG_VR_2018-07-01_4")
-        if (db_preload.exists()) { db = db_preload }
-        else  { imgvrGetDB(); db = imgvrGetDB.out } 
-      }
-    } else {
-      db = Channel.empty()
-    }
-  emit: db    
-}
-
-workflow download_checkv_db {
-    main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { checkvGetDB(); db = checkvGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.databases}/checkv", type: 'dir')
-      if (db_preload.exists()) { db = db_preload }
-      else  { checkvGetDB(); db = checkvGetDB.out } 
-    }
-  emit: db    
-}
-
-/*
-workflow download_kaiju_db {
-    main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { kaijuGetDB(); db = kaijuGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.databases}/kaiju/nr_euk")
-      if (db_preload.exists()) { db = db_preload }
-      else  { kaijuGetDB(); db = kaijuGetDB.out } 
-    }
-  emit: db    
-}
-*/
+include { plot_contig_map} from 'modules/plot_contig_map' 
+include { generate_krona_table} from 'modules/krona' 
+include { generate_sankey_table} from 'modules/sankey'
+include { generate_chromomap_table} from 'modules/chromomap'
+include { krona} from 'modules/krona'
+include { sankey} from 'modules/sankey'
+include { chromomap} from 'modules/chromomap'
+include { balloon} from 'modules/balloon'
 
 /************************** 
 * SUB WORKFLOWS
 **************************/
 
-/* Comment section:
-Rename all contigs and filter by length. 
-*/
-workflow preprocess {
-    take:   assembly
-
-    main:
-        // rename contigs
-        rename(assembly)
-
-        // filter contigs by length
-        length_filtering(rename.out)
-
-    emit:
-        rename.out.join(length_filtering.out, by: 0) //  tuple val(name), file("${name}_renamed.fasta"), file("${name}_map.tsv"), file("${name}*filt*.fasta"), env(CONTIGS)
-}
-
-/* Comment section:
-Restore original contig names. 
-*/
-workflow postprocess {
-    take:   fasta
-    main:
-        // restore contig names
-        restore(fasta)
-    emit:
-        restore.out
-}
-
-
-/* Comment section:
-Run virus detection tools and parse the predictions according to defined filters. 
-*/
-workflow detect {
-    take:   assembly_renamed_length_filtered
-            virsorter_db  
-            virfinder_db
-            pprmeta_git  
-
-    main:
-        renamed_ch = assembly_renamed_length_filtered.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, renamed_fasta, map)}
-        length_filtered_ch = assembly_renamed_length_filtered.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, contig_number)}
-
-        // virus detection --> VirSorter, VirFinder and PPR-Meta
-        virsorter(length_filtered_ch, virsorter_db)     
-        virfinder(length_filtered_ch, virfinder_db)
-        pprmeta(length_filtered_ch, pprmeta_git)
-
-        // parsing predictions
-        parse(length_filtered_ch.join(virfinder.out).join(virsorter.out).join(pprmeta.out))
-
-    emit:
-        parse.out.join(renamed_ch).transpose().map{name, fasta, vs_meta, log, renamed_fasta, map -> tuple (name, fasta, map)}
-}
-
-
-
-
-/* Comment section:
-Predict ORFs and align HMMs to taxonomically annotate each contig. Apply bit score cutoffs and filters to distinguish informative ViPhOG HMMs and finally taxonomically annotate contigs, if possible. 
-Also runs additional HMM from further databases if defined and can also run a simple blast approach based on IMG/VR. Finally, mashmap can be used for the particular detection of a specific reference virus sequence. 
-Then, all results are summarized for reporting and plotting. 
-*/
-workflow annotate {
-    take:
-            contigs   
-            predicted_contigs
-            viphog_db
-            ncbi_db
-            rvdb_db
-            pvogs_db
-            vogdb_db
-            vpf_db
-            imgvr_db
-            additional_model_data
-            checkv_db
-            factor_file
-
-    main:
-        // ORF detection --> prodigal
-        prodigal(predicted_contigs)
-        //phanotate(predicted_contigs)
-
-        // annotation --> hmmer
-        hmmscan_viphogs(prodigal.out, viphog_db)
-        hmm_postprocessing(hmmscan_viphogs.out)
-
-        // calculate hit qual per protein
-        ratio_evalue(hmm_postprocessing.out, additional_model_data)
-
-        // annotate contigs based on ViPhOGs
-        annotation(ratio_evalue.out)
-
-        // plot visuals --> PDFs
-        plot_contig_map(annotation.out)
-
-        // assign lineages
-        assign(annotation.out, ncbi_db, factor_file)
-
-        // blast IMG/VR for more information
-        if (params.blastextend) {
-          blast(predicted_contigs, imgvr_db)
-          blast_filter(blast.out, imgvr_db)
-        }
-
-        // hmmer additional databases
-        if (params.hmmextend) {
-          hmmscan_rvdb(prodigal.out, rvdb_db)
-          hmmscan_pvogs(prodigal.out, pvogs_db)
-          hmmscan_vogdb(prodigal.out, vogdb_db)
-          hmmscan_vpf(prodigal.out, vpf_db)
-        }
-
-        if (params.mashmap) {
-            mashmap(predicted_contigs, mashmap_ref_ch)
-        }
-
-        checkV(
-          predicted_contigs.combine(contigs.map { name, fasta -> fasta }),
-          checkv_db
-        )
-
-        viphos_annotations = annotation.out.map { _, __, annotations -> annotations }.collect()
-        taxonomy_annotations = assign.out.map { _, __, taxonomy -> taxonomy }.collect()
-        checkv_results = checkV.out.map { _, __, quality_summary, ___ -> quality_summary }.collect()
-
-        write_gff(
-          contigs.first(),
-          viphos_annotations,
-          taxonomy_annotations,
-          checkv_results
-        )
-
-        predicted_contigs_filtered = predicted_contigs.map { id, set_name, fasta -> [set_name, id, fasta] }
-        plot_contig_map_filtered = plot_contig_map.out.map { id, set_name, dir, table -> [set_name, table] }
-        chromomap_ch = predicted_contigs_filtered.join(plot_contig_map_filtered).map { set_name, assembly_name, fasta, tsv -> [assembly_name, set_name, fasta, tsv]}
-
-    emit:
-      assign.out
-      chromomap_ch
-}
-
+include { PREPROCESS } from '../subworkflows/preprocess'
 
 /* Comment section:
 Plot results. Basically runs krona and sankey. ChromoMap and Balloon are still experimental features and should be used with caution. 
@@ -610,19 +253,37 @@ workflow {
     //kaiju_db = download_kaiju_db.out
     /**************************************************************/
 
+    PREPROCESS( fasta_input_ch )
+
+    POSTPROCESS(
+      PREPROCESS.out.map { name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map )}
+    )
+
+    ANNOTATE(
+        fasta_input_ch,
+        viphog_db,
+        ncbi_db,
+        rvdb_db,
+        pvogs_db,
+        vogdb_db,
+        vpf_db,
+        imgvr_db,
+        additional_model_data,
+        checkv_db,
+        factor_file
+    )
+
+    // Post process
+    restore( fasta )
+  
+
     // only detection based on an assembly
     if (params.fasta) {
+      
       // only annotate the FASTA
       if (params.onlyannotate) {
-        preprocess(fasta_input_ch)
+        
         plot(
-          annotate(
-            fasta_input_ch,
-            postprocess(
-              preprocess.out.map{name, renamed_fasta, map, filtered_fasta, contig_number -> tuple(name, filtered_fasta, map)}
-            ),
-            viphog_db, ncbi_db, rvdb_db, pvogs_db, vogdb_db, vpf_db, imgvr_db, additional_model_data, checkv_db, factor_file
-          )
         )
       } else {
           preprocess(fasta_input_ch)

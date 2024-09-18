@@ -1,26 +1,26 @@
 process virsorter {
-      publishDir "${params.output}/${name}/${params.virusdir}/", mode: 'copy', pattern: "*"
-      label 'virsorter'
+    publishDir "${params.output}/${name}/${params.virusdir}/", mode: 'copy', pattern: "*"
+    label 'virsorter'
 
     input:
-      tuple val(name), file(fasta), val(contig_number) 
-      file(database) 
+    tuple val(name), file(fasta), val(contig_number) 
+    path(database) 
 
     when: 
-      contig_number.toInteger() > 0 
+    contig_number.toInteger() > 0 
 
     output:
-      tuple val(name), file("*")
+    tuple val(name), file("*")
     
     script:
-      if (params.virome)
-      """
-      wrapper_phage_contigs_sorter_iPlant.pl -f ${fasta} --db 2 --wdir virsorter --ncpu ${task.cpus} --data-dir ${database} --virome
-      """
-      else
-      """
-      wrapper_phage_contigs_sorter_iPlant.pl -f ${fasta} --db 2 --wdir virsorter --ncpu ${task.cpus} --data-dir ${database}
-      """
+    if (params.virome)
+    """
+    wrapper_phage_contigs_sorter_iPlant.pl -f ${fasta} --db 2 --wdir virsorter --ncpu ${task.cpus} --data-dir ${database} --virome
+    """
+    else
+    """
+    wrapper_phage_contigs_sorter_iPlant.pl -f ${fasta} --db 2 --wdir virsorter --ncpu ${task.cpus} --data-dir ${database}
+    """
 }
 
 /*

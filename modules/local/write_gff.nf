@@ -1,17 +1,18 @@
-process write_gff {
+process WRITE_GFF {
+
     publishDir "${params.output}/${name}/${params.finaldir}/gff", mode: 'copy' , pattern: "*.gff"
 
     errorStrategy 'ignore'
     label 'python3'
 
     input:
-       tuple val(name), file(fasta)
-       path(viphos_annotations)
-       path(taxonomies)
-       path(quality_summaries)
+    tuple val(name), path(fasta)
+    path(viphos_annotations)
+    path(taxonomies)
+    path(quality_summaries)
 
     output:
-       file("${name}_virify.gff")
+    path("${name}_virify.gff")
 
     script:
     """
