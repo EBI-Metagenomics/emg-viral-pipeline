@@ -1,6 +1,8 @@
 /*
  * Rename all contigs and filter by length. 
 */
+include { LENGTH_FILTERING } from '../../modules/local/length_filtering'
+include { RENAME           } from '../../modules/local/rename'
 
 workflow PREPROCESS {
 
@@ -10,11 +12,12 @@ workflow PREPROCESS {
 
     main:
   
-    rename(assembly)
+    RENAME(assembly)
 
     // filter contigs by length
-    length_filtering(rename.out)
+    LENGTH_FILTERING(RENAME.out)
 
     emit:
-    rename.out.join(length_filtering.out, by: 0) //  tuple val(name), file("${name}_renamed.fasta"), file("${name}_map.tsv"), file("${name}*filt*.fasta"), env(CONTIGS)
+    //  tuple val(name), file("${name}_renamed.fasta"), file("${name}_map.tsv"), file("${name}*filt*.fasta"), env(CONTIGS)
+    preprocessed_data = RENAME.out.join(LENGTH_FILTERING.out, by: 0)
 }

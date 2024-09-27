@@ -2,9 +2,9 @@
  * Run virus detection tools and parse the predictions according to defined filters. 
 */
 
-include { virsorter } from '../modules/local/virsorter' 
-include { virfinder } from '../modules/local/virfinder' 
-include { pprmeta   } from '../modules/local/pprmeta'
+include { VIRSORTER } from '../../modules/local/virsorter' 
+include { VIRFINDER } from '../../modules/local/virfinder' 
+include { PPRMETA   } from '../../modules/local/pprmeta'
 
 workflow DETECT {
 
@@ -33,8 +33,8 @@ workflow DETECT {
     PPRMETA( length_filtered_ch, pprmeta_git)
 
     // parsing predictions
-    PARSE( length_filtered_ch.join( virfinder.out ).join( virsorter.out ).join( pprmeta.out ) )
+    PARSE( length_filtered_ch.join( VIRFINDER.out ).join( VIRSORTER.out ).join( PPRMETA.out ) )
 
     emit:
-    PARSE.out.join(renamed_ch).transpose().map{ name, fasta, vs_meta, log, renamed_fasta, map -> tuple (name, fasta, map) }
+    detect_output = PARSE.out.join(renamed_ch).transpose().map{ name, fasta, vs_meta, log, renamed_fasta, map -> tuple (name, fasta, map) }
 }
