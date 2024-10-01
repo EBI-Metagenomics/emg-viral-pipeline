@@ -1,7 +1,7 @@
 process LENGTH_FILTERING {
     label 'process_low'
       
-    container 'quay.io/microbiome-informatics/virify-python3:1.2'
+    container 'quay.io/biocontainers/biopython:1.75'
 
     input:
       tuple val(name), file(fasta), file(map) 

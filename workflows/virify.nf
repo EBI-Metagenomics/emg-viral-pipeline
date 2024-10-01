@@ -1,50 +1,6 @@
 #!/usr/bin/env nextflow
 
 /************************** 
-* Help messages & user inputs & checks
-**************************/
-
-include { helpMSG                } from './modules/local/help'
-include { printMetadataV4Warning } from './modules/local/warnings'
-
-/* Comment section:
-First part is a terminal print for additional user information, followed by some help statements (e.g. missing input)
-Second part is file channel input. This allows via --list to alter the input of --nano & --illumina to
-add csv instead. name,path   or name,pathR1,pathR2 in case of illumina
-*/
-
-// terminal prints
-println " "
-println "\u001B[32mProfile: $workflow.profile\033[0m"
-println " "
-println "\033[2mCurrent User: $workflow.userName"
-println "Nextflow-version: $nextflow.version"
-println "Starting time: $nextflow.timestamp"
-println "Workdir location:"
-println "  $workflow.workDir"
-println "Databases location:"
-println "  $params.databases\u001B[0m"
-println " "
-if (workflow.profile == 'standard') {
-  println "\033[2mCPUs to use: $params.cores"
-  println "Output dir name: $params.output\u001B[0m"
-  println " "
-}
-println "\033[2mDev ViPhOG database: $params.viphog_version\u001B[0m"
-println "\033[2mDev Meta database: $params.meta_version\u001B[0m"
-println " "
-println "\033[2mOnly run annotation: $params.onlyannotate\u001B[0m"
-println " "
-
-if (params.help) { exit 0, helpMSG() }
-if (params.profile) {
-  exit 1, "--profile is WRONG use -profile" }
-if (params.illumina == '' &&  params.fasta == '' ) {
-  exit 1, "input missing, use [--illumina] or [--fasta]"}
-
-if (params.meta_version == "v4") { printMetadataV4Warning() }
-
-/************************** 
 * INPUT CHANNELS 
 **************************/
 
@@ -84,22 +40,17 @@ if (params.factor) {
    factor_file = file( params.factor, checkIfExists: true) 
 }
 
-
-/************************** 
-* MODULES
-**************************/
-
 /************************** 
 * SUB WORKFLOWS
 **************************/
 
-include { ASSEMBLE_ILLUMINA  } from './subworkflows/local/assemble_illumina'
-include { ANNOTATE           } from './subworkflows/local/annotate'
-include { DETECT             } from './subworkflows/local/detect'
-include { DOWNLOAD_DATABASES } from './subworkflows/local/download_databases'
-include { PLOT               } from './subworkflows/local/plot'
-include { POSTPROCESS        } from './subworkflows/local/postprocess'
-include { PREPROCESS         } from './subworkflows/local/preprocess'
+include { ASSEMBLE_ILLUMINA  } from '../subworkflows/local/assemble_illumina'
+include { ANNOTATE           } from '../subworkflows/local/annotate'
+include { DETECT             } from '../subworkflows/local/detect'
+include { DOWNLOAD_DATABASES } from '../subworkflows/local/download_databases'
+include { PLOT               } from '../subworkflows/local/plot'
+include { POSTPROCESS        } from '../subworkflows/local/postprocess'
+include { PREPROCESS         } from '../subworkflows/local/preprocess'
 
 /************************** 
 * WORKFLOW ENTRY POINT
@@ -109,7 +60,7 @@ include { PREPROCESS         } from './subworkflows/local/preprocess'
 Here the main workflow starts and runs the defined sub workflows. 
 */
 
-workflow {
+workflow VIRIFY {
 
     /**************************************************************/
     // check/ download all databases

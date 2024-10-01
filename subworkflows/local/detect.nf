@@ -5,6 +5,7 @@
 include { VIRSORTER } from '../../modules/local/virsorter' 
 include { VIRFINDER } from '../../modules/local/virfinder' 
 include { PPRMETA   } from '../../modules/local/pprmeta'
+include { PARSE     } from '../../modules/local/parse'
 
 workflow DETECT {
 

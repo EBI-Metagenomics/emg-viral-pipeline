@@ -12,8 +12,7 @@
 include { VIRSORTER                   } from '../../modules/local/virsorter' 
 include { VIRFINDER                   } from '../../modules/local/virfinder' 
 include { PPRMETA                     } from '../../modules/local/pprmeta'
-include { LENGTH_FILTERING            } from '../../modules/local/length_filtering' 
-include { PARSE                       } from '../../modules/local/parse' 
+include { LENGTH_FILTERING            } from '../../modules/local/length_filtering'  
 include { PRODIGAL                    } from '../../modules/local/prodigal'
 include { HMMSCAN as HMMSCAN_VIPHOGS  } from '../../modules/local/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.viphog_version)
 include { HMMSCAN as HMMSCAN_RVDB     } from '../../modules/local/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'rvdb', version: params.viphog_version)
@@ -29,6 +28,7 @@ include { BLAST_FILTER                } from '../../modules/local/blast_filter'
 include { MASHMAP                     } from '../../modules/local/mashmap'
 include { CHECKV                      } from '../../modules/local/checkv'
 include { WRITE_GFF                   } from '../../modules/local/write_gff'
+include { PLOT_CONTIG_MAP             } from '../../modules/local/plot_contig_map'
 
 
 workflow ANNOTATE {
