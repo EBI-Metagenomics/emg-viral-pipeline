@@ -16,8 +16,9 @@ def helpMSG() {
     nextflow run virify.nf --fasta 'assembly.fasta' 
 
     ${c_yellow}Input:${c_reset}
-    ${c_green} --fasta ${c_reset}             '*.fasta'                   -> one sample per file, no assembly produced
-    ${c_green} --illumina ${c_reset}          '*.R{1,2}.fastq.gz'         -> file pairs, experimental feature that performs SPAdes assembly first
+    ${c_green} --fasta ${c_reset}             '*.fasta'                   -> one fasta file, no assembly produced (if you need to process more than one assembly use --samplesheet option)
+    ${c_green} --samplesheet ${c_reset}       '*.csv'                     -> use to provide multiple assemblies/sets of raw reads
+    ${c_green} --assemble ${c_reset}          'true/false'                -> should be provided with samplesheet containing raw reads if you need to assemble reads first (experimental feature that performs SPAdes assembly)
     ${c_dim}  ..change above input to csv:${c_reset} ${c_green}--list ${c_reset}            
 
     ${c_yellow}Options:${c_reset}

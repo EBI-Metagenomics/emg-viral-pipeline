@@ -1,7 +1,7 @@
 process BLAST {
 
     label 'process_high'
-      
+    tag "${assembly_name}"      
     container 'quay.io/microbiome-informatics/blast:2.9.0'
 
     input:

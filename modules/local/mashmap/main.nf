@@ -1,6 +1,6 @@
 process MASHMAP {
     label 'process_medium'
-    
+    tag "${assembly_name}"
     container 'quay.io/microbiome-informatics/mashmap:2.0'
 
     input:

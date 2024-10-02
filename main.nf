@@ -9,11 +9,12 @@ nextflow.enable.dsl = 2
     VALIDATE & PRINT PARAMETER SUMMARY
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { helpMSG } from './modules/local/help'
 include { printMetadataV4Warning } from './modules/local/warnings'
 include { validateParameters; paramsHelp; paramsSummaryLog; } from 'plugin/nf-schema'
 
 if (params.help) {
-   log.info paramsHelp("nextflow run ebi-metagenomics/emg-viral-pipeline --help")
+   helpMSG()
    exit 0
 }
 
@@ -23,9 +24,6 @@ log.info paramsSummaryLog(workflow)
 
 if (params.meta_version == "v4") { printMetadataV4Warning() }
 
-// check input
-if (params.illumina == '' &&  params.fasta == '' ) {
-  exit 1, "input missing, use [--illumina] or [--fasta]"}
   
 // ------------------------------
 // WORKFLOW: Run main ebi-metagenomics/emg-viral-pipeline analysis pipeline

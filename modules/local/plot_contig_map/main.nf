@@ -1,5 +1,5 @@
 process PLOT_CONTIG_MAP {
-    
+    tag "${name}"
     label 'process_low'
     
     container 'quay.io/microbiome-informatics/virify-plot-contig-map:1'

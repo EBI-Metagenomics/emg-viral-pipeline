@@ -1,6 +1,6 @@
 process CHECKV {
     label 'process_medium'
-    
+    tag "${name}"    
     container 'quay.io/microbiome-informatics/checkv:0.8.1__1'
     
     input:

@@ -1,6 +1,6 @@
 process PPRMETA {
     label 'process_medium'
-    
+    tag "${name}"
     container 'quay.io/microbiome-informatics/pprmeta:1.1'
 
     input:

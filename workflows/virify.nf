@@ -4,29 +4,31 @@
 * INPUT CHANNELS 
 **************************/
 
-illumina_input_ch = Channel.empty()
-fasta_input_ch    = Channel.empty()
+input_ch          = Channel.empty()
 mashmap_ref_ch    = Channel.empty()
 factor_file       = Channel.empty()
 
-// illumina reads input & --list support
-if (params.illumina && params.list) { 
-   illumina_input_ch = Channel.fromPath( params.illumina, checkIfExists: true )
-     .splitCsv()
-     .map { row -> ["${row[0]}", [file("${row[1]}"), file("${row[2]}")]] }
-}
-else if (params.illumina) { 
-  illumina_input_ch = Channel.fromFilePairs( params.illumina , checkIfExists: true )
-}
+include { samplesheetToList } from 'plugin/nf-schema'
 
-// direct fasta input w/o assembly support & --list support
-if (params.fasta && params.list) { 
-   fasta_input_ch = Channel.fromPath( params.fasta, checkIfExists: true )
-      .splitCsv()
-      .map { row -> ["${row[0]}", file("${row[1]}")] }
+if ( params.samplesheet ) {
+    groupReads = { id, assembly, fq1, fq2 ->
+        if (fq1 == []) {
+            return tuple(id, assembly)
+        } else {
+            if (params.assemble) {
+              return tuple(id, [fq1, fq2]) 
+            }
+            else {
+              exit 1, "input missing, use [--assemble] flag with raw reads"
+            }
+        }
+    }
+    samplesheet = Channel.fromList(samplesheetToList(params.samplesheet, "./assets/schema_input.json"))
+    input_ch = samplesheet.map(groupReads)
 }
-else if (params.fasta) { 
-   fasta_input_ch = Channel.fromPath( params.fasta, checkIfExists: true)
+// one sample of assembly
+if (params.fasta) { 
+   input_ch = Channel.fromPath( params.fasta, checkIfExists: true)
       .map { file -> tuple(file.simpleName, file) }
 }
 
@@ -71,13 +73,13 @@ workflow VIRIFY {
     
     assembly_ch = Channel.empty()
     
-    // ----------- if --illumina specified - assemble reads first
-    if (params.illumina) { 
-      ASSEMBLE_ILLUMINA( illumina_input_ch )
+    // ----------- if --assemble specified - assemble reads first
+    if (params.assemble) { 
+      ASSEMBLE_ILLUMINA( input_ch )
       assembly_ch = ASSEMBLE_ILLUMINA.out.assembly
     }
     else {
-      assembly_ch = fasta_input_ch
+      assembly_ch = input_ch
     }
     
     // ----------- rename fasta + length filtering

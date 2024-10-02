@@ -1,5 +1,5 @@
 process HMMSCAN {
-
+    tag "${name}"
     label 'process_high'
     
     container 'quay.io/microbiome-informatics/hmmer:3.1b2'

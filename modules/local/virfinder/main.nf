@@ -1,5 +1,5 @@
 process VIRFINDER {
-      
+    tag "${name}"  
     label 'process_high'
       
     container 'quay.io/microbiome-informatics/virfinder:1.1__eb8032e'

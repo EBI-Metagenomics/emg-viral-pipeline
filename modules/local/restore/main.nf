@@ -2,7 +2,7 @@ process RESTORE {
     /*
     usage: rename_fasta.py [-h] -i INPUT [-m MAP] -o OUTPUT {rename,restore} ...
     */
-
+    tag "${name}"
     label 'process_low'
     
     container 'quay.io/microbiome-informatics/virify-python3:1.2'

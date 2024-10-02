@@ -3,7 +3,7 @@ process HMM_POSTPROCESSING {
     input: File_hmmer_ViPhOG.tbl
     output: File_hmmer_ViPhOG_modified.tbl
     */
-    
+    tag "${name}"    
     label 'process_low'
     
     container 'quay.io/microbiome-informatics/virify-python3:1.2'

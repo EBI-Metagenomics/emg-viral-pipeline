@@ -1,5 +1,5 @@
 process WRITE_GFF {
-    
+    tag "${name}"
     label 'process_medium'
     
     container 'quay.io/microbiome-informatics/virify-python3:1.2'

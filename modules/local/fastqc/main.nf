@@ -1,5 +1,5 @@
 process FASTQC {
-
+  tag "${name}"
   label 'process_low'  
   container 'quay.io/biocontainers/fastqc:0.11.9--hdfd78af_1'
   

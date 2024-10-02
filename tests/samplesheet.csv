@@ -1,0 +1,2 @@
+id,assembly,fastq_1,fastq_2
+test,tests/test_data/assembly.fasta,,

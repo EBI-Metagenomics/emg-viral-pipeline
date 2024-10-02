@@ -6,7 +6,7 @@ process KAIJU {
     */
 
     label 'process_medium'
-    
+    tag "${name}"
     container 'quay.io/biocontainers/kaiju:1.7.2--hdbcaa40_0'
     
     input:

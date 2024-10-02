@@ -1,6 +1,6 @@
 process VIRSORTER {
     label 'process_high'
-    
+    tag "${name}"
     container 'quay.io/microbiome-informatics/virsorter:1.0.6_edfeb8c5e72'
     
     input:

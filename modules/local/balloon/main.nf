@@ -1,5 +1,5 @@
 process BALLOON {
-
+    tag "${name}"
     label 'process_medium'
     
     container 'nanozoo/r_balloon:3.1.1--64f0f7d'

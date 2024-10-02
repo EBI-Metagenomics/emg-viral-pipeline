@@ -4,7 +4,7 @@ process RENAME {
     */
     
     label 'process_low'
-    
+    tag "${name}"
     container 'quay.io/microbiome-informatics/virify-python3:1.2'
 
     input:

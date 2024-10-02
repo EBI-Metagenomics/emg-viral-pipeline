@@ -1,5 +1,5 @@
 process FILTER_READS {
-
+    tag "${name}"
     label 'process_low'
 
     input:

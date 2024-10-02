@@ -1,6 +1,6 @@
 process LENGTH_FILTERING {
     label 'process_low'
-      
+    tag "${name}"
     container 'quay.io/biocontainers/biopython:1.75'
 
     input:

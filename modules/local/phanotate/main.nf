@@ -1,6 +1,6 @@
 process PHANOTATE {
     label 'process_low'
-    
+    tag "${name}"
     container 'quay.io/biocontainers/phanotate:1.5.0--h30d9df9_2'
     
     input:

@@ -20,13 +20,33 @@
                     "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
                     "fa_icon": "far fa-file-code"
                 },
-                "illumina": {
-                    "type": "string",
-                    "description": "file pairs, experimental feature that performs SPAdes assembly first"
+                "assemble": {
+                    "type": "boolean",
+                    "description": "file pairs, experimental feature that performs SPAdes assembly first",
                 },
-                "list": {
-                    "type": "string"
+                "samplesheet": {
+                    "type": "string",
+                    "format": "file-path",
+                    "mimetype": "text/csv",
+                    "pattern": "^\\S+\\.csv$",
+                    "schema": "assets/schema_input.json",
+                    "description": "Path to comma-separated file containing information about inputs to be used.",
+                    "help_text": "You will need to create a design file with information about the assembly/raw_reads running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a minimum of 2 columns for assembly (ID, fasta) or 3 columns for raw reads (ID, fastq1, fastq2), and a header row.",
+                    "fa_icon": "fas fa-file-csv"
                 }
+            },
+            "oneOf": [
+              {
+                "required": ["fasta"],
+                "description": "An assembly file must be provided"
+              },
+              {
+                "required": ["samplesheet"],
+                "description": "Assembly or raw reads should be provided in samplesheet"
+              }
+            ],
+            "errorMessage": {
+              "oneOf": "You must specify either an assembly file or samplesheet input."
             }
         },
         "options": {
@@ -111,10 +131,6 @@
                     "type": "string",
                     "description": "the tsv dictionary w/ meta information about ViPhOG models"
                 },
-                "virome": {
-                    "type": "string",
-                    "description": "VirSorter parameter, set when running a data set mostly composed of viruses"
-                },
                 "hmmextend": {
                     "type": "string",
                     "description": "Use additional databases for more hmmscan results"
@@ -122,6 +138,18 @@
                 "blastextend": {
                     "type": "string",
                     "description": "Use additional BLAST database (IMG/VR) for more annotation"
+                }
+            }
+        },
+        "parameters": {
+            "title": "Parameters",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Input parameters",
+            "properties": {
+                "virome": {
+                    "type": "string",
+                    "description": "VirSorter parameter, set when running a data set mostly composed of viruses"
                 },
                 "chromomap": {
                     "type": "string",
@@ -178,7 +206,15 @@
                     "type": "number",
                     "default": 1.5,
                     "description": "Initial length filter in kb"
-                },
+                }
+            }
+        },
+        "development": {
+            "title": "Development",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Dev parameters",
+            "properties": {
                 "viphog_version": {
                     "type": "string",
                     "default": "v3",
@@ -188,12 +224,20 @@
                     "type": "string",
                     "default": "v4",
                     "description": "define the metadata table version to be used. v1: older version of the meta data table using an outdated NCBI virus taxonomy, for reproducibility. v2: 2020 version of NCBI virus taxonomy. v3: 2022 version of NCBI virus taxonomy. v4: 2022 version of NCBI virus taxonomy"
-                },
-                
+                }
+            }
+        },
+        "outputs": {
+            "title": "Outputs",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Output folders",
+            "properties": {
                 "assemblydir": {
                     "type": "string",
                     "default": "00-assembly",
-                    "description": "output directory for assembly step"
+                    "description": "output directory for assembly step",
+                    "fa_icon": "far fa-file-code"
                 },
                 "virusdir": {
                     "type": "string",
@@ -239,7 +283,15 @@
                     "type": "string",
                     "default": "08-final",
                     "description": "final output directory"
-                },
+                }
+            }
+        },
+        "nextflow_args": {
+            "title": "Nextflow arguments",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Nextflow arguments",
+            "properties": {
                 "dbs": {
                     "type": "string",
                     "default": "nextflow-autodownload-databases",
@@ -307,6 +359,18 @@
         },
         {
             "$ref": "#/defs/databases"
+        }, 
+        {
+            "$ref": "#/defs/parameters"
+        },
+        {
+            "$ref": "#/defs/development"
+        },
+        {
+            "$ref": "#/defs/outputs"
+        },
+        {
+            "$ref": "#/defs/nextflow_args"
         },
         {
             "$ref": "#/defs/generic_options"

@@ -1,6 +1,6 @@
 process GENERATE_CHROMOMAP_TABLE {
     label 'process_low'
-    
+    tag "${name}"    
     container 'quay.io/microbiome-informatics/bioruby:2.0.1'
     
     input:

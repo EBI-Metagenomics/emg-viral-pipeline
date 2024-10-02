@@ -1,6 +1,6 @@
 process BLAST_FILTER {
     label 'process_low'
-      
+    tag "${assembly_name}"      
     container 'quay.io/microbiome-informatics/virify-python3:1.2'
 
     input:

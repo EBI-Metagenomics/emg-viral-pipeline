@@ -7,7 +7,7 @@ process RATIO_EVALUE {
     
     out PRJNA530103_small_modified_informative.tsv
     */
-   
+    tag "${name}"
     label 'process_low'
     
     container 'quay.io/microbiome-informatics/virify-python3:1.1'

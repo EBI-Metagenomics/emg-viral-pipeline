@@ -6,7 +6,7 @@ process FASTP {
   The merged reads will be written to the file given by --merged_out, the unmerged reads will be 
   written to the files specified by --out1 and --out2. The merging mode is disabled by default.
 */
-
+  tag "${name}"
   label 'process_medium'  
   container 'quay.io/biocontainers/fastp:0.20.1--h8b12597_0'
   

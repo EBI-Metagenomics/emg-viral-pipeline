@@ -1,6 +1,6 @@
 process PRODIGAL {
     label 'process_high'
-    
+    tag "${name}"
     container 'quay.io/biocontainers/prodigal:2.6.3--hec16e2b_4'
     
     input:
