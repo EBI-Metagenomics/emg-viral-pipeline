@@ -1,27 +1,22 @@
 process CHECKV {
-    label 'process_medium'
-    tag "${name}"    
+    label 'process_high'
+    tag "${meta.id} ${confidence_set_name}"    
     container 'quay.io/microbiome-informatics/checkv:0.8.1__1'
     
     input:
-        tuple val(name), val(confidence_set_name), file(fasta), file(contigs)
-        file(database)
+        tuple val(meta), val(confidence_set_name), path(fasta)
+        path(database)
 
     output:
-        tuple val(name), val(confidence_set_name), file("${confidence_set_name}_quality_summary.tsv"), path("${confidence_set_name}/")
+        tuple val(meta), val(confidence_set_name), path("${confidence_set_name}_quality_summary.tsv")
 
     script:
-    if (confidence_set_name == 'prophages') {
+    
         """
-	checkv end_to_end ${fasta} -d ${database} -t ${task.cpus} ${confidence_set_name}
+	      checkv end_to_end ${fasta} -d ${database} -t ${task.cpus} ${confidence_set_name}
         cp ${confidence_set_name}/quality_summary.tsv ${confidence_set_name}_quality_summary.tsv 
         """
-    } else {
-        """
-        checkv end_to_end ${fasta} -d ${database} -t ${task.cpus} ${confidence_set_name} 
-        cp ${confidence_set_name}/quality_summary.tsv ${confidence_set_name}_quality_summary.tsv 
-        """
-    }
+        
     stub:
         """
         mkdir negative_result_${confidence_set_name}.tsv

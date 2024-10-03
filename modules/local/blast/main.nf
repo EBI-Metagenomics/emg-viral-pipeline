@@ -1,15 +1,15 @@
 process BLAST {
 
     label 'process_high'
-    tag "${assembly_name}"      
+    tag "${meta.id} ${confidence_set_name}"      
     container 'quay.io/microbiome-informatics/blast:2.9.0'
 
     input:
-      tuple val(assembly_name), val(confidence_set_name), file(fasta) 
+      tuple val(meta), val(confidence_set_name), path(fasta) 
       file(db)
     
     output:
-      tuple val(assembly_name), val(confidence_set_name), file("${confidence_set_name}.blast"), file("${confidence_set_name}.filtered.blast")
+      tuple val(meta), val(confidence_set_name), path("${confidence_set_name}.blast"), path("${confidence_set_name}.filtered.blast")
     
     script:
     if (task.attempt.toString() == '1')

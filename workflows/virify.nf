@@ -4,19 +4,27 @@
 * INPUT CHANNELS 
 **************************/
 
-input_ch          = Channel.empty()
-mashmap_ref_ch    = Channel.empty()
-factor_file       = Channel.empty()
+input_ch                              = Channel.empty()
+mashmap_ref_ch                        = Channel.empty()
+factor_file                           = Channel.empty()
+ch_multiqc_config                     = Channel.fromPath("$projectDir/assets/multiqc_config.yml", checkIfExists: true)
+ch_multiqc_custom_config              = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
+ch_multiqc_logo                       = params.multiqc_logo   ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.fromPath("$projectDir/assets/mgnify_logo.png")
+ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
+
 
 include { samplesheetToList } from 'plugin/nf-schema'
 
 if ( params.samplesheet ) {
     groupReads = { id, assembly, fq1, fq2 ->
         if (fq1 == []) {
-            return tuple(id, assembly)
+            return tuple(["id": id], 
+                         assembly
+                         )
         } else {
             if (params.assemble) {
-              return tuple(id, [fq1, fq2]) 
+              return tuple(["id": id], 
+                           [fq1, fq2]) 
             }
             else {
               exit 1, "input missing, use [--assemble] flag with raw reads"
@@ -26,10 +34,11 @@ if ( params.samplesheet ) {
     samplesheet = Channel.fromList(samplesheetToList(params.samplesheet, "./assets/schema_input.json"))
     input_ch = samplesheet.map(groupReads)
 }
+
 // one sample of assembly
 if (params.fasta) { 
    input_ch = Channel.fromPath( params.fasta, checkIfExists: true)
-      .map { file -> tuple(file.simpleName, file) }
+      .map { file -> tuple(["id": file.simpleName], file) }
 }
 
 // mashmap input
@@ -41,6 +50,11 @@ if (params.mashmap) {
 if (params.factor) { 
    factor_file = file( params.factor, checkIfExists: true) 
 }
+/************************** 
+* SUB WORKFLOWS
+**************************/
+
+include { MULTIQC             } from '../modules/nf-core/multiqc' 
 
 /************************** 
 * SUB WORKFLOWS
@@ -83,6 +97,7 @@ workflow VIRIFY {
     }
     
     // ----------- rename fasta + length filtering
+    // out: (meta, renamed_fasta, map, filtered_fasta, env)
     PREPROCESS( assembly_ch )  
  
     // ----------- if --onlyannotate - skip DETECT step
@@ -98,11 +113,12 @@ workflow VIRIFY {
          DOWNLOAD_DATABASES.out.virfinder_db, 
          DOWNLOAD_DATABASES.out.pprmeta_git
       )
-      postprocess_input_ch = DETECT.out
+      // (meta, fasta, map)
+      postprocess_input_ch = DETECT.out.detect_output
     }
 
     // ----------- POSTPROCESS: restore fasta file
-    POSTPROCESS(postprocess_input_ch)
+    POSTPROCESS(postprocess_input_ch)  // out: (meta, type(HC/LC/PP), fasta)
     
     // ----------- ANNOTATE
     ANNOTATE(
@@ -126,5 +142,15 @@ workflow VIRIFY {
        ANNOTATE.out.assign_output,
        ANNOTATE.out.chromomap
     )
+    
+    if (params.assemble) {
+      ch_multiqc_files = ASSEMBLE_ILLUMINA.out.ch_multiqc_files
+      MULTIQC(
+           ch_multiqc_files.collect(),
+           ch_multiqc_config.toList(),
+           ch_multiqc_custom_config.toList(),
+           ch_multiqc_logo.toList()
+      )
+    }
 }
 

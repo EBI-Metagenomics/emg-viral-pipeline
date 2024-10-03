@@ -1,14 +1,14 @@
 process PLOT_CONTIG_MAP {
-    tag "${name}"
+    tag "${meta.id} ${set_name}"
     label 'process_low'
     
     container 'quay.io/microbiome-informatics/virify-plot-contig-map:1'
     
     input:
-      tuple val(name), val(set_name), file(tab)
+      tuple val(meta), val(set_name), path(tab)
     
     output:
-      tuple val(name), val(set_name), file("${set_name}_mapping_results"), file("${set_name}_prot_ann_table_filtered.tsv")
+      tuple val(meta), val(set_name), path("${set_name}_mapping_results"), path("${set_name}_prot_ann_table_filtered.tsv")
     
     script:
     """

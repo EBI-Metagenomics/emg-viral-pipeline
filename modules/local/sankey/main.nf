@@ -1,13 +1,13 @@
 process GENERATE_SANKEY_TABLE {
     label 'process_low'
-    tag "${name}"    
+    tag "${meta.id} ${set_name}"    
     container 'quay.io/microbiome-informatics/bioruby:2.0.1'
 
     input:
-      tuple val(name), val(set_name), file(krona_table)
+      tuple val(meta), val(set_name), path(krona_table)
     
     output:
-      tuple val(name), val(set_name), file("${set_name}.sankey.filtered-${params.sankey}.json"), file("${set_name}.sankey.tsv")
+      tuple val(meta), val(set_name), path("${set_name}.sankey.filtered-${params.sankey}.json"), path("${set_name}.sankey.tsv")
     
     script:
     """
@@ -22,19 +22,19 @@ process GENERATE_SANKEY_TABLE {
 
 process SANKEY {
 
-    label 'process_medium'
-    
+    label 'process_low'
+    tag "${meta.id} ${set_name}"
     container 'quay.io/microbiome-informatics/sankeyd3:0.12.3'
 
     input:
-      tuple val(name), val(set_name), file(json), file(tsv)
+      tuple val(meta), val(set_name), path(json), path(tsv)
     
     output:
-      tuple val(name), val(set_name), file("*.sankey.html")
+      tuple val(meta), val(set_name), path("*.sankey.html")
     
     script:
     id = set_name
-    if (set_name == "all") { id = name }
+    if (set_name == "all") { id = meta.id }
     """
     #!/usr/bin/env Rscript
 

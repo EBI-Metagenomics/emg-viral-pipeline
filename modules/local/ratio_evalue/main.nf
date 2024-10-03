@@ -7,17 +7,17 @@ process RATIO_EVALUE {
     
     out PRJNA530103_small_modified_informative.tsv
     */
-    tag "${name}"
+    tag "${meta.id} ${set_name}"
     label 'process_low'
     
     container 'quay.io/microbiome-informatics/virify-python3:1.1'
     
     input:
-      tuple val(name), val(set_name), file(modified_table), file(faa)
-      file(model_metadata)
+      tuple val(meta), val(set_name), path(modified_table), path(faa)
+      path(model_metadata)
     
     output:
-      tuple val(name), val(set_name), file("${set_name}_modified_informative.tsv"), file(faa), optional: true
+      tuple val(meta), val(set_name), path("${set_name}_modified_informative.tsv"), path(faa), optional: true
     
     script:
     """

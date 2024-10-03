@@ -1,17 +1,17 @@
 process VIRSORTER {
-    label 'process_high'
-    tag "${name}"
+    label 'process_medium'
+    tag "${meta.id}"
     container 'quay.io/microbiome-informatics/virsorter:1.0.6_edfeb8c5e72'
     
     input:
-    tuple val(name), file(fasta), val(contig_number) 
+    tuple val(meta), path(fasta), val(contig_number) 
     path(database) 
 
     when: 
     contig_number.toInteger() > 0 
 
     output:
-    tuple val(name), file("*")
+    tuple val(meta), path("*")
     
     script:
     if (params.virome)

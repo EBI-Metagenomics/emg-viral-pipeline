@@ -1,17 +1,17 @@
 process GENERATE_CHROMOMAP_TABLE {
-    label 'process_low'
-    tag "${name}"    
+    label 'process_single'
+    tag "${meta.id} ${set_name}"    
     container 'quay.io/microbiome-informatics/bioruby:2.0.1'
     
     input:
-      tuple val(name), val(set_name), file(assembly), file(annotation_table)
+      tuple val(meta), val(set_name), path(assembly), path(annotation_table)
     
     output:
-      tuple val(name), val(set_name), file("${id}.filtered-*.contigs.txt"), file("${id}.filtered-*.anno.txt")
+      tuple val(meta), val(set_name), path("${id}.filtered-*.contigs.txt"), path("${id}.filtered-*.anno.txt")
     
     script:
     id = set_name
-    if (set_name == "all") { id = name }
+    if (set_name == "all") { id = meta.id }
     """
     # combine
     if [[ ${set_name} == "all" ]]; then
@@ -29,18 +29,19 @@ process GENERATE_CHROMOMAP_TABLE {
 }
 
 process CHROMOMAP {
-    label 'process_medium'
+    label 'process_low'
+    tag "${meta.id} ${set_name}"
     container 'quay.io/microbiome-informatics/r_chromomap:0.3'
 
     input:
-      tuple val(name), val(set_name), file(contigs), file(annotations)
+      tuple val(meta), val(set_name), file(contigs), file(annotations)
     
     output:
-      tuple val(name), val(set_name), file("*.html") optional true
+      tuple val(meta), val(set_name), file("*.html") optional true
     
     script:
     id = set_name
-    if (set_name == "all") { id = name }
+    if (set_name == "all") { id = meta.id }
     """
     #!/usr/bin/env Rscript
 

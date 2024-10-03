@@ -1,5 +1,7 @@
 process virsorterGetDB {
-  label 'noDocker'    
+  label 'process_low'    
+  container 'nanozoo/template:3.8--ccd0653'
+       
   if (params.cloudProcess) { 
     publishDir "${params.databases}/virsorter/", mode: 'copy', pattern: "virsorter-data" 
   }

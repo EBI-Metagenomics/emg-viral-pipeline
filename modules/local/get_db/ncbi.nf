@@ -1,5 +1,7 @@
 process ncbiGetDB {
-  label 'noDocker'
+  label 'process_low'    
+  container 'nanozoo/template:3.8--ccd0653'
+  
   if (params.cloudProcess) { 
     publishDir "${params.databases}/ncbi/", mode: 'copy', pattern: "ete3_ncbi_tax.sqlite" 
   }

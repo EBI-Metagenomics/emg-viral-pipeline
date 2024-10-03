@@ -1,21 +1,21 @@
 process PARSE {
     label 'process_low'
-    tag "${name}"
+    tag "${meta.id}"
     container 'quay.io/microbiome-informatics/virify-python3:1.2'
 
     input:
-      tuple val(name), file(fasta), val(contig_number), file(virfinder), file(virsorter), file(pprmeta)
+      tuple val(meta), path(fasta), val(contig_number), path(virfinder), path(virsorter), path(pprmeta)
 
     when: 
       contig_number.toInteger() > 0 
 
     output:
-      tuple val(name), file("*.fna"), file('virsorter_metadata.tsv'), file("${name}_virus_predictions.log"), optional: true
+      tuple val(meta), path("*.fna"), path('virsorter_metadata.tsv'), path("${meta.id}_virus_predictions.log"), optional: true
     
     script:
     """
     touch virsorter_metadata.tsv
-    parse_viral_pred.py -a ${fasta} -f ${virfinder} -p ${pprmeta} -s ${virsorter}/Predicted_viral_sequences/*.fasta &> ${name}_virus_predictions.log
+    parse_viral_pred.py -a ${fasta} -f ${virfinder} -p ${pprmeta} -s ${virsorter}/Predicted_viral_sequences/*.fasta &> ${meta.id}_virus_predictions.log
     """
 }
 

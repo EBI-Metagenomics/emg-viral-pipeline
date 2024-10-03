@@ -1,13 +1,13 @@
 process PHANOTATE {
     label 'process_low'
-    tag "${name}"
+    tag "${meta.id}"
     container 'quay.io/biocontainers/phanotate:1.5.0--h30d9df9_2'
     
     input:
-      tuple val(name), file(fasta) 
+      tuple val(meta), path(fasta) 
     
     output:
-      tuple val(name), stdout, file("*.faa")
+      tuple val(meta), stdout, path("*.faa")
     
     script:
     """

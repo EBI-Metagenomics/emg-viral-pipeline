@@ -1,5 +1,7 @@
 process viphogGetDB {
-  label 'noDocker'    
+  label 'process_low'    
+  container 'nanozoo/template:3.8--ccd0653'   
+  
   if (params.cloudProcess) { 
     publishDir "${params.databases}/", mode: 'copy', pattern: "vpHMM_database_${params.viphog_version}" 
   }

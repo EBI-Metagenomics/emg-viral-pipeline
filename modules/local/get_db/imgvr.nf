@@ -1,5 +1,7 @@
 process imgvrGetDB {
-  label 'noDocker'    
+  label 'process_low'    
+  container 'nanozoo/template:3.8--ccd0653' 
+  
   if (params.cloudProcess) { 
     publishDir "${params.databases}/imgvr/", mode: 'copy', pattern: "IMG_VR_2018-07-01_4" 
   }

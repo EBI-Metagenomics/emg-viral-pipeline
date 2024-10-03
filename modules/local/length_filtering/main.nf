@@ -1,18 +1,18 @@
 process LENGTH_FILTERING {
-    label 'process_low'
-    tag "${name}"
+    label 'process_single'
+    tag "${meta.id}"
     container 'quay.io/biocontainers/biopython:1.75'
 
     input:
-      tuple val(name), file(fasta), file(map) 
+      tuple val(meta), path(fasta), path(map) 
     
     output:
-      tuple val(name), file("${name}*filt*.fasta"), env(CONTIGS)
+      tuple val(meta), path("${meta.id}*filt*.fasta"), env(CONTIGS)
     
     script:
     """    
       filter_contigs_len.py -f ${fasta} -l ${params.length} -o ./
-      CONTIGS=\$(grep ">" ${name}*filt*.fasta | wc -l)
+      CONTIGS=\$(grep ">" ${meta.id}*filt*.fasta | wc -l)
     """
 }
 

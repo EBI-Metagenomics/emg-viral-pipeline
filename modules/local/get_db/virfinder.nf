@@ -1,5 +1,7 @@
 process virfinderGetDB {
-  label 'noDocker'    
+  label 'process_low'    
+  container 'nanozoo/template:3.8--ccd0653'
+  
   if (params.cloudProcess) { 
     publishDir "${params.databases}/virfinder/", mode: 'copy', pattern: "VF.modEPV_k8.rda" 
   }

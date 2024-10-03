@@ -1,13 +1,13 @@
 process PRODIGAL {
-    label 'process_high'
-    tag "${name}"
+    label 'process_medium'
+    tag "${meta.id} ${confidence_set_name}"
     container 'quay.io/biocontainers/prodigal:2.6.3--hec16e2b_4'
     
     input:
-      tuple val(assembly_name), val(confidence_set_name), file(fasta) 
+      tuple val(meta), val(confidence_set_name), path(fasta) 
     
     output:
-      tuple val(assembly_name), val(confidence_set_name), file("*.faa")
+      tuple val(meta), val(confidence_set_name), path("*.faa")
     
     script:
     """

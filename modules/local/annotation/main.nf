@@ -15,16 +15,16 @@ process ANNOTATION {
 						help="Name of processing .fna file to write correct output name")
 
 */
-    tag "${name}"
-    label 'process_low'
+    tag "${meta.id} ${set_name}"
+    label 'process_single'
     
     container 'quay.io/microbiome-informatics/virify-python3:1.1'
     
     input:
-      tuple val(name), val(set_name), file(tab), file(faa) 
+      tuple val(meta), val(set_name), path(tab), path(faa) 
     
     output:
-      tuple val(name), val(set_name), file("*_annotation.tsv")
+      tuple val(meta), val(set_name), path("*_annotation.tsv"), emit: annotations
     
     script:
     """

@@ -1,17 +1,14 @@
 process WRITE_GFF {
-    tag "${name}"
-    label 'process_medium'
+    tag "${meta.id}"
+    label 'process_low'
     
     container 'quay.io/microbiome-informatics/virify-python3:1.2'
     
     input:
-    tuple val(name), path(fasta)
-    path(viphos_annotations)
-    path(taxonomies)
-    path(quality_summaries)
+    tuple val(meta), path(fasta), path(viphos_annotations), path(taxonomies), path(quality_summaries)
 
     output:
-    path("${name}_virify.gff")
+    path("${meta.id}_virify.gff")
 
     script:
     """
@@ -19,9 +16,9 @@ process WRITE_GFF {
     -v ${viphos_annotations.join(' ')} \
     -c ${quality_summaries.join(' ')} \
     -t ${taxonomies.join(' ')} \
-    -s ${name} \
+    -s ${meta.id} \
     -a ${fasta}
 
-    gt gff3validator ${name}_virify.gff
+    gt gff3validator ${meta.id}_virify.gff
     """
 }

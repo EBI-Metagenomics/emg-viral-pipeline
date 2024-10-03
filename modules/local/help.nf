@@ -81,7 +81,7 @@ def helpMSG() {
 
     ${c_yellow}HPC computing:${c_reset}
     Especially for execution of the workflow on a HPC (LSF, SLURM) adjust the following parameters if needed:
-    --databases               defines the path where databases are stored [default: $params.dbs]
+    --databases               defines the path where databases are stored [default: $params.databases]
     --workdir                 defines the path where nextflow writes tmp files [default: $params.workdir]
     --singularity_cachedir    defines the path where images (singularity) are cached [default: $params.singularity_cachedir] 
 

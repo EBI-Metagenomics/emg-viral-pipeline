@@ -1,14 +1,14 @@
 process BLAST_FILTER {
-    label 'process_low'
-    tag "${assembly_name}"      
+    label 'process_single'
+    tag "${meta.id} ${confidence_set_name}"      
     container 'quay.io/microbiome-informatics/virify-python3:1.2'
 
     input:
-      tuple val(assembly_name), val(confidence_set_name), file(blast), file(blast_filtered)
-      file(db)
+      tuple val(meta), val(confidence_set_name), path(blast), path(blast_filtered)
+      path(db)
     
     output:
-      tuple val(assembly_name), val(confidence_set_name), file("*.meta")
+      tuple val(meta), path(confidence_set_name), path("*.meta")
     
     script:
     if (task.attempt.toString() == '1')

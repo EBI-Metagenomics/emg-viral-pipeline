@@ -69,10 +69,10 @@ workflow ANNOTATE {
     ANNOTATION( RATIO_EVALUE.out )
 
     // plot visuals --> PDFs
-    PLOT_CONTIG_MAP( ANNOTATION.out )
+    PLOT_CONTIG_MAP( ANNOTATION.out.annotations )
 
     // assign lineages
-    ASSIGN( ANNOTATION.out, ncbi_db, factor_file )
+    ASSIGN( ANNOTATION.out.annotations, ncbi_db, factor_file )
 
     // blast IMG/VR for more information
     if (params.blastextend) {
@@ -93,25 +93,22 @@ workflow ANNOTATE {
     }
 
     CHECKV(
-      predicted_contigs.combine( contigs.map { name, fasta -> fasta }),
-      checkv_db
+      predicted_contigs,
+      checkv_db.first()
     )
-
-    viphos_annotations = ANNOTATION.out.map { _, __, annotations -> annotations }.collect()
-    taxonomy_annotations = ASSIGN.out.map { _, __, taxonomy -> taxonomy }.collect()
-    checkv_results = CHECKV.out.map { _, __, quality_summary, ___ -> quality_summary }.collect()
+    
+    viphos_annotations = ANNOTATION.out.annotations.map{meta, type, annotation -> [meta, annotation]}.groupTuple()
+    taxonomy_annotations = ASSIGN.out.map{meta, type, annotation -> [meta, annotation]}.groupTuple()
+    checkv_results = CHECKV.out.map{meta, type, quality -> [meta, quality]}.groupTuple()
 
     WRITE_GFF(
-      contigs.first(),
-      viphos_annotations,
-      taxonomy_annotations,
-      checkv_results
+      contigs.join(viphos_annotations).join(taxonomy_annotations).join(checkv_results)
     )
-
-    predicted_contigs_filtered = predicted_contigs.map { id, set_name, fasta -> [set_name, id, fasta] }
-    plot_contig_map_filtered = PLOT_CONTIG_MAP.out.map { id, set_name, dir, table -> [set_name, table] }
+    
+    predicted_contigs_filtered = predicted_contigs.map { meta, set_name, fasta -> [set_name, meta, fasta] }
+    plot_contig_map_filtered = PLOT_CONTIG_MAP.out.map { meta, set_name, dir, table -> [set_name, table] }
     chromomap_ch = predicted_contigs_filtered.join(plot_contig_map_filtered).map { set_name, assembly_name, fasta, tsv -> [assembly_name, set_name, fasta, tsv]}
-
+    
     emit:
     assign_output = ASSIGN.out
     chromomap = chromomap_ch

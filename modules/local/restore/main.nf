@@ -2,16 +2,16 @@ process RESTORE {
     /*
     usage: rename_fasta.py [-h] -i INPUT [-m MAP] -o OUTPUT {rename,restore} ...
     */
-    tag "${name}"
-    label 'process_low'
+    tag "${meta.id}"
+    label 'process_single'
     
     container 'quay.io/microbiome-informatics/virify-python3:1.2'
 
     input:
-    tuple val(name), file(fasta), file(map) 
+    tuple val(meta), path(fasta), path(map) 
     
     output:
-    tuple val(name), env(BN), file("*_original.fasta")
+    tuple val(meta), env(BN), path("*_original.fasta")
     
     script:
     """    

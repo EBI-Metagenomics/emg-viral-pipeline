@@ -18,14 +18,12 @@ workflow DETECT {
 
     main:
 
-    renamed_ch = assembly_renamed_length_filtered.map {name, renamed_fasta, map, _, __ -> {
-        tuple(name, renamed_fasta, map)
-      }
+    renamed_ch = assembly_renamed_length_filtered.map { 
+                meta, renamed_fasta, map, _, __ -> tuple(meta, renamed_fasta, map)
     }
 
-    length_filtered_ch = assembly_renamed_length_filtered.map { name, _, __, filtered_fasta, contig_number -> {
-        tuple(name, filtered_fasta, contig_number)
-      }
+    length_filtered_ch = assembly_renamed_length_filtered.map { 
+               meta, _, __, filtered_fasta, contig_number -> tuple(meta, filtered_fasta, contig_number)
     }
 
     // virus detection --> VirSorter, VirFinder and PPR-Meta
@@ -37,5 +35,5 @@ workflow DETECT {
     PARSE( length_filtered_ch.join( VIRFINDER.out ).join( VIRSORTER.out ).join( PPRMETA.out ) )
 
     emit:
-    detect_output = PARSE.out.join(renamed_ch).transpose().map{ name, fasta, vs_meta, log, renamed_fasta, map -> tuple (name, fasta, map) }
+    detect_output = PARSE.out.join(renamed_ch).transpose().map{ meta, fasta, vs_meta, log, renamed_fasta, map -> tuple (meta, fasta, map) }
 }

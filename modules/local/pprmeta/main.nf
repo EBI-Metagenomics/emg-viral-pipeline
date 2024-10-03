@@ -1,22 +1,22 @@
 process PPRMETA {
     label 'process_medium'
-    tag "${name}"
+    tag "${meta.id}"
     container 'quay.io/microbiome-informatics/pprmeta:1.1'
 
     input:
-      tuple val(name), file(fasta), val(contig_number)
+      tuple val(meta), path(fasta), val(contig_number)
       path(pprmeta_git)
     
     when: 
       contig_number.toInteger() > 0 
 
     output:
-      tuple val(name), file("${name}_pprmeta.csv")
+      tuple val(meta), path("${meta.id}_pprmeta.csv")
 
     script:
       """
       [ -d "pprmeta" ] && cp pprmeta/* .
-      ./PPR_Meta ${fasta} ${name}_pprmeta.csv
+      ./PPR_Meta ${fasta} ${meta.id}_pprmeta.csv
       """
 }
 
@@ -24,7 +24,8 @@ process PPRMETA {
  // need to implement this so its fixed 
 
 process pprmetaGet {
-  label 'noDocker'    
+  container 'nanozoo/template:3.8--ccd0653'
+  label 'process_single'    
   if (params.cloudProcess) { 
     publishDir "${params.databases}/pprmeta", mode: 'copy', pattern: "*" 
   }

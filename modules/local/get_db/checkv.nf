@@ -1,7 +1,14 @@
 process checkVGetDB {
-    label 'noDocker'    
-    if (params.cloudProcess) { publishDir "${params.databases}/checkv", mode: 'copy' }
-    else { storeDir "${params.databases}/checkv" }  
+    label 'process_low'    
+    container 'nanozoo/template:3.8--ccd0653'
+    
+    if (params.cloudProcess) { 
+        publishDir "${params.databases}/checkv", mode: 'copy' 
+    }
+    else { 
+        storeDir "${params.databases}/checkv" 
+    }
+      
     output:
         path("checkv-db-v*", type: 'dir')
     script:

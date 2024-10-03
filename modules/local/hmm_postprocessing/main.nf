@@ -3,16 +3,16 @@ process HMM_POSTPROCESSING {
     input: File_hmmer_ViPhOG.tbl
     output: File_hmmer_ViPhOG_modified.tbl
     */
-    tag "${name}"    
-    label 'process_low'
+    tag "${meta.id} ${set_name}"    
+    label 'process_single'
     
     container 'quay.io/microbiome-informatics/virify-python3:1.2'
 
     input:
-      tuple val(name), val(set_name), file(hmmer_tbl), file(faa) 
+      tuple val(meta), val(set_name), path(hmmer_tbl), path(faa) 
     
     output:
-      tuple val(name), val(set_name), file("${set_name}_modified.tsv"), file(faa)
+      tuple val(meta), val(set_name), path("${set_name}_modified.tsv"), path(faa)
     
     script:
     """

@@ -148,19 +148,19 @@
             "description": "Input parameters",
             "properties": {
                 "virome": {
-                    "type": "string",
+                    "type": "boolean",
                     "description": "VirSorter parameter, set when running a data set mostly composed of viruses"
                 },
                 "chromomap": {
-                    "type": "string",
+                    "type": "boolean",
                     "description": "feature to activate chromomap plot"
                 },
                 "balloon": {
-                    "type": "string",
+                    "type": "boolean",
                     "description": "feature to activate balloon plot"
                 },
                 "onlyannotate": {
-                    "type": "string",
+                    "type": "boolean",
                     "description": "Only annotate the input FASTA (no virus prediction, only contig length filtering)"
                 },
                 "mashmap_len": {
@@ -169,7 +169,7 @@
                     "description": "Mashmap mapping segment length, shorter sequences will be ignored"
                 },
                 "mashmap": {
-                    "type": "string",
+                    "type": "boolean",
                     "description": "Map the viral contigs against the provided reference"
                 },
                 "evalue": {
@@ -189,7 +189,7 @@
                 },
                 "factor": {
                     "type": "string",
-                    "default": "/Users/kates/Desktop/EBI/MGnify/pipelines/emg-viral-pipeline/references/viphogs_cds_per_taxon_cummulative.csv",
+                    "default": "emg-viral-pipeline/references/viphogs_cds_per_taxon_cummulative.csv",
                     "description": "Path to file with viral assemblies metadata, including taxon-specific factors"
                 },
                 "sankey": {
@@ -292,7 +292,7 @@
             "fa_icon": "fas fa-dna",
             "description": "Nextflow arguments",
             "properties": {
-                "dbs": {
+                "databases": {
                     "type": "string",
                     "default": "nextflow-autodownload-databases",
                     "description": "directory path to databases"
@@ -307,13 +307,8 @@
                     "default": "singularity",
                     "description": "singularity folder"
                 },
-                "databases": {
-                    "type": "string",
-                    "default": "nextflow-autodownload-databases",
-                    "description": "directory path to databases"
-                },
                 "cloudProcess": {
-                    "type": "string",
+                    "type": "boolean",
                     "description": "run on cloud"
                 }
             }
