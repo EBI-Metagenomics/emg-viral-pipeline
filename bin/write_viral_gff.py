@@ -112,6 +112,14 @@ def aggregate_annotations(virify_annotation_files):
     return viral_sequences, cds_annotations
 
 
+def open_fasta_file(filename):
+    if filename.endswith('.gz'):
+        f = gzip.open(filename, "rt")
+    else:
+        f = open(filename, "rt")
+    return f
+
+
 def write_gff(
     checkv_files,
     taxonomy_files,
@@ -181,11 +189,13 @@ def write_gff(
                 taxonomy_dict[contig] = taxonomy_string
 
     # Read unmodified contig length from the renamed assembly file
-    for record in SeqIO.parse(assembly_file, "fasta"):
+    handle = open_fasta_file(assembly_file)
+    for record in SeqIO.parse(handle, "fasta"):
         contig_id = str(record.id)
         seq_len = len(str(record.seq))
         contigs_len_dict[contig_id] = seq_len
-
+    handle.close()
+    
     with open(output_filename, "w") as gff:
         print("##gff-version 3", file=gff)
         # Constants

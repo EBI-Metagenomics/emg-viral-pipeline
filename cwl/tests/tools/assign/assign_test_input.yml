@@ -1,8 +1,0 @@
-input_tables:
-  - class: File
-    path: high_confidence_viral_contigs_predicted_cds_annotation.tsv
-  - class: File
-    path: low_confidence_viral_contigs_predicted_cds_annotation.tsv
-ncbi_tax_db:
-    class: File
-    path: ../../../databases/ete3_ncbi_tax.sqlite

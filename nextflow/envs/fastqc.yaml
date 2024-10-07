@@ -1,6 +1,0 @@
-name: fastqc
-channels:
-  - bioconda
-  - conda-forge
-dependencies:
-  - fastqc=0.11.8
