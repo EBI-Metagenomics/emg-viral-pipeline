@@ -87,6 +87,10 @@
                     "type": "string",
                     "description": "a virsorter database provided as 'virsorter/virsorter-data'"
                 },
+                "virsorter2": {
+                    "type": "string",
+                    "description": "a virsorter2 database"
+                },
                 "virfinder": {
                     "type": "string",
                     "description": "a virfinder model"
@@ -162,6 +166,10 @@
                 "onlyannotate": {
                     "type": "boolean",
                     "description": "Only annotate the input FASTA (no virus prediction, only contig length filtering)"
+                },
+                "use_virsorter_v1": {
+                    "type": "boolean",
+                    "description": "Use VirSorter instead of VirSorter2"
                 },
                 "mashmap_len": {
                     "type": "integer",

@@ -6,19 +6,20 @@
 The Database Section is designed to "auto-get" pre prepared databases.
 It is written for local use and cloud use.*/
 
-include { checkVGetDB    } from '../../modules/local/get_db/checkv'
-include { virfinderGetDB } from '../../modules/local/get_db/virfinder'
-include { pprmetaGet     } from '../../modules/local/pprmeta'
-include { metaGetDB      } from '../../modules/local/get_db/meta'
-include { virsorterGetDB } from '../../modules/local/get_db/virsorter'
-include { viphogGetDB    } from '../../modules/local/get_db/viphog'
-include { ncbiGetDB      } from '../../modules/local/get_db/ncbi'
-include { rvdbGetDB      } from '../../modules/local/get_db/rvdb'
-include { pvogsGetDB     } from '../../modules/local/get_db/pvogs'
-include { vogdbGetDB     } from '../../modules/local/get_db/vogdb'
-include { vpfGetDB       } from '../../modules/local/get_db/vpf'
-include { imgvrGetDB     } from '../../modules/local/get_db/imgvr'
-include { kaijuGetDB     } from '../../modules/local/get_db/kaiju'
+include { checkVGetDB     } from '../../modules/local/get_db/checkv'
+include { virfinderGetDB  } from '../../modules/local/get_db/virfinder'
+include { pprmetaGet      } from '../../modules/local/pprmeta'
+include { metaGetDB       } from '../../modules/local/get_db/meta'
+include { virsorterGetDB  } from '../../modules/local/get_db/virsorter'
+include { virsorter2GetDB } from '../../modules/local/get_db/virsorter2'
+include { viphogGetDB     } from '../../modules/local/get_db/viphog'
+include { ncbiGetDB       } from '../../modules/local/get_db/ncbi'
+include { rvdbGetDB       } from '../../modules/local/get_db/rvdb'
+include { pvogsGetDB      } from '../../modules/local/get_db/pvogs'
+include { vogdbGetDB      } from '../../modules/local/get_db/vogdb'
+include { vpfGetDB        } from '../../modules/local/get_db/vpf'
+include { imgvrGetDB      } from '../../modules/local/get_db/imgvr'
+include { kaijuGetDB      } from '../../modules/local/get_db/kaiju'
 
 workflow download_pprmeta {
     main:
@@ -211,15 +212,35 @@ workflow download_kaiju_db {
 }
 */
 
+workflow download_virsorter2_db {
+    main:
+    // local storage via storeDir
+    if (!params.cloudProcess) { virsorter2GetDB(); db = virsorter2GetDB.out }
+    // cloud storage via db_preload.exists()
+    if (params.cloudProcess) {
+      db_preload = file("${params.databases}/virsorter2/virsorter2-data")
+      if (db_preload.exists()) { db = db_preload }
+      else  { virsorter2GetDB(); db = virsorter2GetDB.out } 
+    }
+  emit: db    
+}
+
+
 workflow DOWNLOAD_DATABASES {
    main:
    
     if (params.pprmeta) { pprmeta_git = file(params.pprmeta) }
     else { pprmeta_git = download_pprmeta() }
     
-    if (params.virsorter) { virsorter_db = file(params.virsorter)} 
-    else { download_virsorter_db(); virsorter_db = download_virsorter_db.out }
-  
+    if (!params.use_virsorter_v1) {
+        if (params.virsorter2) { virsorter_db = file(params.virsorter2)} 
+        else { download_virsorter2_db(); virsorter_db = download_virsorter2_db.out }
+    }
+    else {
+      if (params.virsorter) { virsorter_db = file(params.virsorter)} 
+      else { download_virsorter_db(); virsorter_db = download_virsorter_db.out }
+    }
+
     if (params.virfinder) { virfinder_db = file(params.virfinder)} 
     else { download_virfinder_db(); virfinder_db = download_virfinder_db.out }
   
