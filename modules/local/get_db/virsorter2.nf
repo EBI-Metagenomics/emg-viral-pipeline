@@ -19,6 +19,6 @@ process virsorter2GetDB {
     # download virsorter2 database and extract
     wget https://osf.io/v46sc/download
     mkdir virsorter2-data
-    tar -xzf db.tgz -C virsorter2-data
+    tar -xzf download -C virsorter2-data
     """
 }
