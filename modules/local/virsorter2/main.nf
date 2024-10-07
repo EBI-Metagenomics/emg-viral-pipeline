@@ -5,6 +5,7 @@ process VIRSORTER2 {
     
     input:
       tuple val(meta), file(fasta), val(contig_number) 
+      path(database) 
 
     when: 
       contig_number.toInteger() > 0 
@@ -14,6 +15,7 @@ process VIRSORTER2 {
 
     script:
       """
-      virsorter run -w virsorter2 -i ${fasta}  -j ${task.cpus} all
+      virsorter config --init-source --db-dir=${database}
+      virsorter run -w virsorter2 -i ${fasta} -j ${task.cpus} all
       """
 }
