@@ -6,7 +6,7 @@ import sys
 import gzip
 import csv
 
-from bin.parse_viral_pred import Record
+from parse_viral_pred import Record
 
 from Bio import SeqIO
 

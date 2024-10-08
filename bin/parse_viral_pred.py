@@ -192,35 +192,64 @@ def parse_virus_sorter2(sorter_files):
     Low confidence are contigs with confidence score < confidence cutoff and > 0.5.
     Putative prophages are contigs with partial viral sequences. According to the VirSorter2 author
     partial viral sequences can only occur as prophages, full viral sequences can occur due to prophages or other origins though.
+    
+    VirSorter2 NOTE
+    Note that suffix ||full, ||lt2gene and ||{i}_partial ({i} can be numbers starting from 0 to max number 
+    of viral fragments found in that contig) have been added to original sequence names to differentiate 
+    sub-sequences in case of multiple viral subsequences found in one contig. 
+    Partial sequences can be treated as proviruses since they are extracted from longer host sequences. 
+    Full sequences, however, can be proviruses or free virus since it can be a short fragment sequenced from 
+    a provirus region. Moreover, "full" sequences are just sequences with strong viral signal as a whole 
+    ("nearly full" is more accurate). They might be trimmed due to partial gene overhang at ends, 
+    duplicate segments from circular genomes, and an end trimming step for all identified viral sequences 
+    to find the optimal viral segments (longest within 95% of peak score by default). Again, the "full" sequences 
+    trimmed by the end trimming step should not be interpreted as provirus, since genes that have low impact on score, 
+    such as unknown gene or genes shared by host and virus, could be trimmed. If you prefer the full sequences 
+    (ending with ||full) not to be trimmed and leave it to specialized tools such as checkV, 
+    you can use --keep-original-seq option.
     """
 
     boundary_columns = ['seqname', 'trim_orf_index_start', 'trim_orf_index_end', 
                         'trim_bp_start', 'trim_bp_end', 'trim_pr', 
-                        'partial', 'pr_full', 'hallmark_cnt', 'group']
+                        'partial', 'pr_full', 'hallmark_cnt', 'group', 'shape']
 
     boundary_dtypes = {'seqname': 'object', 'trim_orf_index_start': 'int64', 'trim_orf_index_end': 'int64',
                        'trim_bp_start': 'int64', 'trim_bp_end': 'int64', 'trim_pr': 'float64',
-                       'partial': 'int64', 'pr_full': 'float64', 'hallmark_cnt': 'int64', 'group': 'object'}
+                       'partial': 'int64', 'pr_full': 'float64', 'hallmark_cnt': 'int64', 'group': 'object', 'shape': 'object'}
 
     high_confidence = dict()
     low_confidence = dict()
     prophages = dict()
+    
+    final_boundary_file, final_score_file, final_combined_fa_file = "", "", ""
+    for i in sorter_files:
+        if "final-viral-boundary.tsv" in i:
+            final_boundary_file = i
+        elif "final-viral-score.tsv" in i:
+            final_score_file = i
+        elif "final-viral-combined.fa" in i:
+            final_combined_fa_file = i
+        else:
+            print('ERROR: The result files of VirSorter2 are incomplete. The code expects the files final-viral-{boundary,score}.tsv and final-viral-combined.fa.', file=sys.stderr)
+            return high_confidence, low_confidence, prophages
+    
+    boundary_df = pd.read_csv(final_boundary_file, sep='\t', index_col='seqname', usecols=boundary_columns, 
+                              dtype=boundary_dtypes)
+    score_df = pd.read_csv(final_score_file, sep='\t')
+    score_df['seqname'] = score_df['seqname'].str.replace(r'\|\|.*', '', regex=True)
+    score_df.set_index('seqname', inplace=True)
+        
+    meta = score_df.merge(boundary_df, left_index=True, right_index=True, how='left', 
+                          suffixes=('_score', '_boundary')).dropna(subset=['shape'])
 
-    if ["final-viral-boundary.tsv", "final-viral-score.tsv", "final-viral-combined.fa"] not in sorter_files:
-        print('ERROR: The result files of Virus Sorter 3 are incomplete. The code expects the files final-viral-{boundary,score}.tsv and final-viral-combined.fa.', file=sys.stderr)
-        return high_confidence, low_confidence, prophages
-
-    boundary_df = pd.read_csv([filename for filename in sorter_files if 'boundary' in filename][0], sep='\t', index_col = 'seqname_new', usecols = boundary_columns, dtype = boundary_dtypes)
-    score_df = pd.read_csv([filename for filename in sorter_files if 'score' in filename][0], sep='\t', index_col = 'seqname')
-    meta = score_df.merge(boundary_df, left_index=True, right_index=True, how='left', suffixes = ('_score', '_boundary'))
-
-    for record in SeqIO.parse([filename for filename in sorter_files if 'combined' in filename][0], "fasta"):
-
-        max_score = meta.loc[record.id, 'max_score']
+    for record in SeqIO.parse(final_combined_fa_file, "fasta"):
         clean_name = record.id.split('|')[0]
-        circular =  meta.loc[record.id, 'shape'].startswith('c')
-        prange = [meta.loc[record.id, 'trim_bp_start'], meta.loc[record.id, 'trim_bp_end']]
-
+        max_score = meta['max_score'].get(clean_name, None)
+        circular = meta['shape'].get(clean_name, None)
+        prange = [meta['trim_bp_start'].get(clean_name, None), meta['trim_bp_end'].get(clean_name, None)]
+        if not circular or not max_score:
+            continue
+        circular = circular.startswith('circular')
         if 'partial' in record.id:
             # add the prophage position within the contig
             prophages.setdefault(clean_name, []).append(
