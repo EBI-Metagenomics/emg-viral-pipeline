@@ -8,7 +8,7 @@ process virsorter2GetDB {
   }  
 
   output:
-    path("virsorter2-data", type: 'dir')
+    path("virsorter2-data/db", type: 'dir')
 
   script:
     """

@@ -15,7 +15,6 @@ process VIRSORTER2 {
 
     script:
       """
-      virsorter config --init-source --db-dir=${database}
-      virsorter run -w virsorter2 -i ${fasta} -j ${task.cpus} all
+      virsorter run --db-dir ${database} -w virsorter2 -i ${fasta} -j ${task.cpus} all
       """
 }
