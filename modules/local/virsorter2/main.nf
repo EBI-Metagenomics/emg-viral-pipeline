@@ -1,7 +1,7 @@
 process VIRSORTER2 {
     tag "${meta.id}"
     label 'process_medium'
-    container 'docker://jiarong/virsorter:2.2.3'
+    container 'quay.io/microbiome-informatics/virsorter:2.2.3--1'
     
     input:
       tuple val(meta), file(fasta), val(contig_number) 
