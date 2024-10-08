@@ -1,4 +1,0 @@
-fasta_file:
-  class: File
-  path: ERR575691_host_filtered_filt300bp.fasta
-  format: http://edamontology.org/format_1929

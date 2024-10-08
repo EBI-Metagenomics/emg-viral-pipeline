@@ -52,6 +52,8 @@ def aggregate_annotations(virify_annotation_files):
     cds_annotations = {}
 
     for virify_summary in virify_annotation_files:
+        if 'taxonomy' in virify_summary:
+            continue
         with open(virify_summary, "r") as table_handle:
             csv_reader = csv.DictReader(table_handle, delimiter="\t")
             for row in csv_reader:

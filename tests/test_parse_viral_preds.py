@@ -102,7 +102,7 @@ class ParseViralPredictions(unittest.TestCase):
 
         vs_files = [os.path.join(vs_path, f) for f in os.listdir(vs_path)]
 
-        hc, lc, pp, *_ = merge_annotations(pprmeta_path, vf_path, vs_files, assembly)
+        hc, lc, pp, *_ = merge_annotations(pprmeta_path, vf_path, vs_files, None, assembly)
 
         hc_ids = set([h.id for h in hc])
         lc_ids = set([l.id for l in lc])
@@ -129,7 +129,7 @@ class ParseViralPredictions(unittest.TestCase):
 
         print(test_dir)
 
-        main(pprmeta_path, vf_path, vs_files, assembly, test_dir)
+        main(pprmeta_path, vf_path, vs_files, None, assembly, test_dir, 0.9)
 
         with open(test_dir + "/high_confidence_viral_contigs.fna", "rb") as hc_f:
             with open(
@@ -176,7 +176,7 @@ class ParseViralPredictions(unittest.TestCase):
 
         sorter_files = [os.path.join(vs_path, f) for f in os.listdir(vs_path)]
 
-        main(pprmeta_path, vf_path, sorter_files, assembly, test_dir)
+        main(pprmeta_path, vf_path, sorter_files, None, assembly, test_dir, 0.9)
 
         with open(test_dir + "/high_confidence_viral_contigs.fna", "rb") as hc_f:
             with open(
