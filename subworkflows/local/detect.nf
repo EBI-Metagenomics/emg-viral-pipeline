@@ -52,11 +52,10 @@ workflow DETECT {
       collected_fa = VIRSORTER2.out.combined_fa.flatMap{meta, fa -> 
          (meta, fa.collectFile(name:"final-viral-combined.fa"))
       }    
-      virsorter_output = collected_score.join(collected_boundary).join(collected_fa).map {meta, score, boundary, fa -> 
+      virsorter_output = collected_score.join(collected_boundary).join(collected_fa).map{meta, score, boundary, fa -> 
           (meta, [score, boundary, fa])}
     }
     
-         
     VIRFINDER( length_filtered_ch, virfinder_db)
     
     PPRMETA( length_filtered_ch, pprmeta_git)
