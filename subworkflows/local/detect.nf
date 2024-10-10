@@ -35,15 +35,24 @@ workflow DETECT {
       virsorter_output = VIRSORTER.out
     }
     else {
+      # chunk fasta by 10Mb
       chunked_ch = length_filtered_ch.flatMap{ meta, fasta, value ->
           def chunks = fasta.splitFasta(file: true, size: 10.MB);
           chunks.collect{ chunk ->
              return tuple(meta, chunk, value);
           }
       }
-      chunked_ch.view()
-      VIRSORTER2( chunked_ch, virsorter_db)
-      virsorter_output = VIRSORTER2.out
+      VIRSORTER2(chunked_ch, virsorter_db)
+      collected_score = VIRSORTER2.out.score_tsv.flatMap{meta, tsv -> 
+         (meta, tsv.collectFile(name:"final-viral-score.tsv", keepHeader:true, skip:1))
+      }
+      collected_boundary = VIRSORTER2.out.boundary_tsv.flatMap{meta, tsv -> 
+         (meta, tsv.collectFile(name:"final-viral-boundary.tsv", keepHeader:true, skip:1))
+      }    
+      collected_fa = VIRSORTER2.out.combined_fa.flatMap{meta, fa -> 
+         (meta, fa.collectFile(name:"final-viral-combined.fa"))
+      }    
+      virsorter_output = collected_score.join(collected_boundary).join(collected_fa)
     }
          
     VIRFINDER( length_filtered_ch, virfinder_db)

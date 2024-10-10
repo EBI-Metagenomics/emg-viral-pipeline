@@ -11,14 +11,17 @@ process VIRSORTER2 {
       contig_number.toInteger() > 0 
 
     output:
-      tuple val(name), file("virsorter2/*.{tsv,fa*}")
+      tuple val(name), path("virsorter2/final-viral-score.tsv"),    emit: score_tsv
+      tuple val(name), path("virsorter2/final-viral-boundary.tsv"), emit: boundary_tsv
+      tuple val(name), path("virsorter2/final-viral-combined.fa"),  emit: combined_fa
 
     script:
       def args = task.ext.args ?: ''
       """
       # speed up hmmsearch
-      virsorter config --set HMMSEARCH_THREADS=4
-      virsorter config --set FAA_BP_PER_SPLIT=50000
+      #virsorter config --set HMMSEARCH_THREADS=4
+      #virsorter config --set FAA_BP_PER_SPLIT=50000
+      
       virsorter run \
                 --db-dir ${database} \
                 -w virsorter2 \
