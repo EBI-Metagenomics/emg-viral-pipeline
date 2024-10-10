@@ -36,8 +36,8 @@ workflow DETECT {
     }
     else {
       chunked_ch = length_filtered_ch.flatMap{ meta, fasta, value ->
-          def chunks = fasta.splitFasta(file: true, size: 50.MB);
-          chunks.map{ chunk ->
+          def chunks = fasta.splitFasta(file: true, size: 10.MB);
+          chunks.collect{ chunk ->
              return tuple(meta, chunk, value);
           }
       }
