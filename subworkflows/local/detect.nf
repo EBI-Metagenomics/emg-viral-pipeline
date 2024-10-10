@@ -35,7 +35,14 @@ workflow DETECT {
       virsorter_output = VIRSORTER.out
     }
     else {
-      VIRSORTER2( length_filtered_ch, virsorter_db)
+      chunked_ch = length_filtered_ch.flatMap{ meta, fasta, value ->
+          def chunks = fasta.splitFasta(file: true, size: 50.MB);
+          chunks.map{ chunk ->
+             return tuple(meta, chunk, value);
+          }
+      }
+      chunked_ch.view()
+      VIRSORTER2( chunked_ch, virsorter_db)
       virsorter_output = VIRSORTER2.out
     }
          
