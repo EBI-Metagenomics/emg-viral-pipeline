@@ -16,7 +16,7 @@ process PARSE {
     if (!params.use_virsorter_v1)
     """
     touch virsorter_metadata.tsv
-    parse_viral_pred.py -a ${fasta} -f ${virfinder} -p ${pprmeta} -z ${virsorter} &> ${name}_virus_predictions.log
+    parse_viral_pred.py -a ${fasta} -f ${virfinder} -p ${pprmeta} -z ${virsorter} &> ${meta.id}_virus_predictions.log
     """
     else
     """

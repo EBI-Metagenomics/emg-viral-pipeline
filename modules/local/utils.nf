@@ -1,5 +1,6 @@
 process CONCATENATE_FILES {
     tag "${meta.id}"
+    label "process_medium"
 
     input:
     tuple val(meta), path(input_files, stageAs: "inputs/*")
