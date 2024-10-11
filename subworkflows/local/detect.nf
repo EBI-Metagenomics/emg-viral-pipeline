@@ -2,12 +2,14 @@
  * Run virus detection tools and parse the predictions according to defined filters. 
 */
 
-include { VIRSORTER         } from '../../modules/local/virsorter' 
-include { VIRSORTER2        } from '../../modules/local/virsorter2' 
-include { VIRFINDER         } from '../../modules/local/virfinder' 
-include { PPRMETA           } from '../../modules/local/pprmeta'
-include { PARSE             } from '../../modules/local/parse'
-include { CONCATENATE_FILES } from '../../modules/local/utils'
+include { VIRSORTER                                       } from '../../modules/local/virsorter' 
+include { VIRSORTER2                                      } from '../../modules/local/virsorter2' 
+include { VIRFINDER                                       } from '../../modules/local/virfinder' 
+include { PPRMETA                                         } from '../../modules/local/pprmeta'
+include { PARSE                                           } from '../../modules/local/parse'
+include { CONCATENATE_FILES as CONCATENATE_FILES_SCORE    } from '../../modules/local/utils'
+include { CONCATENATE_FILES as CONCATENATE_FILES_BOUNDARY } from '../../modules/local/utils'
+include { CONCATENATE_FILES as CONCATENATE_FILES_FA       } from '../../modules/local/utils'
 
 workflow DETECT {
 
@@ -44,9 +46,20 @@ workflow DETECT {
           }
       }
       VIRSORTER2(chunked_ch, virsorter_db)
-      collected_score = CONCATENATE_FILES(VIRSORTER2.out.score_tsv.groupTuple(), "final-viral-score.tsv").out.concatenated_result
-      collected_boundary = CONCATENATE_FILES(VIRSORTER2.out.boundary_tsv.groupTuple(), "final-viral-boundary.tsv").out.concatenated_result
-      collected_fa = CONCATENATE_FILES(VIRSORTER2.out.combined_fa.groupTuple(), "final-viral-combined.fa").out.concatenated_result
+      collected_score = CONCATENATE_FILES_SCORE(
+         VIRSORTER2.out.score_tsv.groupTuple(), 
+         "final-viral-score.tsv"
+      ).out.concatenated_result
+      
+      collected_boundary = CONCATENATE_FILES_BOUNDARY(
+         VIRSORTER2.out.boundary_tsv.groupTuple(), 
+         "final-viral-boundary.tsv"
+      ).out.concatenated_result
+      
+      collected_fa = CONCATENATE_FILES_FA(
+         VIRSORTER2.out.combined_fa.groupTuple(), 
+         "final-viral-combined.fa"
+      ).out.concatenated_result
       
       virsorter_output = collected_score.join(collected_boundary).join(collected_fa).map{meta, score, boundary, fa -> 
           return tuple(meta, [score, boundary, fa])}
