@@ -11,7 +11,7 @@ process CONCATENATE_FILES {
 
     script:
     """
-    first_file=\$(ls inputs | head -n 1);
+    export first_file=\$(ls inputs | head -n 1);
     echo \${first_file}
     grep 'seqname' inputs/\${first_file} > header.tsv
     echo "1"
