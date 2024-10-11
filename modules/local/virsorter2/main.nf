@@ -22,6 +22,12 @@ process VIRSORTER2 {
       #virsorter config --set HMMSEARCH_THREADS=4
       #virsorter config --set FAA_BP_PER_SPLIT=50000
       
+      # extract chunk number to rename output files
+      filename=\$(basename ${fasta_file})
+      # Extract VALUE (assuming the filename is in format NAME.VALUE.fasta)
+      export value="all"
+      value=\$(echo "\$filename" | cut -d'.' -f2)
+    
       virsorter run \
                 --db-dir ${database} \
                 -w virsorter2 \
@@ -29,5 +35,10 @@ process VIRSORTER2 {
                 -j ${task.cpus} \
                 $args \
                 all
+      
+      # Rename files
+      mv virsorter2/final-viral-score.tsv "\${value}.final-viral-score.tsv"
+      mv virsorter2/final-viral-boundary.tsv "\${value}.final-viral-boundary.tsv"
+      mv virsorter2/final-viral-combined.fa "\${value}.final-viral-combined.fa"
       """
 }
