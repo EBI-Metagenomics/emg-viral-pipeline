@@ -23,7 +23,7 @@ process VIRSORTER2 {
       #virsorter config --set FAA_BP_PER_SPLIT=50000
       
       # extract chunk number to rename output files
-      filename=\$(basename ${fasta_file})
+      filename=\$(basename ${fasta})
       # Extract VALUE (assuming the filename is in format NAME.VALUE.fasta)
       export value="all"
       value=\$(echo "\$filename" | cut -d'.' -f2)
