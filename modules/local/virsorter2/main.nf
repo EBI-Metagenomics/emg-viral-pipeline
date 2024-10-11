@@ -11,9 +11,9 @@ process VIRSORTER2 {
       contig_number.toInteger() > 0 
 
     output:
-      tuple val(meta), path("virsorter2/final-viral-score.tsv"),    emit: score_tsv
-      tuple val(meta), path("virsorter2/final-viral-boundary.tsv"), emit: boundary_tsv
-      tuple val(meta), path("virsorter2/final-viral-combined.fa"),  emit: combined_fa
+      tuple val(meta), path("*.final-viral-score.tsv"),    emit: score_tsv
+      tuple val(meta), path("*.final-viral-boundary.tsv"), emit: boundary_tsv
+      tuple val(meta), path("*.final-viral-combined.fa"),  emit: combined_fa
 
     script:
       def args = task.ext.args ?: ''
