@@ -206,14 +206,17 @@ def parse_virus_sorter2(sorter_files):
     low_confidence = dict()
     prophages = dict()
 
-    if ["final-viral-boundary.tsv", "final-viral-score.tsv", "final-viral-combined.fa"] not in sorter_files:
+    if "final-viral-boundary.tsv" not in sorter_files or "final-viral-score.tsv" not in sorter_files or "final-viral-combined.fa" not in sorter_files:
         print('ERROR: The result files of VirSorter2 are incomplete. The code expects the files final-viral-{boundary,score}.tsv and final-viral-combined.fa.', file=sys.stderr)
         return high_confidence, low_confidence, prophages
-
-    boundary_df = pd.read_csv([filename for filename in sorter_files if 'boundary' in filename][0], 
-                              sep='\t', index_col='seqname_new', usecols=boundary_columns, dtype=boundary_dtypes)
-    score_df = pd.read_csv([filename for filename in sorter_files if 'score' in filename][0], 
-                           sep='\t', index_col='seqname')
+    
+    for input_file in sorter_files:
+        if 'boundary' in input_file:
+            boundary_df = pd.read_csv(input_file, 
+                                      sep='\t', index_col='seqname_new', usecols=boundary_columns, dtype=boundary_dtypes)
+        elif 'score' in input_file:
+            score_df = pd.read_csv(input_file, sep='\t', index_col='seqname')
+        
     meta = score_df.merge(boundary_df, left_index=True, right_index=True, how='left', suffixes=('_score', '_boundary'))
 
     for record in SeqIO.parse([filename for filename in sorter_files if 'combined' in filename][0], "fasta"):
