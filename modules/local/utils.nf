@@ -13,7 +13,7 @@ process CONCATENATE_FILES {
     """
     export first_file=\$(ls inputs | head -n 1);
     echo \${first_file}
-    grep 'seqname' inputs/\${first_file} > header.tsv
+    grep 'seqname' inputs/\${first_file} > header.tsv || true
     echo "1"
     cat inputs/* | grep -v 'seqname' > without_header.${output_name}
     echo "2"
