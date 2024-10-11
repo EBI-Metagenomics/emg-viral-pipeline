@@ -12,9 +12,14 @@ process CONCATENATE_FILES {
     script:
     """
     first_file=\$(ls inputs | head -n 1);
+    echo \${first_file}
     grep 'seqname' "inputs/\${first_file}" > header.tsv
+    echo "1"
     cat inputs/* | grep -v 'seqname' > without_header.${output_name}
+    echo "2"
     cat header.tsv without_header.${output_name} > ${output_name}
+    echo "3"
     rm without_header.${output_name}
+    echo "4"
     """
 }
