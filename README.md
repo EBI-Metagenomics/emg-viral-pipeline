@@ -6,11 +6,10 @@
 
 1. [ The VIRify pipeline ](#virify)
 2. [ Nextflow execution ](#nf)
-3. [ CWL execution (discontinued) ](#cwl)
-4. [ Pipeline overview ](#overview)
-5. [ Detour: Metatranscriptomics ](#metatranscriptome)
-6. [ Resources ](#resources)
-7. [ Citations ](#cite)
+3. [ Pipeline overview ](#overview)
+4. [ Detour: Metatranscriptomics ](#metatranscriptome)
+5. [ Resources ](#resources)
+6. [ Citations ](#cite)
 
 <a name="virify"></a>
 
@@ -22,14 +21,12 @@ VIRify is a pipeline for the detection, annotation, and taxonomic classification
 
 The pipeline is implemented in [Nextflow](#nf) and additionally only Docker or Singularity are needed to run VIRify. Details about installation and usage are given below.
 
-**Please note**, that until v1.0 the pipeline was also implemented in [CWL](#cwl) as an alternative to [Nextflow](#nf). However, later updates were only included in the [Nextflow](#nf) version of the pipeline. 
-
 
 <a name="nf"></a>
 
 # Nextflow
 
-A [Nextflow](https://www.nextflow.io/) implementation of the VIRify pipeline. In the backend, the same scripts are used as in the [CWL](#cwl) implementation.
+A [Nextflow](https://www.nextflow.io/) implementation of the VIRify pipeline.
 
 ## What do I need?
 
@@ -155,21 +152,7 @@ The labels used in the Type column of the gff file correspond to the following n
 | prophage  | [SO:0001006](http://www.sequenceontology.org/browser/current_svn/term/SO:0001006) |
 | CDS | [SO:0000316](http://www.sequenceontology.org/browser/current_svn/term/SO:0000316) |
 
-Note that CDS are reported only when a ViPhOG match has been found. 
-
-
-<a name="cwl"></a>
-
-# Common Workflow Language (discontinued)
-
-**Until VIRify v1.0**, VIRify was implemented in [Common Workflow Language (CWL)](https://www.commonwl.org/) next to the Nextflow implementation. Both Workflow Management Systems were previously supported. 
-
-## What do I need?
-The implementation until v1.0 of VIRify uses CWL version 1.2. It was tested using Toil version 5.3.0 as the workflow engine and conda to manage the software dependencies.
-
-## How?
-For instructions go to the [CWL README](cwl/README.md).
-
+Note that CDS are reported only when a ViPhOG match has been found.
 
 <a name="overview"></a>
 
