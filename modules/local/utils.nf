@@ -10,6 +10,6 @@ process CONCATENATE_FILES {
 
     script:
     """
-    cat inouts/* > ${output_name}
+    cat inputs/* > ${output_name}
     """
 }
