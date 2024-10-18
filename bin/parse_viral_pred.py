@@ -186,7 +186,7 @@ def parse_virus_sorter(sorter_files):
     return high_confidence, low_confidence, prophages
 
 
-def parse_virus_sorter2(sorter_files):
+def parse_virus_sorter2(sorter_files, vs_cutoff):
     """Extract high, low and prophages confidence Records from virus sorter results.
     High confidence are contigs with confidence score >= confidence cutoff (0.9 per default).
     Low confidence are contigs with confidence score < confidence cutoff and > 0.5.
@@ -222,6 +222,7 @@ def parse_virus_sorter2(sorter_files):
     prophages = dict()
     
     final_boundary_file, final_score_file, final_combined_fa_file = "", "", ""
+    print('SORTER',sorter_files)
     for i in sorter_files:
         if "final-viral-boundary.tsv" in i:
             final_boundary_file = i
@@ -250,15 +251,15 @@ def parse_virus_sorter2(sorter_files):
         if not circular or not max_score:
             continue
         circular = circular.startswith('circular')
+        
         if 'partial' in record.id:
             # add the prophage position within the contig
+            record.id = clean_name
             prophages.setdefault(clean_name, []).append(
                 Record(record, "prophage", circular, prange)
             )
-
         record.id = clean_name
-
-        if float(max_score) >= float(args.vs_cutoff):
+        if float(max_score) >= float(vs_cutoff):
             high_confidence[record.id] = Record(record, "high_confidence", circular)
         else:
             low_confidence[record.id] = Record(record, "low_confidence", circular)
@@ -270,7 +271,7 @@ def parse_virus_sorter2(sorter_files):
     return high_confidence, low_confidence, prophages
 
 
-def merge_annotations(pprmeta, finder, sorter, sorter2, assembly):
+def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
     """Parse VirSorter, VirFinder and PPR-Meta outputs and merge the results.
     High confidence viral contigs:
     -  VirSorter reported as categories 1 and 2
@@ -291,19 +292,20 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly):
     pprmeta_lc = parse_pprmeta(pprmeta)
     finder_lc, finder_lowestc = parse_virus_finder(finder)
     sorter_hc, sorter_lc, sorter_prophages = parse_virus_sorter(sorter) if sorter is not None else parse_virus_sorter2(
-        sorter2)
+        sorter2, vs_cutoff)
 
     for seq_record in SeqIO.parse(assembly, "fasta"):
-        # HC
-        if seq_record.id in sorter_hc:
-            hc_predictions_contigs.append(sorter_hc.get(seq_record.id).get_seq_record())
         # Pro
-        elif seq_record.id in sorter_prophages:
+        # TODO: check this decision because for VirSorter2 sequence can be in 2 categories
+        if seq_record.id in sorter_prophages:
             # a contig may have several prophages
             # for prophages write the record as it holds the
             # sliced fasta
             for record in sorter_prophages.get(seq_record.id):
                 prophage_predictions_contigs.append(record.get_seq_record())
+        # HC
+        if seq_record.id in sorter_hc:
+            hc_predictions_contigs.append(sorter_hc.get(seq_record.id).get_seq_record())
         # LC
         elif seq_record.id in finder_lc:
             lc_predictions_contigs.append(seq_record)
@@ -331,7 +333,7 @@ def main(pprmeta, finder, sorter, sorter2, assembly, outdir, vs_cutoff, prefix=F
         sorter_hc,
         sorter_lc,
         sorter_prophages,
-    ) = merge_annotations(pprmeta, finder, sorter, sorter2, assembly)
+    ) = merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff)
 
     at_least_one = False
     name_prefix = ""
