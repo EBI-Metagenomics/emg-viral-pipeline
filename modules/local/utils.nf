@@ -1,4 +1,4 @@
-process CONCATENATE_FILES {
+process CONCATENATE_VIRSORTER2_FILES {
     tag "${meta.id}"
     label "process_medium"
 
@@ -15,6 +15,5 @@ process CONCATENATE_FILES {
     grep 'seqname' inputs/\${first_file} > header.tsv || true
     cat inputs/* | grep -v 'seqname' > without_header.${output_name}
     cat header.tsv without_header.${output_name} > ${output_name}
-    rm without_header.${output_name}
     """
 }

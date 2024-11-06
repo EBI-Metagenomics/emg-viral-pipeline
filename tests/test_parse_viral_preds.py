@@ -228,7 +228,7 @@ class ParseViralPredictions(unittest.TestCase):
         shutil.rmtree(test_dir)
         
     def test_virsorter2_precedence(self):
-        """VirSorter2 results take precedence over the other tools
+        """VirSorter2 results should take precedence over the other tools
         """
         pprmeta_path = self._build_path("/virsorter_precedence/pprmeta.csv")
         vf_path = self._build_path("/virsorter_precedence/virfinder.txt")

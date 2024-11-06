@@ -28,7 +28,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements-test.txt
-        pip install --upgrade numpy pandas
+        pip install --upgrade pandas==1.4.0
     - name: Unit tests
       run: |
         # TODO, improve the pythonpath handling

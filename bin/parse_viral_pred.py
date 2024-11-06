@@ -222,14 +222,13 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
     prophages = dict()
     
     final_boundary_file, final_score_file, final_combined_fa_file = "", "", ""
-    print('SORTER',sorter_files)
-    for i in sorter_files:
-        if "final-viral-boundary.tsv" in i:
-            final_boundary_file = i
-        elif "final-viral-score.tsv" in i:
-            final_score_file = i
-        elif "final-viral-combined.fa" in i:
-            final_combined_fa_file = i
+    for sorter_results_file in sorter_files:
+        if "final-viral-boundary.tsv" in sorter_results_file:
+            final_boundary_file = sorter_results_file
+        elif "final-viral-score.tsv" in sorter_results_file:
+            final_score_file = sorter_results_file
+        elif "final-viral-combined.fa" in sorter_results_file:
+            final_combined_fa_file = sorter_results_file
         else:
             print('ERROR: The result files of VirSorter2 are incomplete. The code expects the files final-viral-{boundary,score}.tsv and final-viral-combined.fa.', file=sys.stderr)
             return high_confidence, low_confidence, prophages

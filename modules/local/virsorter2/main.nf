@@ -4,11 +4,11 @@ process VIRSORTER2 {
     container 'quay.io/microbiome-informatics/virsorter:2.2.4'
     
     input:
-      tuple val(meta), file(fasta), val(contig_number) 
+      tuple val(meta), file(fasta), val(number_of_contigs) 
       path(database) 
 
     when: 
-      contig_number.toInteger() > 0 
+      number_of_contigs.toInteger() > 0 
 
     output:
       tuple val(meta), path("*.final-viral-score.tsv"),    emit: score_tsv
@@ -18,7 +18,8 @@ process VIRSORTER2 {
     script:
       def args = task.ext.args ?: ''
       """
-      # speed up hmmsearch
+      # Settings to speed up hmmsearch
+      # TODO: this needs to be tested, it doesn't seem to speed up so we decided to chunk the fasta instead
       #virsorter config --set HMMSEARCH_THREADS=4
       #virsorter config --set FAA_BP_PER_SPLIT=50000
       

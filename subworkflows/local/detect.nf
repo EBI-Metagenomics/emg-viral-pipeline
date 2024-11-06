@@ -2,14 +2,14 @@
  * Run virus detection tools and parse the predictions according to defined filters. 
 */
 
-include { VIRSORTER                                       } from '../../modules/local/virsorter' 
-include { VIRSORTER2                                      } from '../../modules/local/virsorter2' 
-include { VIRFINDER                                       } from '../../modules/local/virfinder' 
-include { PPRMETA                                         } from '../../modules/local/pprmeta'
-include { PARSE                                           } from '../../modules/local/parse'
-include { CONCATENATE_FILES as CONCATENATE_FILES_SCORE    } from '../../modules/local/utils'
-include { CONCATENATE_FILES as CONCATENATE_FILES_BOUNDARY } from '../../modules/local/utils'
-include { CONCATENATE_FILES as CONCATENATE_FILES_FA       } from '../../modules/local/utils'
+include { VIRSORTER                                                  } from '../../modules/local/virsorter' 
+include { VIRSORTER2                                                 } from '../../modules/local/virsorter2' 
+include { VIRFINDER                                                  } from '../../modules/local/virfinder' 
+include { PPRMETA                                                    } from '../../modules/local/pprmeta'
+include { PARSE                                                      } from '../../modules/local/parse'
+include { CONCATENATE_VIRSORTER2_FILES as CONCATENATE_FILES_SCORE    } from '../../modules/local/utils'
+include { CONCATENATE_VIRSORTER2_FILES as CONCATENATE_FILES_BOUNDARY } from '../../modules/local/utils'
+include { CONCATENATE_VIRSORTER2_FILES as CONCATENATE_FILES_FA       } from '../../modules/local/utils'
 
 workflow DETECT {
 
@@ -38,9 +38,9 @@ workflow DETECT {
       virsorter_output = VIRSORTER.out
     }
     else {
-      // chunk fasta by 10Mb
+      // chunk fasta by 500Mb
       chunked_ch = length_filtered_ch.flatMap{ meta, fasta, value ->
-          def chunks = fasta.splitFasta(file: true, size: 10.MB);
+          def chunks = fasta.splitFasta(file: true, size: 500.MB);
           chunks.collect{ chunk ->
              return tuple(meta, chunk, value);
           }
