@@ -72,6 +72,7 @@
                 },
                 "output": {
                     "type": "string",
+                    "format": "directory-path",
                     "default": "results",
                     "description": "name of the result folder"
                 }
@@ -85,7 +86,13 @@
             "properties": {
                 "virsorter": {
                     "type": "string",
+                    "format": "directory-path",
                     "description": "a virsorter database provided as 'virsorter/virsorter-data'"
+                },
+                "virsorter2": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "a virsorter2 database"
                 },
                 "virfinder": {
                     "type": "string",
@@ -163,6 +170,10 @@
                     "type": "boolean",
                     "description": "Only annotate the input FASTA (no virus prediction, only contig length filtering)"
                 },
+                "use_virsorter_v1": {
+                    "type": "boolean",
+                    "description": "Use VirSorter instead of VirSorter2"
+                },
                 "mashmap_len": {
                     "type": "integer",
                     "default": 2000,
@@ -235,52 +246,62 @@
             "properties": {
                 "assemblydir": {
                     "type": "string",
+                    "format": "directory-path",
                     "default": "00-assembly",
                     "description": "output directory for assembly step",
                     "fa_icon": "far fa-file-code"
                 },
                 "virusdir": {
                     "type": "string",
+                    "format": "directory-path",
                     "default": "01-viruses",
                     "description": "output directory for detected viruses step"
                 },
                 "prodigaldir": {
                     "type": "string",
+                    "format": "directory-path",
                     "default": "02-prodigal",
                     "description": "output directory for prodigal step"
                 },
                 "phanotatedir": {
                     "type": "string",
+                    "format": "directory-path",
                     "default": "02-phanotate",
                     "description": "output directory for phanotate step"
                 },
                 "hmmerdir": {
                     "type": "string",
+                    "format": "directory-path",
                     "default": "03-hmmer",
                     "description": "output directory for hmmer step"
                 },
                 "blastdir": {
                     "type": "string",
+                    "format": "directory-path",
                     "default": "04-blast",
                     "description": "output directory for blast step"
                 },
                 "plotdir": {
                     "type": "string",
+                    "format": "directory-path",
                     "default": "05-plots",
                     "description": "output directory for plots"
                 },
                 "taxdir": {
                     "type": "string",
+                    "format": "directory-path",
                     "default": "06-taxonomy",
                     "description": "output directory for taxonomy results"
                 },
                 "checkvdir": {
                     "type": "string",
+                    "format": "directory-path",
                     "default": "07-checkv",
                     "description": "output directory for checkV step"
                 },
                 "finaldir": {
                     "type": "string",
+                    "format": "directory-path",
                     "default": "08-final",
                     "description": "final output directory"
                 }

@@ -29,6 +29,7 @@ def helpMSG() {
 
     ${c_yellow}Databases (automatically downloaded by default):${c_reset}
     --virsorter         a virsorter database provided as 'virsorter/virsorter-data' [default: $params.virsorter]
+    --virsorter2        a virsorter2 database provided as 'virsorter2/virsorter2-data' [default: $params.virsorter2]
     --virfinder         a virfinder model [default: $params.virfinder]
     --viphog            the ViPhOG database, hmmpress'ed [default: $params.viphog]
     --rvdb              the RVDB, hmmpress'ed [default: $params.rvdb]
@@ -47,6 +48,7 @@ def helpMSG() {
         --rvdb /path/to/your/rvdb
 
     ${c_yellow}Parameters:${c_reset}
+    --use_virsorter_v1  Use VirSorter_v1 instead of default VirSorter2
     --evalue            E-value used to filter ViPhOG hits in the ratio_evalue step [default: $params.evalue]
     --prop              Minimum proportion of proteins with ViPhOG annotations to provide a taxonomic assignment [default: $params.prop]
     --taxthres          Minimum proportion of annotated genes required for taxonomic assignment [default: $params.taxthres]

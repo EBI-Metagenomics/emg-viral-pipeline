@@ -8,7 +8,7 @@ import unittest
 
 from bin.parse_viral_pred import (_parse_virsorter_metadata, main,
                                   merge_annotations, parse_virus_finder,
-                                  parse_virus_sorter)
+                                  parse_virus_sorter, parse_virus_sorter2)
 
 
 class ParseViralPredictions(unittest.TestCase):
@@ -83,6 +83,16 @@ class ParseViralPredictions(unittest.TestCase):
         self.assertSetEqual(set([r.seq_id for _, r in lc.items()]), set())
         self.assertSetEqual(set([r[0].seq_id for _, r in p.items()]), set(["pos_phage_0"]))
 
+    def test_parsing_virsorter2(self):
+        VS_CUTOFF = 0.9
+        path = self._build_path("/base_fixtures/virsorter2/")
+        hc, lc, p = parse_virus_sorter2([os.path.join(path, f) for f in os.listdir(path)], VS_CUTOFF)
+        self.assertSetEqual(set([r.seq_id for _, r in hc.items()]),
+                            set(["hc_1", "hc_2", "phage_2"]))
+        self.assertSetEqual(set([r.seq_id for _, r in lc.items()]), set(["lc_1", "lc_2", "phage_1"]))
+        self.assertSetEqual(set([r[0].seq_id for _, r in p.items()]), set(["phage_1", "phage_2"]))
+
+
     def test_parsing_virfinder(self):
         """For virfinder => virsorter_finder_test_data/input.fasta the expected is:
         """
@@ -102,7 +112,7 @@ class ParseViralPredictions(unittest.TestCase):
 
         vs_files = [os.path.join(vs_path, f) for f in os.listdir(vs_path)]
 
-        hc, lc, pp, *_ = merge_annotations(pprmeta_path, vf_path, vs_files, assembly)
+        hc, lc, pp, *_ = merge_annotations(pprmeta_path, vf_path, vs_files, None, assembly, 0.9)
 
         hc_ids = set([h.id for h in hc])
         lc_ids = set([l.id for l in lc])
@@ -129,7 +139,7 @@ class ParseViralPredictions(unittest.TestCase):
 
         print(test_dir)
 
-        main(pprmeta_path, vf_path, vs_files, assembly, test_dir)
+        main(pprmeta_path, vf_path, vs_files, None, assembly, test_dir, 0.9)
 
         with open(test_dir + "/high_confidence_viral_contigs.fna", "rb") as hc_f:
             with open(
@@ -176,7 +186,7 @@ class ParseViralPredictions(unittest.TestCase):
 
         sorter_files = [os.path.join(vs_path, f) for f in os.listdir(vs_path)]
 
-        main(pprmeta_path, vf_path, sorter_files, assembly, test_dir)
+        main(pprmeta_path, vf_path, sorter_files, None, assembly, test_dir, 0.9)
 
         with open(test_dir + "/high_confidence_viral_contigs.fna", "rb") as hc_f:
             with open(
@@ -216,7 +226,59 @@ class ParseViralPredictions(unittest.TestCase):
                              hashlib.md5(expected.encode("utf-8")).hexdigest())
 
         shutil.rmtree(test_dir)
+        
+    def test_virsorter2_precedence(self):
+        """VirSorter2 results should take precedence over the other tools
+        """
+        pprmeta_path = self._build_path("/virsorter_precedence/pprmeta.csv")
+        vf_path = self._build_path("/virsorter_precedence/virfinder.txt")
+        vs_path = self._build_path("/virsorter_precedence/virsorter2")
+        assembly = self._build_path("/virsorter_precedence/assembly_renamed_filt1500bp.fasta")
 
+        test_dir = tempfile.mkdtemp()
+
+        sorter_files = [os.path.join(vs_path, f) for f in os.listdir(vs_path)]
+
+        main(pprmeta_path, vf_path, None, sorter_files, assembly, test_dir, 0.9)
+
+        with open(test_dir + "/high_confidence_viral_contigs.fna", "rb") as hc_f:
+            with open(
+                self._build_path("/virsorter_precedence/expected_vs2/"
+                                 "/high_confidence_viral_contigs.fna"), "rb") as hc_e:
+                self.assertEqual(hashlib.md5(hc_f.read()).hexdigest(),
+                                 hashlib.md5(hc_e.read()).hexdigest())
+
+        with open(test_dir + "/low_confidence_viral_contigs.fna", "rb") as lc_f:
+            content = lc_f.readlines()
+            self.assertEqual(">seq1\n" in content, False)
+            lc_f.seek(0)
+            with open(
+                self._build_path("/virsorter_precedence/expected_vs2/"
+                                 "/low_confidence_viral_contigs.fna"), "rb") as lc_e:
+                self.assertEqual(hashlib.md5(lc_f.read()).hexdigest(),
+                                 hashlib.md5(lc_e.read()).hexdigest())
+
+        with open(test_dir + "/prophages.fna", "rb") as p_f:
+            self.assertEqual(p_f.readline(), b">seq1|prophage-1:23146\n")
+            p_f.seek(0)
+            with open(
+                self._build_path("/virsorter_precedence/expected_vs2/"
+                                 "/prophages.fna"), "rb") as p_e:
+                self.assertEqual(hashlib.md5(p_f.read()).hexdigest(),
+                                 hashlib.md5(p_e.read()).hexdigest())
+
+        # seq1 has to be in prophages and not in low_confidence
+        with open(test_dir + "/virsorter_metadata.tsv", "rb") as vs_f:
+            # sort the lines as the script doesn't guarantee order
+            obtained = str(sorted(vs_f.readlines()))
+            with open(
+                self._build_path("/virsorter_precedence/expected_vs2/"
+                                 "/virsorter_metadata.tsv"), "rb") as vs_e:
+                expected = str(sorted(vs_e.readlines()))
+            self.assertEqual(hashlib.md5(obtained.encode("utf-8")).hexdigest(),
+                             hashlib.md5(expected.encode("utf-8")).hexdigest())
+
+        shutil.rmtree(test_dir)
 
 if __name__ == "__main__":
     unittest.main()
