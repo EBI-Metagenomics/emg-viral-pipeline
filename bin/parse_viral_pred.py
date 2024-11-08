@@ -294,24 +294,42 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
         sorter2, vs_cutoff)
 
     for seq_record in SeqIO.parse(assembly, "fasta"):
-        # Pro
-        # TODO: check this decision because for VirSorter2 sequence can be in 2 categories
-        if seq_record.id in sorter_prophages:
-            # a contig may have several prophages
-            # for prophages write the record as it holds the
-            # sliced fasta
-            for record in sorter_prophages.get(seq_record.id):
-                prophage_predictions_contigs.append(record.get_seq_record())
-        # HC
-        if seq_record.id in sorter_hc:
-            hc_predictions_contigs.append(sorter_hc.get(seq_record.id).get_seq_record())
-        # LC
-        elif seq_record.id in finder_lc:
-            lc_predictions_contigs.append(seq_record)
-        elif seq_record.id in sorter_lc and seq_record.id in finder_lowestc:
-            lc_predictions_contigs.append(sorter_lc.get(seq_record.id).get_seq_record())
-        elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
-            lc_predictions_contigs.append(seq_record)
+        if sorter:
+            if seq_record.id in sorter_hc:
+                hc_predictions_contigs.append(sorter_hc.get(seq_record.id).get_seq_record())
+                # Pro
+            elif seq_record.id in sorter_prophages:
+                # a contig may have several prophages
+                # for prophages write the record as it holds the
+                # sliced fasta
+                for record in sorter_prophages.get(seq_record.id):
+                    prophage_predictions_contigs.append(record.get_seq_record())
+                # LC
+            elif seq_record.id in finder_lc:
+                lc_predictions_contigs.append(seq_record)
+            elif seq_record.id in sorter_lc and seq_record.id in finder_lowestc:
+                lc_predictions_contigs.append(sorter_lc.get(seq_record.id).get_seq_record())
+            elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
+                lc_predictions_contigs.append(seq_record)
+        else:
+            # Pro
+            # TODO: check this decision because for VirSorter2 sequence can be in 2 categories
+            if seq_record.id in sorter_prophages:
+                # a contig may have several prophages
+                # for prophages write the record as it holds the
+                # sliced fasta
+                for record in sorter_prophages.get(seq_record.id):
+                    prophage_predictions_contigs.append(record.get_seq_record())
+            # HC
+            if seq_record.id in sorter_hc:
+                hc_predictions_contigs.append(sorter_hc.get(seq_record.id).get_seq_record())
+            # LC
+            elif seq_record.id in finder_lc:
+                lc_predictions_contigs.append(seq_record)
+            elif seq_record.id in sorter_lc and seq_record.id in finder_lowestc:
+                lc_predictions_contigs.append(sorter_lc.get(seq_record.id).get_seq_record())
+            elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
+                lc_predictions_contigs.append(seq_record)
 
     return (
         hc_predictions_contigs,
