@@ -14,7 +14,7 @@ process PLOT_CONTIG_MAP {
     """
   	# get only contig IDs that have at least one annotation hit
     cat ${tab} | sed 's/|/VIRIFY/g' > virify.tmp 
-	  IDS=\$(awk 'BEGIN{FS="\\t"};{if(\$6!="No hit"){print \$1}}' virify.tmp | sort | uniq | grep -v Contig)
+	  export IDS=\$(awk 'BEGIN{FS="\\t"};{if(\$6!="No hit"){print \$1}}' virify.tmp | sort | uniq | grep -v Contig)
 	  head -1 ${tab} > ${set_name}_prot_ann_table_filtered.tsv
 	  for ID in \$IDS; do
 		  awk -v id="\$ID" '{if(id==\$1){print \$0}}' virify.tmp >> ${set_name}_prot_ann_table_filtered.tsv

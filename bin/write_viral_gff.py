@@ -23,7 +23,7 @@ def get_ena_contig_mapping(ena_contig_file):
     return ena_mapping
 
 
-def aggregate_annotations(virify_annotation_files):
+def aggregate_annotations(virify_annotation_files, use_proteins=False):
     """Aggregate all the virify annotations into a single data structure for
     easier handling when writing the GFF file.
 
@@ -75,11 +75,18 @@ def aggregate_annotations(virify_annotation_files):
                     viral_sequence_type = "phage_circular"
 
                 if prophage_start is not None and prophage_end is not None:
-                    # Fixing CDS coordinates to the context of the whole contig
-                    # Current coordinates corresponds to the prophage region:
-                    # contig_1|prophage-132033:161324	contig_1|prophage-132033:161324_1	2	256	1	No hit	NA
-                    start = start + prophage_start
-                    end = end + prophage_start
+                    if use_proteins:
+                        # If pipeline used already predicted proteins as input
+                        # they were predicted on whole contigs 
+                        # that means no need to change coordinates
+                        start = start
+                        end = end
+                    else:
+                        # Fixing CDS coordinates to the context of the whole contig
+                        # Current coordinates corresponds to the prophage region:
+                        # contig_1|prophage-132033:161324	contig_1|prophage-132033:161324_1	2	256	1	No hit	NA
+                        start = start + prophage_start
+                        end = end + prophage_start
                     viral_sequence_type = f"prophage-{prophage_start}:{prophage_end}"
 
                 # We use the contig name without any extra annotations
@@ -355,6 +362,12 @@ if __name__ == "__main__":
         help="Path to ENA contig file if renaming needed",
         required=False,
     )
+    parser.add_argument(
+        "--use-proteins",
+        dest="use_proteins",
+        help="Add this argument if pipeline used already predicted proteins as input",
+        action='store_true',
+    )
 
     args = parser.parse_args()
 
@@ -413,7 +426,7 @@ if __name__ == "__main__":
 
     logging.info("Collecting annotation data")
 
-    viral_sequences, cds_annotations = aggregate_annotations(virify_files)
+    viral_sequences, cds_annotations = aggregate_annotations(virify_files, args.use_proteins)
 
     logging.info("Generating the gff output")
     write_gff(

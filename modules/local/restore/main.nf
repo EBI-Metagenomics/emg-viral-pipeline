@@ -2,7 +2,7 @@ process RESTORE {
     /*
     usage: rename_fasta.py [-h] -i INPUT [-m MAP] -o OUTPUT {rename,restore} ...
     */
-    tag "${meta.id}"
+    tag "${meta.id} ${fasta}"
     label 'process_single'
     
     container 'quay.io/microbiome-informatics/virify-python3:1.2'

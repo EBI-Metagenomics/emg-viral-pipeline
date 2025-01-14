@@ -16,11 +16,18 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 include { samplesheetToList } from 'plugin/nf-schema'
 
 if ( params.samplesheet ) {
-    groupReads = { id, assembly, fq1, fq2 ->
+    groupInputs = { id, assembly, fq1, fq2, proteins ->
         if (fq1 == []) {
-            return tuple(["id": id], 
-                         assembly
-                         )
+            if (params.use_proteins && proteins)  {
+              return tuple(["id": id], 
+                           assembly,
+                           proteins
+                           )
+            } else {
+              return tuple(["id": id], 
+                             assembly
+                             )
+            }
         } else {
             if (params.assemble) {
               return tuple(["id": id], 
@@ -32,7 +39,7 @@ if ( params.samplesheet ) {
         }
     }
     samplesheet = Channel.fromList(samplesheetToList(params.samplesheet, "./assets/schema_input.json"))
-    input_ch = samplesheet.map(groupReads)
+    input_ch = samplesheet.map(groupInputs)
 }
 
 // one sample of assembly
@@ -60,13 +67,14 @@ include { MULTIQC             } from '../modules/nf-core/multiqc'
 * SUB WORKFLOWS
 **************************/
 
-include { ASSEMBLE_ILLUMINA  } from '../subworkflows/local/assemble_illumina'
-include { ANNOTATE           } from '../subworkflows/local/annotate'
-include { DETECT             } from '../subworkflows/local/detect'
-include { DOWNLOAD_DATABASES } from '../subworkflows/local/download_databases'
-include { PLOT               } from '../subworkflows/local/plot'
-include { POSTPROCESS        } from '../subworkflows/local/postprocess'
-include { PREPROCESS         } from '../subworkflows/local/preprocess'
+include { ASSEMBLE_ILLUMINA             } from '../subworkflows/local/assemble_illumina'
+include { ANNOTATE                      } from '../subworkflows/local/annotate'
+include { DETECT                        } from '../subworkflows/local/detect'
+include { DOWNLOAD_DATABASES            } from '../subworkflows/local/download_databases'
+include { PLOT                          } from '../subworkflows/local/plot'
+include { POSTPROCESS                   } from '../subworkflows/local/postprocess'
+include { PREPROCESS                    } from '../subworkflows/local/preprocess'
+include { SPLIT_PROTEINS_BY_CATEGORIES  } from '../subworkflows/local/split_proteins_by_categories'
 
 /************************** 
 * WORKFLOW ENTRY POINT
@@ -86,6 +94,7 @@ workflow VIRIFY {
     /**************************************************************/
     
     assembly_ch = Channel.empty()
+    proteins_ch = Channel.empty()
     
     // ----------- if --assemble specified - assemble reads first
     if (params.assemble) { 
@@ -93,7 +102,11 @@ workflow VIRIFY {
       assembly_ch = ASSEMBLE_ILLUMINA.out.assembly
     }
     else {
-      assembly_ch = input_ch
+      if (params.use_proteins) {
+         assembly_ch = input_ch.map{ meta, assembly, proteins -> tuple(meta, assembly) }
+      } else {
+         assembly_ch = input_ch
+      }
     }
     
     // ----------- rename fasta + length filtering
@@ -118,12 +131,35 @@ workflow VIRIFY {
     }
 
     // ----------- POSTPROCESS: restore fasta file
-    POSTPROCESS(postprocess_input_ch)  // out: (meta, type(HC/LC/PP), fasta)
+    POSTPROCESS(postprocess_input_ch)  
+    category_fasta = POSTPROCESS.out.restored_fasta  // (meta, type(HC/LC/PP), fasta)
     
+    // ----------- split proteins into HC/LC/PP - if provided
+    if (params.use_proteins) {
+       faa = input_ch.map{ meta, assembly, proteins -> tuple(meta, proteins)}  
+       SPLIT_PROTEINS_BY_CATEGORIES(category_fasta.groupTuple().join(faa).transpose()) 
+       proteins_ch = SPLIT_PROTEINS_BY_CATEGORIES.out.splitted_proteins  // out: (meta, type(HC/LC/PP), fasta, faa)
+    }
+
     // ----------- ANNOTATE
+    if (params.use_proteins) {
+       // (meta, [type](HC/LC/PP), [fasta], [faa], assembly) -> [(meta, type, fasta, faa, assembly)]
+       annotate_input = proteins_ch.groupTuple().join(assembly_ch).flatMap{ meta, types, fasta_paths, faa_paths, common_path ->
+        types.indexed().collect{ i, type ->
+           tuple(meta, type, fasta_paths[i], faa_paths[i], common_path)
+           }
+        }  
+    } else {
+       // (meta, [type](HC/LC/PP), [fasta], assembly) -> [(meta, type, fasta, assembly)]
+       annotate_input = category_fasta.groupTuple().join(assembly_ch).flatMap{ meta, types, fasta_paths, common_path ->
+        types.indexed().collect{ i, type ->
+           tuple(meta, type, fasta_paths[i], common_path)
+           }
+        }    
+    }
+    
     ANNOTATE(
-        assembly_ch,
-        POSTPROCESS.out.restored_fasta,
+        annotate_input,
         DOWNLOAD_DATABASES.out.viphog_db,
         DOWNLOAD_DATABASES.out.ncbi_db,
         DOWNLOAD_DATABASES.out.rvdb_db,
