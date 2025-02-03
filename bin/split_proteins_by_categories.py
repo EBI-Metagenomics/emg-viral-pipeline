@@ -63,6 +63,7 @@ class SplitProteins:
         if match_prodigal:
             start_protein = int(match_prodigal.group(2))
             finish_protein = int(match_prodigal.group(3))
+            protein_length = finish_protein - start_protein + 1
         else:
             self.logger.error('incorrect protein info')
         # get coords for prophage
@@ -73,11 +74,18 @@ class SplitProteins:
         start_prophage, finish_prophage = coords.split(':')
         start_prophage = int(start_prophage)
         finish_prophage = int(finish_prophage)
-        if start_prophage <= start_protein <= finish_prophage <= finish_protein \
-            or start_protein <= start_prophage <= finish_protein <= finish_prophage \
-            or start_prophage < start_protein <= finish_protein <= finish_prophage:
-            if start_prophage <= start_protein <= finish_protein <= finish_prophage:
-                self.logger.debug(f"Protein {prodigal_info[4:20]} inside {prophage_info}")
+        prophage_length = finish_prophage - start_prophage + 1
+        # Calculate overlap
+        overlap_start = max(start_protein, start_prophage)
+        overlap_end = min(finish_prophage, finish_protein)
+        intersection = max(0, overlap_end - overlap_start + 1)
+        # Make decision about protein
+        if intersection:
+            prophage_cov = intersection / prophage_length
+            protein_cov = intersection / protein_length
+            
+            if prophage_cov > 0.9 or protein_cov > 0.9:
+                self.logger.debug(f"Protein {prodigal_info[4:20]} more than 90% inside {prophage_info}")
                 return True
             else:
                 self.logger.debug(f"Protein {prodigal_info[4:20]} intersects {prophage_info}")
