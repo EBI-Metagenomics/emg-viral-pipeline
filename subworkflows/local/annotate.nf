@@ -34,8 +34,7 @@ include { PLOT_CONTIG_MAP             } from '../../modules/local/plot_contig_ma
 workflow ANNOTATE {
 
     take:
-    contigs
-    predicted_contigs
+    input_fastas  // (meta, type(HC/LC/PP), predicted_contigs, faa[optional], contigs)
 
     // reference databases and aux files // 
     viphog_db
@@ -52,14 +51,25 @@ workflow ANNOTATE {
 
     main:
     
-    // ORF detection --> prodigal
-    PRODIGAL( predicted_contigs )
+    proteins = Channel.empty()
+    if (params.use_proteins) {
+      // skip prodigal step and use existing faa-s
+      proteins = input_fastas.map{meta, type, pred_contigs, faa, contigs -> tuple(meta, type, faa)}
+      contigs = input_fastas.map{meta, type, pred_contigs, faa, contigs -> tuple(meta, contigs)}
+      predicted_contigs = input_fastas.map{meta, type, pred_contigs, faa, contigs -> tuple(meta, type, pred_contigs)}
+    } else {
+      // ORF detection --> prodigal
+      predicted_contigs = input_fastas.map{meta, type, pred_contigs, contigs -> tuple(meta, type, pred_contigs)}
+      PRODIGAL( predicted_contigs )
+      proteins = PRODIGAL.out
+      contigs = input_fastas.map{meta, type, pred_contigs, contigs -> tuple(meta, contigs)}
+    }
 
     // Not implemented //
     //-- phanotate(predicted_contigs) --//
 
     // annotation --> hmmer
-    HMMSCAN_VIPHOGS( PRODIGAL.out, viphog_db )
+    HMMSCAN_VIPHOGS( proteins, viphog_db )
     HMM_POSTPROCESSING( HMMSCAN_VIPHOGS.out )
 
     // calculate hit qual per protein
@@ -82,10 +92,10 @@ workflow ANNOTATE {
 
     // hmmer additional databases
     if ( params.hmmextend ) {
-      HMMSCAN_RVDB( PRODIGAL.out, rvdb_db )
-      HMMSCAN_PVOGS( PRODIGAL.out, pvogs_db )
-      HMMSCAN_VOGDB( PRODIGAL.out, vogdb_db )
-      HMMSCAN_VPF( PRODIGAL.out, vpf_db )
+      HMMSCAN_RVDB( proteins, rvdb_db )
+      HMMSCAN_PVOGS( proteins, pvogs_db )
+      HMMSCAN_VOGDB( proteins, vogdb_db )
+      HMMSCAN_VPF( proteins, vpf_db )
     }
 
     if ( params.mashmap ) {
