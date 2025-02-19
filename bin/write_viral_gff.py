@@ -5,6 +5,7 @@ import argparse
 import sys
 import gzip
 import csv
+import re
 
 from parse_viral_pred import Record
 
@@ -50,10 +51,18 @@ def aggregate_annotations(virify_annotation_files, use_proteins=False):
     #   ]
     # }
     cds_annotations = {}
-
+    virify_quality = {}
+    
     for virify_summary in virify_annotation_files:
+        quality = ''
         if 'taxonomy' in virify_summary:
             continue
+        if 'high_confidence_viral' in virify_summary:
+            quality = 'HC'
+        elif 'low_confidence' in virify_summary:
+            quality = 'LC'
+        elif 'prophages' in virify_summary:
+            quality = 'PP'   
         with open(virify_summary, "r") as table_handle:
             csv_reader = csv.DictReader(table_handle, delimiter="\t")
             for row in csv_reader:
@@ -88,7 +97,9 @@ def aggregate_annotations(virify_annotation_files, use_proteins=False):
                         start = start + prophage_start
                         end = end + prophage_start
                     viral_sequence_type = f"prophage-{prophage_start}:{prophage_end}"
-
+                
+                # save HC, LC, PP (removing |prophage from contig name)
+                virify_quality.setdefault(contig.split('|')[0], quality)
                 # We use the contig name without any extra annotations
                 # This also collapses multiples prophages annotations
                 # per contig, if any.
@@ -118,7 +129,7 @@ def aggregate_annotations(virify_annotation_files, use_proteins=False):
                         ]
                     )
 
-    return viral_sequences, cds_annotations
+    return viral_sequences, cds_annotations, virify_quality
 
 
 def open_fasta_file(filename):
@@ -136,6 +147,7 @@ def write_gff(
     assembly_file,
     viral_sequences,
     cds_annotations,
+    virify_quality,
     ena_mapping=None,
 ):
     if ena_mapping:
@@ -156,11 +168,15 @@ def write_gff(
                 checkv_type = row["provirus"]
                 checkv_quality = row["checkv_quality"]
                 miuvig_quality = row["miuvig_quality"]
+                kmer_freq = row["kmer_freq"]
+                viral_genes = row["viral_genes"]
                 checkv_info = ";".join(
                     [
                         f"checkv_provirus={checkv_type}",
                         f"checkv_quality={checkv_quality}",
                         f"miuvig_quality={miuvig_quality}",
+                        f"kmer_freq={kmer_freq}",
+                        f"viral_genes={viral_genes}",
                     ]
                 )
                 checkv_dict[contig_id] = checkv_info
@@ -233,6 +249,7 @@ def write_gff(
         # coordinates and attributes
         for contig_name, viral_sequence_types in viral_sequences.items():
             clean_contig_name = Record.remove_prophage_from_contig(contig_name)
+            quality = virify_quality[clean_contig_name] if clean_contig_name in virify_quality else "unknown"
             for viral_seq_type in viral_sequence_types:
                 element_category = "viral_sequence"
 
@@ -249,13 +266,14 @@ def write_gff(
 
                     if int(start) == 0:
                         start = '1'
-                        id_=id_.replace('prophage-0:','prophage-1:')
+                        id_ = id_.replace('prophage-0:','prophage-1:')
 
                     element_category = "prophage"
                     mobile_element_type = "prophage"
 
                 mobile_element_attributes = [
                     id_,
+                    f"virify_quality={quality}",
                     "gbkey=mobile_element",
                     f"mobile_element_type={mobile_element_type}",
                     checkv_dict[contig_name],
@@ -284,13 +302,15 @@ def write_gff(
             for cds_data in contig_cds:
                 cds_id, start, end, direction, viphog_annotation = cds_data
 
-                cds_id=cds_id.replace('prophage-0:','prophage-1:')
+                cds_id = cds_id.replace('prophage-0:','prophage-1:')
 
                 # TODO: review this rule.
                 if end > contigs_len_dict[contig_name]:
                     end = contigs_len_dict[contig_name]
-
-                cds_attributes = [f"ID={cds_id}", "gbkey=CDS", viphog_annotation]
+                cleaned_name = re.sub(r'_[^_]*$', '', contig_name)
+                
+                quality = virify_quality[cleaned_name] if cleaned_name in virify_quality else "unknown"
+                cds_attributes = [f"ID={cds_id}", f"virify_quality={quality}", "gbkey=CDS", viphog_annotation]
                 cds_line = [
                     contig_name,
                     "Prodigal",
@@ -426,7 +446,7 @@ if __name__ == "__main__":
 
     logging.info("Collecting annotation data")
 
-    viral_sequences, cds_annotations = aggregate_annotations(virify_files, args.use_proteins)
+    viral_sequences, cds_annotations, virify_quality = aggregate_annotations(virify_files, args.use_proteins)
 
     logging.info("Generating the gff output")
     write_gff(
@@ -436,5 +456,6 @@ if __name__ == "__main__":
         args.assembly_file,
         viral_sequences,
         cds_annotations,
+        virify_quality,
         ena_mapping=ena_mapping,
     )
