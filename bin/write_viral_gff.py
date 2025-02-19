@@ -174,9 +174,9 @@ def write_gff(
                     [
                         f"checkv_provirus={checkv_type}",
                         f"checkv_quality={checkv_quality}",
-                        f"miuvig_quality={miuvig_quality}",
-                        f"kmer_freq={kmer_freq}",
-                        f"viral_genes={viral_genes}",
+                        f"checkv_miuvig_quality={miuvig_quality}",
+                        f"checkv_kmer_freq={kmer_freq}",
+                        f"checkv_viral_genes={viral_genes}",
                     ]
                 )
                 checkv_dict[contig_id] = checkv_info
