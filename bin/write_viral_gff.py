@@ -309,7 +309,7 @@ def write_gff(
                     end = contigs_len_dict[contig_name]
                 cleaned_name = re.sub(r'_[^_]*$', '', contig_name)
                 
-                quality = virify_quality[cleaned_name] if cleaned_name in virify_quality else "unknown"
+                quality = virify_quality[contig_name] if contig_name in virify_quality else "unknown"
                 cds_attributes = [f"ID={cds_id}", f"virify_quality={quality}", "gbkey=CDS", viphog_annotation]
                 cds_line = [
                     contig_name,
