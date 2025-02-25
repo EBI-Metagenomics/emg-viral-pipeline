@@ -66,7 +66,7 @@ class TestWriteGFF(unittest.TestCase):
         )
         assembly_file = self._build_path("/write_gff_fixtures") + "/assembly.fasta"
 
-        viral_sequences, cds_annotations = aggregate_annotations(annotation_files)
+        viral_sequences, cds_annotations, virify_quality = aggregate_annotations(annotation_files)
 
         write_gff(
             checkv_files,
@@ -75,6 +75,7 @@ class TestWriteGFF(unittest.TestCase):
             assembly_file,
             viral_sequences,
             cds_annotations,
+            virify_quality,
         )
 
         # The file generated will be called: "pos.phage.0_virify.gff"
