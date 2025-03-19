@@ -13,7 +13,7 @@ process CONCATENATE_VIRSORTER2_FILES {
     """
     export first_file=\$(ls inputs | head -n 1);
     grep 'seqname' inputs/\${first_file} > header.tsv || true
-    cat inputs/* | grep -v 'seqname' > without_header.${output_name}
-    cat header.tsv without_header.${output_name} > ${output_name}
+    cat inputs/* | grep -v 'seqname' > without_header.${output_name} || true
+    cat header.tsv without_header.${output_name} > ${output_name} || true
     """
 }
