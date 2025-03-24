@@ -52,17 +52,17 @@ def aggregate_annotations(virify_annotation_files, use_proteins=False):
     # }
     cds_annotations = {}
     virify_quality = {}
-    
+
     for virify_summary in virify_annotation_files:
-        quality = ''
-        if 'taxonomy' in virify_summary:
+        quality = ""
+        if "taxonomy" in virify_summary:
             continue
-        if 'high_confidence_viral' in virify_summary:
-            quality = 'HC'
-        elif 'low_confidence' in virify_summary:
-            quality = 'LC'
-        elif 'prophages' in virify_summary:
-            quality = 'PP'   
+        if "high_confidence_viral" in virify_summary:
+            quality = "HC"
+        elif "low_confidence" in virify_summary:
+            quality = "LC"
+        elif "prophages" in virify_summary:
+            quality = "PP"
         with open(virify_summary, "r") as table_handle:
             csv_reader = csv.DictReader(table_handle, delimiter="\t")
             for row in csv_reader:
@@ -86,7 +86,7 @@ def aggregate_annotations(virify_annotation_files, use_proteins=False):
                 if prophage_start is not None and prophage_end is not None:
                     if use_proteins:
                         # If pipeline used already predicted proteins as input
-                        # they were predicted on whole contigs 
+                        # they were predicted on whole contigs
                         # that means no need to change coordinates
                         start = start
                         end = end
@@ -97,9 +97,9 @@ def aggregate_annotations(virify_annotation_files, use_proteins=False):
                         start = start + prophage_start
                         end = end + prophage_start
                     viral_sequence_type = f"prophage-{prophage_start}:{prophage_end}"
-                
+
                 # save HC, LC, PP (removing |prophage from contig name)
-                virify_quality.setdefault(contig.split('|')[0], quality)
+                virify_quality.setdefault(contig.split("|")[0], quality)
                 # We use the contig name without any extra annotations
                 # This also collapses multiples prophages annotations
                 # per contig, if any.
@@ -133,7 +133,7 @@ def aggregate_annotations(virify_annotation_files, use_proteins=False):
 
 
 def open_fasta_file(filename):
-    if filename.endswith('.gz'):
+    if filename.endswith(".gz"):
         f = gzip.open(filename, "rt")
     else:
         f = open(filename, "rt")
@@ -220,14 +220,14 @@ def write_gff(
         seq_len = len(str(record.seq))
         contigs_len_dict[contig_id] = seq_len
     handle.close()
-    
+
     with open(output_filename, "w") as gff:
         print("##gff-version 3", file=gff)
         # Constants
         SCORE = "."
 
         # Writing the gff header
-        used_contigs=[]
+        used_contigs = []
         for contig_name in viral_sequences.keys():
             clean_contig_name = Record.remove_prophage_from_contig(contig_name)
             contig_length = contigs_len_dict[clean_contig_name]
@@ -249,7 +249,11 @@ def write_gff(
         # coordinates and attributes
         for contig_name, viral_sequence_types in viral_sequences.items():
             clean_contig_name = Record.remove_prophage_from_contig(contig_name)
-            quality = virify_quality[clean_contig_name] if clean_contig_name in virify_quality else "unknown"
+            quality = (
+                virify_quality[clean_contig_name]
+                if clean_contig_name in virify_quality
+                else "unknown"
+            )
             for viral_seq_type in viral_sequence_types:
                 element_category = "viral_sequence"
 
@@ -265,8 +269,8 @@ def write_gff(
                     start, end = viral_seq_type.split("prophage-")[1].split(":")
 
                     if int(start) == 0:
-                        start = '1'
-                        id_ = id_.replace('prophage-0:','prophage-1:')
+                        start = "1"
+                        id_ = id_.replace("prophage-0:", "prophage-1:")
 
                     element_category = "prophage"
                     mobile_element_type = "prophage"
@@ -302,15 +306,24 @@ def write_gff(
             for cds_data in contig_cds:
                 cds_id, start, end, direction, viphog_annotation = cds_data
 
-                cds_id = cds_id.replace('prophage-0:','prophage-1:')
+                cds_id = cds_id.replace("prophage-0:", "prophage-1:")
 
                 # TODO: review this rule.
                 if end > contigs_len_dict[contig_name]:
                     end = contigs_len_dict[contig_name]
-                cleaned_name = re.sub(r'_[^_]*$', '', contig_name)
-                
-                quality = virify_quality[contig_name] if contig_name in virify_quality else "unknown"
-                cds_attributes = [f"ID={cds_id}", f"virify_quality={quality}", "gbkey=CDS", viphog_annotation]
+                cleaned_name = re.sub(r"_[^_]*$", "", contig_name)
+
+                quality = (
+                    virify_quality[contig_name]
+                    if contig_name in virify_quality
+                    else "unknown"
+                )
+                cds_attributes = [
+                    f"ID={cds_id}",
+                    f"virify_quality={quality}",
+                    "gbkey=CDS",
+                    viphog_annotation,
+                ]
                 cds_line = [
                     contig_name,
                     "Prodigal",
@@ -386,7 +399,7 @@ if __name__ == "__main__":
         "--use-proteins",
         dest="use_proteins",
         help="Add this argument if pipeline used already predicted proteins as input",
-        action='store_true',
+        action="store_true",
     )
 
     args = parser.parse_args()
@@ -446,7 +459,9 @@ if __name__ == "__main__":
 
     logging.info("Collecting annotation data")
 
-    viral_sequences, cds_annotations, virify_quality = aggregate_annotations(virify_files, args.use_proteins)
+    viral_sequences, cds_annotations, virify_quality = aggregate_annotations(
+        virify_files, args.use_proteins
+    )
 
     logging.info("Generating the gff output")
     write_gff(
