@@ -97,13 +97,14 @@ def aggregate_annotations(virify_annotation_files, use_proteins=False):
                         start = start + prophage_start
                         end = end + prophage_start
                     viral_sequence_type = f"prophage-{prophage_start}:{prophage_end}"
-                
+
                 # save HC, LC, PP (removing |prophage from contig name)
                 virify_quality.setdefault(contig.split('|')[0], quality)
                 # We use the contig name without any extra annotations
                 # This also collapses multiples prophages annotations
                 # per contig, if any.
                 viral_sequences.setdefault(contig, set()).add(viral_sequence_type)
+
 
                 best_hit = row["Best_hit"]
                 cds_id = row["CDS_ID"]

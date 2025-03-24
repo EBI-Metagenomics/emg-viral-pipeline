@@ -235,12 +235,15 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
     
     boundary_df = pd.read_csv(final_boundary_file, sep='\t', index_col='seqname', usecols=boundary_columns, 
                               dtype=boundary_dtypes)
+
+
     score_df = pd.read_csv(final_score_file, sep='\t')
     score_df['seqname'] = score_df['seqname'].str.replace(r'\|\|.*', '', regex=True)
     score_df.set_index('seqname', inplace=True)
         
     meta = score_df.merge(boundary_df, left_index=True, right_index=True, how='left', 
                           suffixes=('_score', '_boundary')).dropna(subset=['shape'])
+
 
     for record in SeqIO.parse(final_combined_fa_file, "fasta"):
         clean_name = record.id.split('|')[0]
@@ -250,18 +253,20 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
         if not circular or not max_score:
             continue
         circular = circular.startswith('circular')
-        
+
         if 'partial' in record.id:
             # add the prophage position within the contig
             record.id = clean_name
             prophages.setdefault(clean_name, []).append(
                 Record(record, "prophage", circular, prange)
             )
-        record.id = clean_name
-        if float(max_score) >= float(vs_cutoff):
-            high_confidence[record.id] = Record(record, "high_confidence", circular)
-        else:
-            low_confidence[record.id] = Record(record, "low_confidence", circular)
+
+        if 'full' in record.id:
+            record.id = clean_name
+            if float(max_score) >= float(vs_cutoff):
+                high_confidence[record.id] = Record(record, "high_confidence", circular)
+            else:
+                low_confidence[record.id] = Record(record, "low_confidence", circular)
 
     print(f"Virus Sorter found {len(high_confidence)} high confidence contigs.")
     print(f"Virus Sorter found {len(low_confidence)} low confidence contigs.")
