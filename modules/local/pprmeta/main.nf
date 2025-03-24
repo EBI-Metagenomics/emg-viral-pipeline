@@ -15,7 +15,6 @@ process PPRMETA {
 
     script:
       """
-      export MCR_CACHE_ROOT="${task.workDir}/mcr_cache_root"
       [ -d "pprmeta" ] && cp pprmeta/* .
       ./PPR_Meta ${fasta} ${meta.id}_pprmeta.csv
       """
