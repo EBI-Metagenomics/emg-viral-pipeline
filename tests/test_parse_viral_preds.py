@@ -88,8 +88,8 @@ class ParseViralPredictions(unittest.TestCase):
         path = self._build_path("/base_fixtures/virsorter2/")
         hc, lc, p = parse_virus_sorter2([os.path.join(path, f) for f in os.listdir(path)], VS_CUTOFF)
         self.assertSetEqual(set([r.seq_id for _, r in hc.items()]),
-                            set(["hc_1", "hc_2", "phage_2"]))
-        self.assertSetEqual(set([r.seq_id for _, r in lc.items()]), set(["lc_1", "lc_2", "phage_1"]))
+                            set(["hc_1", "hc_2"]))
+        self.assertSetEqual(set([r.seq_id for _, r in lc.items()]), set(["lc_1", "lc_2"]))
         self.assertSetEqual(set([r[0].seq_id for _, r in p.items()]), set(["phage_1", "phage_2"]))
 
 
