@@ -260,8 +260,7 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
             prophages.setdefault(clean_name, []).append(
                 Record(record, "prophage", circular, prange)
             )
-
-        if 'full' in record.id:
+        else:
             record.id = clean_name
             if float(max_score) >= float(vs_cutoff):
                 high_confidence[record.id] = Record(record, "high_confidence", circular)
