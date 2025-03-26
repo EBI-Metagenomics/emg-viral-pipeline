@@ -57,11 +57,12 @@ if (params.mashmap) {
 if (params.factor) { 
    factor_file = file( params.factor, checkIfExists: true) 
 }
+
 /************************** 
-* SUB WORKFLOWS
+* MODULES
 **************************/
 
-include { MULTIQC             } from '../modules/nf-core/multiqc' 
+include { MULTIQC                       } from '../modules/nf-core/multiqc' 
 
 /************************** 
 * SUB WORKFLOWS

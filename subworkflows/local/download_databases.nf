@@ -19,7 +19,6 @@ include { pvogsGetDB      } from '../../modules/local/get_db/pvogs'
 include { vogdbGetDB      } from '../../modules/local/get_db/vogdb'
 include { vpfGetDB        } from '../../modules/local/get_db/vpf'
 include { imgvrGetDB      } from '../../modules/local/get_db/imgvr'
-include { kaijuGetDB      } from '../../modules/local/get_db/kaiju'
 
 workflow download_pprmeta {
     main:
@@ -197,20 +196,6 @@ workflow download_checkv_db {
   emit: db
 }
 
-/*
-workflow download_kaiju_db {
-    main:
-    // local storage via storeDir
-    if (!params.cloudProcess) { kaijuGetDB(); db = kaijuGetDB.out }
-    // cloud storage via db_preload.exists()
-    if (params.cloudProcess) {
-      db_preload = file("${params.databases}/kaiju/nr_euk")
-      if (db_preload.exists()) { db = db_preload }
-      else  { kaijuGetDB(); db = kaijuGetDB.out } 
-    }
-  emit: db    
-}
-*/
 
 workflow download_virsorter2_db {
     main:
