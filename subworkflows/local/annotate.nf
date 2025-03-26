@@ -65,9 +65,6 @@ workflow ANNOTATE {
       contigs = input_fastas.map{meta, type, pred_contigs, contigs -> tuple(meta, contigs)}
     }
 
-    // Not implemented //
-    //-- phanotate(predicted_contigs) --//
-
     // annotation --> hmmer
     HMMSCAN_VIPHOGS( proteins, viphog_db )
     HMM_POSTPROCESSING( HMMSCAN_VIPHOGS.out )

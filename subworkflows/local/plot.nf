@@ -19,7 +19,6 @@ Plot results. Basically runs krona and sankey. ChromoMap and Balloon are still e
     main:
         // krona
         combined_assigned_lineages_ch = assigned_lineages_ch.groupTuple().map { tuple(it[0], 'all', it[2]) }.concat(assigned_lineages_ch)
-        //combined_assigned_lineages_ch.view()
         KRONA(
           GENERATE_KRONA_TABLE(combined_assigned_lineages_ch)
         )
