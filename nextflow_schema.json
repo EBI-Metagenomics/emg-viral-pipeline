@@ -139,11 +139,11 @@
                     "description": "the tsv dictionary w/ meta information about ViPhOG models"
                 },
                 "hmmextend": {
-                    "type": "string",
+                    "type": "boolean",
                     "description": "Use additional databases for more hmmscan results"
                 },
                 "blastextend": {
-                    "type": "string",
+                    "type": "boolean",
                     "description": "Use additional BLAST database (IMG/VR) for more annotation"
                 }
             }
