@@ -27,7 +27,11 @@ workflow ASSEMBLE_ILLUMINA {
         FASTQC_AFTER(FASTP.out.reads)
  
         // assembly
-        SPADES(FASTP.out.reads)
+        SPADES(
+          FASTP.out.reads.map { meta, reads -> [meta, reads, [], []] }, 
+          [], 
+          []
+        )
 
         ch_multiqc_files = Channel.empty() 
         ch_multiqc_files = ch_multiqc_files.mix( FASTQC_BEFORE.out.zip.collect{it[1]}.ifEmpty([]) )

@@ -139,10 +139,115 @@ tower {
 
 You can also directly enter your access token here instead of generating the above-mentioned environment variable.
 
+## Results
+The outputs generated from viral prediction tools, ViPhOG annotation, taxonomy assign, and CheckV quality are integrated and summarized in a validated gff file.
+By default pipeline produces `08-final` folder with the following structure:
+<details>
+<summary>Structure example per-assembly</summary>
+
+    08-final    
+        ├── annotation
+        │   ├── hmmer 
+        │   │   ├── high_confidence_viral_contigs_prodigal_annotation.tsv
+        │   │   └── low_confidence_viral_contigs_prodigal_annotation.tsv
+        │   └── plot_contig_map
+        │       ├── high_confidence_viral_contigs_mapping_results
+        │       │   ├── high_confidence_viral_contigs_prot_ann_table_filtered.tsv
+        │       │   └── plot_pdfs.tar.gz
+        │       └── low_confidence_viral_contigs_mapping_results
+        │           ├── low_confidence_viral_contigs_prot_ann_table_filtered.tsv
+        │           └── plot_pdfs.tar.gz
+        ├── contigs
+        │   ├── high_confidence_viral_contigs_original.fasta
+        │   └── low_confidence_viral_contigs_original.fasta
+        ├── gff
+        │   └── ACCESSION_virify.gff
+        ├── krona
+        │   ├── ACCESSION.krona.html
+        │   ├── high_confidence_viral_contigs.krona.html
+        │   └── low_confidence_viral_contigs.krona.html
+        └── sankey
+            ├── ACCESSION.sankey.html
+            ├── high_confidence_viral_contigs.sankey.html
+            └── low_confidence_viral_contigs.sankey.html
+</details>
+
+In order to have expanded output with more files use `--publish_all` option in pipeline execution.
+
+<details>
+<summary>Expanded structure example per-assembly</summary>
+
+    ├── 01-predictions
+    │   ├── ACCESSION_virus_predictions.log
+    │   ├── pprmeta
+    │   │   └── ACCESSION_pprmeta.csv
+    │   ├── virfinder
+    │   │   └── ACCESSION.txt
+    │   └── virsorter2
+    │       ├── final-viral-boundary.tsv
+    │       ├── final-viral-combined.fa
+    │       ├── final-viral-score.tsv
+    │       └── virsorter_metadata.tsv
+    ├── 02-prodigal
+    │   ├── high_confidence_viral_contigs_prodigal.faa
+    │   └── low_confidence_viral_contigs_prodigal.faa
+    ├── 03-hmmer
+    │   ├── high_confidence_viral_contigs_modified.tsv
+    │   ├── low_confidence_viral_contigs_modified.tsv
+    │   └── ratio_evalue_tables
+    │       ├── high_confidence_viral_contigs_modified_informative.tsv
+    │       └── low_confidence_viral_contigs_modified_informative.tsv
+    ├── 04-blast [optional step]
+    ├── 05-plots
+    │   ├── krona
+    │   │   ├── ACCESSION.krona.tsv
+    │   │   ├── high_confidence_viral_contigs.krona.tsv
+    │   │   └── low_confidence_viral_contigs.krona.tsv
+    │   └── sankey
+    │       ├── all.sankey.filtered-25.json
+    │       ├── all.sankey.tsv
+    │       ├── high_confidence_viral_contigs.sankey.filtered-25.json
+    │       ├── high_confidence_viral_contigs.sankey.tsv
+    │       ├── low_confidence_viral_contigs.sankey.filtered-25.json
+    │       └── low_confidence_viral_contigs.sankey.tsv
+    ├── 06-taxonomy
+    │   ├── high_confidence_viral_contigs_prodigal_annotation_taxonomy.tsv
+    │   └── low_confidence_viral_contigs_prodigal_annotation_taxonomy.tsv
+    ├── 07-checkv
+    │   ├── high_confidence_viral_contigs_quality_summary.tsv
+    │   └── low_confidence_viral_contigs_quality_summary.tsv
+    └── 08-final
+        ├── annotation
+        │   ├── hmmer
+        │   │   ├── high_confidence_viral_contigs_prodigal_annotation.tsv
+        │   │   └── low_confidence_viral_contigs_prodigal_annotation.tsv
+        │   └── plot_contig_map
+        │       ├── high_confidence_viral_contigs_mapping_results
+        │       │   ├── high_confidence_viral_contigs_prot_ann_table_filtered.tsv
+        │       │   └── plot_pdfs.tar.gz
+        │       └── low_confidence_viral_contigs_mapping_results
+        │           ├── low_confidence_viral_contigs_prot_ann_table_filtered.tsv
+        │           └── plot_pdfs.tar.gz
+        ├── contigs
+        │   ├── high_confidence_viral_contigs_original.fasta
+        │   └── low_confidence_viral_contigs_original.fasta
+        ├── chromomap [optional step]
+        ├── gff
+        │   └── ACCESSION_virify.gff
+        ├── krona
+        │   ├── ACCESSION.krona.html
+        │   ├── high_confidence_viral_contigs.krona.html
+        │   └── low_confidence_viral_contigs.krona.html
+        └── sankey
+            ├── ACCESSION.sankey.html
+            ├── high_confidence_viral_contigs.sankey.html
+            └── low_confidence_viral_contigs.sankey.html
+</details>
+
 
 ### GFF output files
 
-The outputs generated from viral prediction tools, ViPhOG annotation, taxonomy assign, and CheckV quality are integrated and summarized in a validated gff file. You can find such output in the `08-final/gff/` folder.
+You can find such output in the `08-final/gff/` folder.
 
 The labels used in the Type column of the gff file correspond to the following nomenclature according to the [Sequence Ontology resource](http://www.sequenceontology.org/browser/current_svn/term/SO:0000001):
 
@@ -157,7 +262,7 @@ Note that CDS are reported only when a ViPhOG match has been found.
 <a name="overview"></a>
 
 # Pipeline overview
-![VIRify Overview](nextflow/figures/virify_fig1_workflow.png)
+![VIRify Overview](figures/virify_fig1_workflow.png)
 For further details please check: [doi.org/10.1101/2022.08.22.504484](https://doi.org/10.1101/2022.08.22.504484)
 
 

@@ -66,8 +66,7 @@ workflow DETECT {
       collected_fa = CONCATENATE_FILES_FA.out.concatenated_result
       
       virsorter_output = collected_score.join(collected_boundary).join(collected_fa).map{meta, score, boundary, fa -> 
-          return tuple(meta, [score, boundary, fa])}
-      virsorter_output.view()    
+          return tuple(meta, [score, boundary, fa])} 
     }
     
     VIRFINDER( length_filtered_ch, virfinder_db)

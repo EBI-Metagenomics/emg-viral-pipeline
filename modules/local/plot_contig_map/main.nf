@@ -23,6 +23,12 @@ process PLOT_CONTIG_MAP {
     mkdir -p ${set_name}_mapping_results
     cp ${set_name}_prot_ann_table_filtered.tsv ${set_name}_mapping_results/
     make_viral_contig_map.R -o ${set_name}_mapping_results -t ${set_name}_prot_ann_table_filtered.tsv
+    
+    # add pdfs into one folder and compress it
+    mkdir -p ${set_name}_mapping_results/plot_pdfs
+    mv ${set_name}_mapping_results/*.pdf ${set_name}_mapping_results/plot_pdfs/
+    tar czf ${set_name}_mapping_results/plot_pdfs.tar.gz ${set_name}_mapping_results/plot_pdfs
+    rm -rf ${set_name}_mapping_results/plot_pdfs
     """
 }
 

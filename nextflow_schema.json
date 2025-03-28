@@ -66,8 +66,8 @@
                     "description": "max cores per process for local use"
                 },
                 "memory": {
-                    "type": "integer",
-                    "default": 12,
+                    "type": "string",
+                    "default": "12.GB",
                     "description": "max memory for local use"
                 },
                 "output": {
@@ -139,11 +139,11 @@
                     "description": "the tsv dictionary w/ meta information about ViPhOG models"
                 },
                 "hmmextend": {
-                    "type": "string",
+                    "type": "boolean",
                     "description": "Use additional databases for more hmmscan results"
                 },
                 "blastextend": {
-                    "type": "string",
+                    "type": "boolean",
                     "description": "Use additional BLAST database (IMG/VR) for more annotation"
                 }
             }
@@ -173,6 +173,16 @@
                 "use_virsorter_v1": {
                     "type": "boolean",
                     "description": "Use VirSorter instead of VirSorter2"
+                },
+                "use_proteins": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Use already predicted proteins instead of running Prodigal"
+                },
+                "publish_all": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Publish outputs for all steps"
                 },
                 "mashmap_len": {
                     "type": "integer",
@@ -254,7 +264,7 @@
                 "virusdir": {
                     "type": "string",
                     "format": "directory-path",
-                    "default": "01-viruses",
+                    "default": "01-predictions",
                     "description": "output directory for detected viruses step"
                 },
                 "prodigaldir": {
@@ -262,12 +272,6 @@
                     "format": "directory-path",
                     "default": "02-prodigal",
                     "description": "output directory for prodigal step"
-                },
-                "phanotatedir": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "default": "02-phanotate",
-                    "description": "output directory for phanotate step"
                 },
                 "hmmerdir": {
                     "type": "string",

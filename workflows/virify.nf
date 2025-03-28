@@ -57,11 +57,12 @@ if (params.mashmap) {
 if (params.factor) { 
    factor_file = file( params.factor, checkIfExists: true) 
 }
+
 /************************** 
-* SUB WORKFLOWS
+* MODULES
 **************************/
 
-include { MULTIQC             } from '../modules/nf-core/multiqc' 
+include { MULTIQC                       } from '../modules/nf-core/multiqc' 
 
 /************************** 
 * SUB WORKFLOWS
@@ -185,7 +186,9 @@ workflow VIRIFY {
            ch_multiqc_files.collect(),
            ch_multiqc_config.toList(),
            ch_multiqc_custom_config.toList(),
-           ch_multiqc_logo.toList()
+           ch_multiqc_logo.toList(),
+           false,
+           false
       )
     }
 }
