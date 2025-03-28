@@ -264,7 +264,7 @@
                 "virusdir": {
                     "type": "string",
                     "format": "directory-path",
-                    "default": "01-viruses",
+                    "default": "01-predictions",
                     "description": "output directory for detected viruses step"
                 },
                 "prodigaldir": {
