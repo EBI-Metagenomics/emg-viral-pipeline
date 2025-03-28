@@ -145,31 +145,39 @@ By default pipeline produces `08-final` folder with the following structure:
 <details>
 <summary>Structure example per-assembly</summary>
 
-    08-final    
+    08-final
         ├── annotation
-        │   ├── hmmer 
+        │   ├── hmmer
         │   │   ├── high_confidence_viral_contigs_prodigal_annotation.tsv
-        │   │   └── low_confidence_viral_contigs_prodigal_annotation.tsv
+        │   │   ├── low_confidence_viral_contigs_prodigal_annotation.tsv
+        │   │   └── prophages_prodigal_annotation.tsv
         │   └── plot_contig_map
         │       ├── high_confidence_viral_contigs_mapping_results
         │       │   ├── high_confidence_viral_contigs_prot_ann_table_filtered.tsv
         │       │   └── plot_pdfs.tar.gz
-        │       └── low_confidence_viral_contigs_mapping_results
-        │           ├── low_confidence_viral_contigs_prot_ann_table_filtered.tsv
-        │           └── plot_pdfs.tar.gz
+        │       ├── low_confidence_viral_contigs_mapping_results
+        │       │   ├── low_confidence_viral_contigs_prot_ann_table_filtered.tsv
+        │       │   └── plot_pdfs.tar.gz
+        │       └── prophages_mapping_results
+        │           ├── plot_pdfs.tar.gz
+        │           └── prophages_prot_ann_table_filtered.tsv
         ├── contigs
         │   ├── high_confidence_viral_contigs_original.fasta
-        │   └── low_confidence_viral_contigs_original.fasta
+        │   ├── low_confidence_viral_contigs_original.fasta
+        │   └── prophages_original.fasta
+        ├── chromomap [optional step]
         ├── gff
         │   └── ACCESSION_virify.gff
         ├── krona
         │   ├── ACCESSION.krona.html
         │   ├── high_confidence_viral_contigs.krona.html
-        │   └── low_confidence_viral_contigs.krona.html
+        │   ├── low_confidence_viral_contigs.krona.html
+        │   └── prophages.krona.html
         └── sankey
             ├── ACCESSION.sankey.html
             ├── high_confidence_viral_contigs.sankey.html
-            └── low_confidence_viral_contigs.sankey.html
+            ├── low_confidence_viral_contigs.sankey.html
+            └── prophages.sankey.html
 </details>
 
 In order to have expanded output with more files use `--publish_all` option in pipeline execution.
@@ -191,57 +199,72 @@ In order to have expanded output with more files use `--publish_all` option in p
     ├── 02-prodigal
     │   ├── high_confidence_viral_contigs_prodigal.faa
     │   └── low_confidence_viral_contigs_prodigal.faa
+    │   └── prophages_prodigal.faa  
     ├── 03-hmmer
     │   ├── high_confidence_viral_contigs_modified.tsv
     │   ├── low_confidence_viral_contigs_modified.tsv
+    │   ├── prophages_modified.tsv 
     │   └── ratio_evalue_tables
     │       ├── high_confidence_viral_contigs_modified_informative.tsv
     │       └── low_confidence_viral_contigs_modified_informative.tsv
+    │       └── prophages_modified_informative.tsv
     ├── 04-blast [optional step]
     ├── 05-plots
     │   ├── krona
     │   │   ├── ACCESSION.krona.tsv
     │   │   ├── high_confidence_viral_contigs.krona.tsv
-    │   │   └── low_confidence_viral_contigs.krona.tsv
+    │   │   ├── low_confidence_viral_contigs.krona.tsv
+    │   │   └── prophages.krona.tsv
     │   └── sankey
     │       ├── all.sankey.filtered-25.json
     │       ├── all.sankey.tsv
     │       ├── high_confidence_viral_contigs.sankey.filtered-25.json
     │       ├── high_confidence_viral_contigs.sankey.tsv
     │       ├── low_confidence_viral_contigs.sankey.filtered-25.json
-    │       └── low_confidence_viral_contigs.sankey.tsv
+    │       ├── low_confidence_viral_contigs.sankey.tsv
+    │       ├── prophages.sankey.filtered-25.json
+    │       └── prophages.sankey.tsv
     ├── 06-taxonomy
     │   ├── high_confidence_viral_contigs_prodigal_annotation_taxonomy.tsv
-    │   └── low_confidence_viral_contigs_prodigal_annotation_taxonomy.tsv
+    │   ├── low_confidence_viral_contigs_prodigal_annotation_taxonomy.tsv
+    │   └── prophages_prodigal_annotation_taxonomy.tsv
     ├── 07-checkv
     │   ├── high_confidence_viral_contigs_quality_summary.tsv
-    │   └── low_confidence_viral_contigs_quality_summary.tsv
+    │   ├── low_confidence_viral_contigs_quality_summary.tsv
+    │   └── prophages_quality_summary.tsv
     └── 08-final
         ├── annotation
         │   ├── hmmer
         │   │   ├── high_confidence_viral_contigs_prodigal_annotation.tsv
-        │   │   └── low_confidence_viral_contigs_prodigal_annotation.tsv
+        │   │   ├── low_confidence_viral_contigs_prodigal_annotation.tsv
+        │   │   └── prophages_prodigal_annotation.tsv
         │   └── plot_contig_map
         │       ├── high_confidence_viral_contigs_mapping_results
         │       │   ├── high_confidence_viral_contigs_prot_ann_table_filtered.tsv
         │       │   └── plot_pdfs.tar.gz
-        │       └── low_confidence_viral_contigs_mapping_results
-        │           ├── low_confidence_viral_contigs_prot_ann_table_filtered.tsv
-        │           └── plot_pdfs.tar.gz
+        │       ├── low_confidence_viral_contigs_mapping_results
+        │       │   ├── low_confidence_viral_contigs_prot_ann_table_filtered.tsv
+        │       │   └── plot_pdfs.tar.gz
+        │       └── prophages_mapping_results
+        │           ├── plot_pdfs.tar.gz
+        │           └── prophages_prot_ann_table_filtered.tsv
         ├── contigs
         │   ├── high_confidence_viral_contigs_original.fasta
-        │   └── low_confidence_viral_contigs_original.fasta
+        │   ├── low_confidence_viral_contigs_original.fasta
+        │   └── prophages_original.fasta
         ├── chromomap [optional step]
         ├── gff
         │   └── ACCESSION_virify.gff
         ├── krona
         │   ├── ACCESSION.krona.html
         │   ├── high_confidence_viral_contigs.krona.html
-        │   └── low_confidence_viral_contigs.krona.html
+        │   ├── low_confidence_viral_contigs.krona.html
+        │   └── prophages.krona.html
         └── sankey
             ├── ACCESSION.sankey.html
             ├── high_confidence_viral_contigs.sankey.html
-            └── low_confidence_viral_contigs.sankey.html
+            ├── low_confidence_viral_contigs.sankey.html
+            └── prophages.sankey.html
 </details>
 
 
