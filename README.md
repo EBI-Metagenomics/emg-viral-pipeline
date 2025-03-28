@@ -197,6 +197,7 @@ In order to have expanded output with more files use `--publish_all` option in p
     │   └── ratio_evalue_tables
     │       ├── high_confidence_viral_contigs_modified_informative.tsv
     │       └── low_confidence_viral_contigs_modified_informative.tsv
+    ├── 04-blast [optional step]
     ├── 05-plots
     │   ├── krona
     │   │   ├── ACCESSION.krona.tsv
@@ -230,6 +231,7 @@ In order to have expanded output with more files use `--publish_all` option in p
         ├── contigs
         │   ├── high_confidence_viral_contigs_original.fasta
         │   └── low_confidence_viral_contigs_original.fasta
+        ├── chromomap [optional step]
         ├── gff
         │   └── ACCESSION_virify.gff
         ├── krona
@@ -260,7 +262,7 @@ Note that CDS are reported only when a ViPhOG match has been found.
 <a name="overview"></a>
 
 # Pipeline overview
-![VIRify Overview](nextflow/figures/virify_fig1_workflow.png)
+![VIRify Overview](figures/virify_fig1_workflow.png)
 For further details please check: [doi.org/10.1101/2022.08.22.504484](https://doi.org/10.1101/2022.08.22.504484)
 
 
