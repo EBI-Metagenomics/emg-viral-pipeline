@@ -13,13 +13,6 @@ include { VIRSORTER                   } from '../../modules/local/virsorter'
 include { VIRFINDER                   } from '../../modules/local/virfinder' 
 include { PPRMETA                     } from '../../modules/local/pprmeta'
 include { LENGTH_FILTERING            } from '../../modules/local/length_filtering'  
-include { PRODIGAL                    } from '../../modules/local/prodigal'
-include { HMMSEARCH as HMMER_VIPHOGS  } from '../../modules/local/hmmsearch' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.viphog_version)
-include { HMMSEARCH as HMMER_RVDB     } from '../../modules/local/hmmsearch' params(output: params.output, hmmerdir: params.hmmerdir, db: 'rvdb', version: params.viphog_version)
-include { HMMSEARCH as HMMER_PVOGS    } from '../../modules/local/hmmsearch' params(output: params.output, hmmerdir: params.hmmerdir, db: 'pvogs', version: params.viphog_version)
-include { HMMSEARCH as HMMER_VOGDB    } from '../../modules/local/hmmsearch' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vogdb', version: params.viphog_version)
-include { HMMSEARCH as HMMER_VPF      } from '../../modules/local/hmmsearch' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vpf', version: params.viphog_version)
-include { HMM_POSTPROCESSING          } from '../../modules/local/hmm_postprocessing'
 include { RATIO_EVALUE                } from '../../modules/local/ratio_evalue' 
 include { ANNOTATION                  } from '../../modules/local/annotation' 
 include { ASSIGN                      } from '../../modules/local/assign' 
@@ -29,6 +22,9 @@ include { MASHMAP                     } from '../../modules/local/mashmap'
 include { CHECKV                      } from '../../modules/local/checkv'
 include { WRITE_GFF                   } from '../../modules/local/write_gff'
 include { PLOT_CONTIG_MAP             } from '../../modules/local/plot_contig_map'
+
+include { HMMER_PREDICTION            } from './hmmer_processing'
+include { PREDICT_PROTEINS            } from './protein_prediction'
 
 
 workflow ANNOTATE {
@@ -51,29 +47,20 @@ workflow ANNOTATE {
 
     main:
     
-    proteins = Channel.empty()
-    if (params.use_proteins) {
-      // skip prodigal step and use existing faa-s
-      proteins = input_fastas.map{meta, type, pred_contigs, faa, contigs -> tuple(meta, type, faa)}
-      contigs = input_fastas.map{meta, type, pred_contigs, faa, contigs -> tuple(meta, contigs)}
-      predicted_contigs = input_fastas.map{meta, type, pred_contigs, faa, contigs -> tuple(meta, type, pred_contigs)}
-    } else {
-      // ORF detection --> prodigal
-      predicted_contigs = input_fastas.map{meta, type, pred_contigs, contigs -> tuple(meta, type, pred_contigs)}
-      PRODIGAL( predicted_contigs )
-      proteins = PRODIGAL.out
-      contigs = input_fastas.map{meta, type, pred_contigs, contigs -> tuple(meta, contigs)}
-    }
-
-    // annotation --> hmmer
-    HMMER_VIPHOGS( proteins, viphog_db )
-    HMM_POSTPROCESSING( HMMER_VIPHOGS.out )
-
+    // prodigal
+    PREDICT_PROTEINS( input_fastas )
+    contigs = PREDICT_PROTEINS.out.contigs
+    proteins = PREDICT_PROTEINS.out.proteins
+    predicted_contigs = PREDICT_PROTEINS.out.predicted_contigs
+    
+    // annotation --> hmmer with chunking 
+    HMMER_PREDICTION(proteins, viphog_db, rvdb_db, pvogs_db, vogdb_db, vpf_db) // out: [meta, type, hmm_modified.tsv]
+    
     // calculate hit qual per protein
-    RATIO_EVALUE( HMM_POSTPROCESSING.out, additional_model_data )
+    RATIO_EVALUE( HMMER_PREDICTION.out.hmm_result, additional_model_data )
 
     // annotate contigs based on ViPhOGs
-    ANNOTATION( RATIO_EVALUE.out )
+    ANNOTATION( RATIO_EVALUE.out.join(proteins, by:[0,1]) )
 
     // plot visuals --> PDFs
     PLOT_CONTIG_MAP( ANNOTATION.out.annotations )
@@ -85,14 +72,6 @@ workflow ANNOTATE {
     if (params.blastextend) {
       BLAST( predicted_contigs, imgvr_db )
       BLAST_FILTER( BLAST.out, imgvr_db )
-    }
-
-    // hmmer additional databases
-    if ( params.hmmextend ) {
-      HMMER_RVDB( proteins, rvdb_db )
-      HMMER_PVOGS( proteins, pvogs_db )
-      HMMER_VOGDB( proteins, vogdb_db )
-      HMMER_VPF( proteins, vpf_db )
     }
 
     if ( params.mashmap ) {

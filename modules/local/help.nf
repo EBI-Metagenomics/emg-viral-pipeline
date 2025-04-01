@@ -55,7 +55,7 @@ def helpMSG() {
     --prop              Minimum proportion of proteins with ViPhOG annotations to provide a taxonomic assignment [default: $params.prop]
     --taxthres          Minimum proportion of annotated genes required for taxonomic assignment [default: $params.taxthres]
     --virome            VirSorter parameter, set when running a data set mostly composed of viruses [default: $params.virome]
-    --hmmextend         Use additional databases for more hmmscan results [default: $params.hmmextend]
+    --hmmextend         Use additional databases for more hmmer results [default: $params.hmmextend]
     --blastextend       Use additional BLAST database (IMG/VR) for more annotation [default: $params.blastextend]
     --chromomap         WIP feature to activate chromomap plot [default: $params.chromomap]
     --balloon           WIP feature to activate balloon plot [default: $params.balloon]
