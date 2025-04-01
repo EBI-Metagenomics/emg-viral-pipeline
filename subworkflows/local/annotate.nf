@@ -14,11 +14,11 @@ include { VIRFINDER                   } from '../../modules/local/virfinder'
 include { PPRMETA                     } from '../../modules/local/pprmeta'
 include { LENGTH_FILTERING            } from '../../modules/local/length_filtering'  
 include { PRODIGAL                    } from '../../modules/local/prodigal'
-include { HMMSCAN as HMMSCAN_VIPHOGS  } from '../../modules/local/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.viphog_version)
-include { HMMSCAN as HMMSCAN_RVDB     } from '../../modules/local/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'rvdb', version: params.viphog_version)
-include { HMMSCAN as HMMSCAN_PVOGS    } from '../../modules/local/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'pvogs', version: params.viphog_version)
-include { HMMSCAN as HMMSCAN_VOGDB    } from '../../modules/local/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vogdb', version: params.viphog_version)
-include { HMMSCAN as HMMSCAN_VPF      } from '../../modules/local/hmmscan' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vpf', version: params.viphog_version)
+include { HMMSEARCH as HMMER_VIPHOGS  } from '../../modules/local/hmmsearch' params(output: params.output, hmmerdir: params.hmmerdir, db: 'viphogs', version: params.viphog_version)
+include { HMMSEARCH as HMMER_RVDB     } from '../../modules/local/hmmsearch' params(output: params.output, hmmerdir: params.hmmerdir, db: 'rvdb', version: params.viphog_version)
+include { HMMSEARCH as HMMER_PVOGS    } from '../../modules/local/hmmsearch' params(output: params.output, hmmerdir: params.hmmerdir, db: 'pvogs', version: params.viphog_version)
+include { HMMSEARCH as HMMER_VOGDB    } from '../../modules/local/hmmsearch' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vogdb', version: params.viphog_version)
+include { HMMSEARCH as HMMER_VPF      } from '../../modules/local/hmmsearch' params(output: params.output, hmmerdir: params.hmmerdir, db: 'vpf', version: params.viphog_version)
 include { HMM_POSTPROCESSING          } from '../../modules/local/hmm_postprocessing'
 include { RATIO_EVALUE                } from '../../modules/local/ratio_evalue' 
 include { ANNOTATION                  } from '../../modules/local/annotation' 
@@ -66,8 +66,8 @@ workflow ANNOTATE {
     }
 
     // annotation --> hmmer
-    HMMSCAN_VIPHOGS( proteins, viphog_db )
-    HMM_POSTPROCESSING( HMMSCAN_VIPHOGS.out )
+    HMMER_VIPHOGS( proteins, viphog_db )
+    HMM_POSTPROCESSING( HMMER_VIPHOGS.out )
 
     // calculate hit qual per protein
     RATIO_EVALUE( HMM_POSTPROCESSING.out, additional_model_data )
@@ -89,10 +89,10 @@ workflow ANNOTATE {
 
     // hmmer additional databases
     if ( params.hmmextend ) {
-      HMMSCAN_RVDB( proteins, rvdb_db )
-      HMMSCAN_PVOGS( proteins, pvogs_db )
-      HMMSCAN_VOGDB( proteins, vogdb_db )
-      HMMSCAN_VPF( proteins, vpf_db )
+      HMMER_RVDB( proteins, rvdb_db )
+      HMMER_PVOGS( proteins, pvogs_db )
+      HMMER_VOGDB( proteins, vogdb_db )
+      HMMER_VPF( proteins, vpf_db )
     }
 
     if ( params.mashmap ) {

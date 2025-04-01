@@ -16,7 +16,7 @@ process HMM_POSTPROCESSING {
     
     script:
     """
-    hmmscan_format_table.py -t ${hmmer_tbl} -o ${set_name}_modified
+    hmmer_format_table.py -i ${hmmer_tbl} -o ${set_name}_modified -t hmmsearch
     """
 }
 

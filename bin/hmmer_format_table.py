@@ -32,11 +32,13 @@ _table_headers = [
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Format hmmscan domain hits table.")
-    parser.add_argument("-t", dest="input_table",
-                        help="hmmscan domain hits table")
+        description="Format hmmer domain hits table.")
+    parser.add_argument("-i", dest="input_table",
+                        help="hmmer domain hits table")
     parser.add_argument("-o", "--outname",
                         dest="outfile_name", help="Output table name")
+    parser.add_argument("-t", "--hmmer-tool",
+                        dest="hmmer_tool", help="what hmm tool was used to generate input table", choices=['hmmsearch', 'hmmscan'])
     args = parser.parse_args()
 
     # hmmscan table format specified in http://eddylab.org/software/hmmer/Userguide.pdf
@@ -60,5 +62,7 @@ if __name__ == "__main__":
                 # properly espace it
                 cols = line.split()
                 data = cols[:22]
+                if args.hmmer_tool == 'hmmsearch':
+                    data[0:3], data[3:6] = data[3:6], data[0:3]
                 description = " ".join(cols[22:])
                 tsv_writer.writerow(data + [description])
