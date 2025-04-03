@@ -36,7 +36,9 @@ def main(args):
     print(args.input_file)
 
     out_file = re.split(r"\.[a-z]+$", os.path.basename(args.input_file))[0]
-
+    
+    if not os.path.exists(args.outdir):
+        os.mkdir(args.outdir)
     with open(
         os.path.join(args.outdir, out_file + "_taxonomy.tsv"), "w", newline=""
     ) as output_file:
@@ -63,17 +65,25 @@ def contig_tax(annot_df, ncbi_db, tax_thres, taxon_factor_dict, output_taxa_orde
             contig_lineage.extend([""] * len(output_taxa_order[1:]))
         else:
             contig_hits = contig_df[pd.notnull(contig_df["Label"])]["Label"].values
-            taxid_list = [
-                ncbi.get_name_translator([item])[item][0] for item in contig_hits
-            ]
-            hit_lineages = [
-                {
-                    y: ncbi.get_taxid_translator([x])[x]
-                    for x, y in ncbi.get_rank(ncbi.get_lineage(item)).items()
-                    if y in viphog_rank
-                }
-                for item in taxid_list
-            ]
+            taxid_list = []
+            for item in contig_hits:
+                if len(ncbi.get_name_translator([item])):
+                    taxid_list.append(ncbi.get_name_translator([item])[item][0])
+                else:
+                    print(f'No {item} found in NCBI db')
+                    
+            hit_lineages = []
+            for item in taxid_list:
+                lineage_dict = {}
+                try:
+                    for x, y in ncbi.get_rank(ncbi.get_lineage(item)).items():
+                        if y in viphog_rank:
+                            lineage_dict[y] = ncbi.get_taxid_translator([x])[x]
+                    hit_lineages.append(lineage_dict)
+                except ValueError:
+                    print(f'Can not return lineage for {item}')
+                    pass  
+
             for rank in output_taxa_order[::-1][:-1]:
                 taxon_list = [item.get(rank) for item in hit_lineages]
                 total_hits = sum(pd.notnull(taxon_list))
