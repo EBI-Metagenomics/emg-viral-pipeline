@@ -186,7 +186,7 @@ In order to have expanded output with more files use `--publish_all` option in p
 <summary>Expanded structure example per-assembly</summary>
 
     ├── 01-predictions
-    │   ├── ACCESSION_virus_predictions.log
+    │   ├── ACCESSION_virus_predictions.stats
     │   ├── pprmeta
     │   │   └── ACCESSION_pprmeta.csv
     │   ├── virfinder
