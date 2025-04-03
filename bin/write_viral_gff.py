@@ -198,10 +198,16 @@ def write_gff(
             for row in csv_reader:
                 contig = row["contig_ID"]
                 lineage = [
-                    empty_if_number(row.get("genus", "")),
-                    empty_if_number(row.get("subfamily", "")),
-                    empty_if_number(row.get("family", "")),
+                    empty_if_number(row.get("superkingdom", "")),
+                    empty_if_number(row.get("kingdom", "")),
+                    empty_if_number(row.get("phylum", "")),
+                    empty_if_number(row.get("subphylum", "")),
+                    empty_if_number(row.get("class", "")),
                     empty_if_number(row.get("order", "")),
+                    empty_if_number(row.get("suborder", "")),
+                    empty_if_number(row.get("family", "")),
+                    empty_if_number(row.get("subfamily", "")),
+                    empty_if_number(row.get("genus", "")),
                 ]
                 if all(level == "" for level in lineage):
                     taxonomy_string = "unclassified"
