@@ -140,7 +140,7 @@
                 },
                 "hmmextend": {
                     "type": "boolean",
-                    "description": "Use additional databases for more hmmscan results"
+                    "description": "Use additional databases for more hmmer results"
                 },
                 "blastextend": {
                     "type": "boolean",
@@ -227,6 +227,16 @@
                     "type": "number",
                     "default": 1.5,
                     "description": "Initial length filter in kb"
+                },
+                "proteins_chunksize": {
+                    "type": "number",
+                    "default": 10000000,
+                    "description": "Chunk size for protein fasta"
+                },
+                "hmmer_tool": {
+                    "type": "string",
+                    "default": "hmmsearch",
+                    "description": "Use hmmscan or hmmsearch method for HMMER"
                 }
             }
         },

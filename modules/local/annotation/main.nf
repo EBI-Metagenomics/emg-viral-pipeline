@@ -1,7 +1,7 @@
 process ANNOTATION {
 /*
 	'''This function takes a fasta file containing the proteins predicted in a set of putative viral contigs and a dataframe that collates the
-	   results obtained with hmmscan against the ViPhOG database for the same proteins'''
+	   results obtained with hmmer against the ViPhOG database for the same proteins'''
 
       input_fasta: prodigal/output_fasta
       input_table: ratio_evalue/informative_table

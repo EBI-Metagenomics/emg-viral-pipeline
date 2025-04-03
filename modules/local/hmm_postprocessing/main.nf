@@ -9,14 +9,14 @@ process HMM_POSTPROCESSING {
     container 'quay.io/microbiome-informatics/virify-python3:1.2'
 
     input:
-      tuple val(meta), val(set_name), path(hmmer_tbl), path(faa) 
+      tuple val(meta), val(set_name), path(hmmer_tbl)
     
     output:
-      tuple val(meta), val(set_name), path("${set_name}_modified.tsv"), path(faa)
+      tuple val(meta), val(set_name), path("${set_name}_modified.tsv")
     
     script:
     """
-    hmmscan_format_table.py -t ${hmmer_tbl} -o ${set_name}_modified
+    hmmer_format_table.py -i ${hmmer_tbl} -o ${set_name}_modified -t ${params.hmmer_tool}
     """
 }
 

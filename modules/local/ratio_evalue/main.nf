@@ -13,11 +13,11 @@ process RATIO_EVALUE {
     container 'quay.io/microbiome-informatics/virify-python3:1.1'
     
     input:
-      tuple val(meta), val(set_name), path(modified_table), path(faa)
+      tuple val(meta), val(set_name), path(modified_table)
       path(model_metadata)
     
     output:
-      tuple val(meta), val(set_name), path("${set_name}_modified_informative.tsv"), path(faa), optional: true
+      tuple val(meta), val(set_name), path("${set_name}_modified_informative.tsv"), optional: true
     
     script:
     """

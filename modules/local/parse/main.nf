@@ -10,18 +10,18 @@ process PARSE {
       contig_number.toInteger() > 0 
 
     output:
-      tuple val(meta), path("*.fna"), path('virsorter_metadata.tsv'), path("${meta.id}_virus_predictions.log"), optional: true
+      tuple val(meta), path("*.fna"), path('virsorter_metadata.tsv'), path("${meta.id}_virus_predictions.stats"), optional: true
     
     script:
     if (!params.use_virsorter_v1)
     """
     touch virsorter_metadata.tsv
-    parse_viral_pred.py -a ${fasta} -f ${virfinder} -p ${pprmeta} -z ${virsorter} &> ${meta.id}_virus_predictions.log
+    parse_viral_pred.py -a ${fasta} -f ${virfinder} -p ${pprmeta} -z ${virsorter} &> ${meta.id}_virus_predictions.stats
     """
     else
     """
     touch virsorter_metadata.tsv
-    parse_viral_pred.py -a ${fasta} -f ${virfinder} -p ${pprmeta} -s ${virsorter}/Predicted_viral_sequences/*.fasta &> ${meta.id}_virus_predictions.log
+    parse_viral_pred.py -a ${fasta} -f ${virfinder} -p ${pprmeta} -s ${virsorter}/Predicted_viral_sequences/*.fasta &> ${meta.id}_virus_predictions.stats
     """
 }
 

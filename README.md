@@ -186,7 +186,7 @@ In order to have expanded output with more files use `--publish_all` option in p
 <summary>Expanded structure example per-assembly</summary>
 
     ├── 01-predictions
-    │   ├── ACCESSION_virus_predictions.log
+    │   ├── ACCESSION_virus_predictions.stats
     │   ├── pprmeta
     │   │   └── ACCESSION_pprmeta.csv
     │   ├── virfinder
@@ -204,10 +204,15 @@ In order to have expanded output with more files use `--publish_all` option in p
     │   ├── high_confidence_viral_contigs_modified.tsv
     │   ├── low_confidence_viral_contigs_modified.tsv
     │   ├── prophages_modified.tsv 
-    │   └── ratio_evalue_tables
-    │       ├── high_confidence_viral_contigs_modified_informative.tsv
-    │       └── low_confidence_viral_contigs_modified_informative.tsv
-    │       └── prophages_modified_informative.tsv
+    │   ├── ratio_evalue_tables
+    │   │   ├── high_confidence_viral_contigs_modified_informative.tsv
+    │   │   ├── low_confidence_viral_contigs_modified_informative.tsv
+    │   │   └── prophages_modified_informative.tsv
+    │   └── vpHMM_database_v3
+    │       ├── high_confidence_viral_contigs_vpHMM_database_v3_hmmsearch.tbl
+    │       ├── low_confidence_viral_contigs_vpHMM_database_v3_hmmsearch.tbl
+    │       └── prophages_vpHMM_database_v3_hmmsearch.tbl
+    │   └── [other chosen optional HMM DBs]
     ├── 04-blast [optional step]
     ├── 05-plots
     │   ├── krona
