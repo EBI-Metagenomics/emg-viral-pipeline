@@ -1,0 +1,54 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/ebi-metagenomics/emg-viral-pipeline/dev/assets/schema_input.json",
+    "title": "ebi-metagenomics/emg-viral-pipeline - params.input schema",
+    "description": "Schema for the file provided with params.input",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "Sample identifier",
+                "minLength": 3
+            },
+            "assembly": {
+                "type": "string",
+                "pattern": "^\\S+\\.f(ast)?a(\\.gz)?$",
+                "errorMessage": "Assembly file in FASTA format",
+                "minLength": 3
+            },
+            "fastq_1": {
+                "type": "string",
+                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
+                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+            },
+            "fastq_2": {
+                "type": "string",
+                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
+                "errorMessage": "FastQ file for reads 2 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+            },
+            "proteins": {
+                "type": "string",
+                "pattern": "^\\S+\\.(f(ast)?a|faa)(\\.gz)?$",
+                "errorMessage": "Proteins file in FASTA format",
+                "minLength": 3
+            }
+        },
+        "required": ["id"],
+        "oneOf": [
+          {
+            "required": ["assembly"],
+            "description": "An assembly file must be provided"
+          },
+          {
+            "required": ["fastq_1", "fastq_2"],
+            "description": "Both fastq_1 and fastq_2 files must be provided"
+          }
+        ],
+        "errorMessage": {
+          "oneOf": "You must specify either an assembly file or both fastq_1 and fastq_2 files."
+        }
+    }
+}

@@ -5,6 +5,7 @@ import argparse
 import sys
 import gzip
 import csv
+import re
 
 from parse_viral_pred import Record
 
@@ -23,7 +24,7 @@ def get_ena_contig_mapping(ena_contig_file):
     return ena_mapping
 
 
-def aggregate_annotations(virify_annotation_files):
+def aggregate_annotations(virify_annotation_files, use_proteins=False):
     """Aggregate all the virify annotations into a single data structure for
     easier handling when writing the GFF file.
 
@@ -50,8 +51,18 @@ def aggregate_annotations(virify_annotation_files):
     #   ]
     # }
     cds_annotations = {}
+    virify_quality = {}
 
     for virify_summary in virify_annotation_files:
+        quality = ""
+        if "taxonomy" in virify_summary:
+            continue
+        if "high_confidence_viral" in virify_summary:
+            quality = "HC"
+        elif "low_confidence" in virify_summary:
+            quality = "LC"
+        elif "prophages" in virify_summary:
+            quality = "PP"
         with open(virify_summary, "r") as table_handle:
             csv_reader = csv.DictReader(table_handle, delimiter="\t")
             for row in csv_reader:
@@ -73,13 +84,22 @@ def aggregate_annotations(virify_annotation_files):
                     viral_sequence_type = "phage_circular"
 
                 if prophage_start is not None and prophage_end is not None:
-                    # Fixing CDS coordinates to the context of the whole contig
-                    # Current coordinates corresponds to the prophage region:
-                    # contig_1|prophage-132033:161324	contig_1|prophage-132033:161324_1	2	256	1	No hit	NA
-                    start = start + prophage_start
-                    end = end + prophage_start
+                    if use_proteins:
+                        # If pipeline used already predicted proteins as input
+                        # they were predicted on whole contigs
+                        # that means no need to change coordinates
+                        start = start
+                        end = end
+                    else:
+                        # Fixing CDS coordinates to the context of the whole contig
+                        # Current coordinates corresponds to the prophage region:
+                        # contig_1|prophage-132033:161324	contig_1|prophage-132033:161324_1	2	256	1	No hit	NA
+                        start = start + prophage_start
+                        end = end + prophage_start
                     viral_sequence_type = f"prophage-{prophage_start}:{prophage_end}"
 
+                # save HC, LC, PP (removing |prophage from contig name)
+                virify_quality.setdefault(contig.split("|")[0], quality)
                 # We use the contig name without any extra annotations
                 # This also collapses multiples prophages annotations
                 # per contig, if any.
@@ -109,7 +129,15 @@ def aggregate_annotations(virify_annotation_files):
                         ]
                     )
 
-    return viral_sequences, cds_annotations
+    return viral_sequences, cds_annotations, virify_quality
+
+
+def open_fasta_file(filename):
+    if filename.endswith(".gz"):
+        f = gzip.open(filename, "rt")
+    else:
+        f = open(filename, "rt")
+    return f
 
 
 def write_gff(
@@ -119,6 +147,7 @@ def write_gff(
     assembly_file,
     viral_sequences,
     cds_annotations,
+    virify_quality,
     ena_mapping=None,
 ):
     if ena_mapping:
@@ -139,11 +168,15 @@ def write_gff(
                 checkv_type = row["provirus"]
                 checkv_quality = row["checkv_quality"]
                 miuvig_quality = row["miuvig_quality"]
+                kmer_freq = row["kmer_freq"]
+                viral_genes = row["viral_genes"]
                 checkv_info = ";".join(
                     [
                         f"checkv_provirus={checkv_type}",
                         f"checkv_quality={checkv_quality}",
-                        f"miuvig_quality={miuvig_quality}",
+                        f"checkv_miuvig_quality={miuvig_quality}",
+                        f"checkv_kmer_freq={kmer_freq}",
+                        f"checkv_viral_genes={viral_genes}",
                     ]
                 )
                 checkv_dict[contig_id] = checkv_info
@@ -181,10 +214,12 @@ def write_gff(
                 taxonomy_dict[contig] = taxonomy_string
 
     # Read unmodified contig length from the renamed assembly file
-    for record in SeqIO.parse(assembly_file, "fasta"):
+    handle = open_fasta_file(assembly_file)
+    for record in SeqIO.parse(handle, "fasta"):
         contig_id = str(record.id)
         seq_len = len(str(record.seq))
         contigs_len_dict[contig_id] = seq_len
+    handle.close()
 
     with open(output_filename, "w") as gff:
         print("##gff-version 3", file=gff)
@@ -192,7 +227,7 @@ def write_gff(
         SCORE = "."
 
         # Writing the gff header
-        used_contigs=[]
+        used_contigs = []
         for contig_name in viral_sequences.keys():
             clean_contig_name = Record.remove_prophage_from_contig(contig_name)
             contig_length = contigs_len_dict[clean_contig_name]
@@ -214,6 +249,11 @@ def write_gff(
         # coordinates and attributes
         for contig_name, viral_sequence_types in viral_sequences.items():
             clean_contig_name = Record.remove_prophage_from_contig(contig_name)
+            quality = (
+                virify_quality[clean_contig_name]
+                if clean_contig_name in virify_quality
+                else "unknown"
+            )
             for viral_seq_type in viral_sequence_types:
                 element_category = "viral_sequence"
 
@@ -229,14 +269,15 @@ def write_gff(
                     start, end = viral_seq_type.split("prophage-")[1].split(":")
 
                     if int(start) == 0:
-                        start = '1'
-                        id_=id_.replace('prophage-0:','prophage-1:')
+                        start = "1"
+                        id_ = id_.replace("prophage-0:", "prophage-1:")
 
                     element_category = "prophage"
                     mobile_element_type = "prophage"
 
                 mobile_element_attributes = [
                     id_,
+                    f"virify_quality={quality}",
                     "gbkey=mobile_element",
                     f"mobile_element_type={mobile_element_type}",
                     checkv_dict[contig_name],
@@ -265,13 +306,24 @@ def write_gff(
             for cds_data in contig_cds:
                 cds_id, start, end, direction, viphog_annotation = cds_data
 
-                cds_id=cds_id.replace('prophage-0:','prophage-1:')
+                cds_id = cds_id.replace("prophage-0:", "prophage-1:")
 
                 # TODO: review this rule.
                 if end > contigs_len_dict[contig_name]:
                     end = contigs_len_dict[contig_name]
+                cleaned_name = re.sub(r"_[^_]*$", "", contig_name)
 
-                cds_attributes = [f"ID={cds_id}", "gbkey=CDS", viphog_annotation]
+                quality = (
+                    virify_quality[contig_name]
+                    if contig_name in virify_quality
+                    else "unknown"
+                )
+                cds_attributes = [
+                    f"ID={cds_id}",
+                    f"virify_quality={quality}",
+                    "gbkey=CDS",
+                    viphog_annotation,
+                ]
                 cds_line = [
                     contig_name,
                     "Prodigal",
@@ -343,6 +395,12 @@ if __name__ == "__main__":
         help="Path to ENA contig file if renaming needed",
         required=False,
     )
+    parser.add_argument(
+        "--use-proteins",
+        dest="use_proteins",
+        help="Add this argument if pipeline used already predicted proteins as input",
+        action="store_true",
+    )
 
     args = parser.parse_args()
 
@@ -401,7 +459,9 @@ if __name__ == "__main__":
 
     logging.info("Collecting annotation data")
 
-    viral_sequences, cds_annotations = aggregate_annotations(virify_files)
+    viral_sequences, cds_annotations, virify_quality = aggregate_annotations(
+        virify_files, args.use_proteins
+    )
 
     logging.info("Generating the gff output")
     write_gff(
@@ -411,5 +471,6 @@ if __name__ == "__main__":
         args.assembly_file,
         viral_sequences,
         cds_annotations,
+        virify_quality,
         ena_mapping=ena_mapping,
     )

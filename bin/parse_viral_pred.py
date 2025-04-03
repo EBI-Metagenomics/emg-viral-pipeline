@@ -4,6 +4,7 @@ import argparse
 import re
 import sys
 import csv
+import os
 from copy import copy
 from os.path import isfile
 from pathlib import Path
@@ -186,7 +187,129 @@ def parse_virus_sorter(sorter_files):
     return high_confidence, low_confidence, prophages
 
 
-def merge_annotations(pprmeta, finder, sorter, assembly):
+def parse_virus_sorter2(sorter_files, vs_cutoff):
+    """Extract high, low and prophages confidence Records from virus sorter results.
+    High confidence are contigs with confidence score >= confidence cutoff (0.9 per default).
+    Low confidence are contigs with confidence score < confidence cutoff and > 0.5.
+    Putative prophages are contigs with partial viral sequences. According to the VirSorter2 author
+    partial viral sequences can only occur as prophages, full viral sequences can occur due to prophages or other origins though.
+
+    VirSorter2 NOTE
+    Note that suffix ||full, ||lt2gene and ||{i}_partial ({i} can be numbers starting from 0 to max number
+    of viral fragments found in that contig) have been added to original sequence names to differentiate
+    sub-sequences in case of multiple viral subsequences found in one contig.
+    Partial sequences can be treated as proviruses since they are extracted from longer host sequences.
+    Full sequences, however, can be proviruses or free virus since it can be a short fragment sequenced from
+    a provirus region. Moreover, "full" sequences are just sequences with strong viral signal as a whole
+    ("nearly full" is more accurate). They might be trimmed due to partial gene overhang at ends,
+    duplicate segments from circular genomes, and an end trimming step for all identified viral sequences
+    to find the optimal viral segments (longest within 95% of peak score by default). Again, the "full" sequences
+    trimmed by the end trimming step should not be interpreted as provirus, since genes that have low impact on score,
+    such as unknown gene or genes shared by host and virus, could be trimmed. If you prefer the full sequences
+    (ending with ||full) not to be trimmed and leave it to specialized tools such as checkV,
+    you can use --keep-original-seq option.
+    """
+
+    boundary_columns = [
+        "seqname",
+        "trim_orf_index_start",
+        "trim_orf_index_end",
+        "trim_bp_start",
+        "trim_bp_end",
+        "trim_pr",
+        "partial",
+        "pr_full",
+        "hallmark_cnt",
+        "group",
+        "shape",
+    ]
+
+    boundary_dtypes = {
+        "seqname": "object",
+        "trim_orf_index_start": "int64",
+        "trim_orf_index_end": "int64",
+        "trim_bp_start": "int64",
+        "trim_bp_end": "int64",
+        "trim_pr": "float64",
+        "partial": "int64",
+        "pr_full": "float64",
+        "hallmark_cnt": "int64",
+        "group": "object",
+        "shape": "object",
+    }
+
+    high_confidence = dict()
+    low_confidence = dict()
+    prophages = dict()
+
+    final_boundary_file, final_score_file, final_combined_fa_file = "", "", ""
+    for sorter_results_file in sorter_files:
+        if "final-viral-boundary.tsv" in sorter_results_file:
+            final_boundary_file = sorter_results_file
+        elif "final-viral-score.tsv" in sorter_results_file:
+            final_score_file = sorter_results_file
+        elif "final-viral-combined.fa" in sorter_results_file:
+            final_combined_fa_file = sorter_results_file
+        else:
+            print(
+                "ERROR: The result files of VirSorter2 are incomplete. The code expects the files final-viral-{boundary,score}.tsv and final-viral-combined.fa.",
+                file=sys.stderr,
+            )
+            return high_confidence, low_confidence, prophages
+
+    boundary_df = pd.read_csv(
+        final_boundary_file,
+        sep="\t",
+        index_col="seqname",
+        usecols=boundary_columns,
+        dtype=boundary_dtypes,
+    )
+
+    score_df = pd.read_csv(final_score_file, sep="\t")
+    score_df["seqname"] = score_df["seqname"].str.replace(r"\|\|.*", "", regex=True)
+    score_df.set_index("seqname", inplace=True)
+
+    meta = score_df.merge(
+        boundary_df,
+        left_index=True,
+        right_index=True,
+        how="left",
+        suffixes=("_score", "_boundary"),
+    ).dropna(subset=["shape"])
+
+    for record in SeqIO.parse(final_combined_fa_file, "fasta"):
+        clean_name = record.id.split("|")[0]
+        max_score = meta["max_score"].get(clean_name, None)
+        circular = meta["shape"].get(clean_name, None)
+        prange = [
+            meta["trim_bp_start"].get(clean_name, None),
+            meta["trim_bp_end"].get(clean_name, None),
+        ]
+        if not circular or not max_score:
+            continue
+        circular = circular.startswith("circular")
+
+        if "partial" in record.id:
+            # add the prophage position within the contig
+            record.id = clean_name
+            prophages.setdefault(clean_name, []).append(
+                Record(record, "prophage", circular, prange)
+            )
+        else:
+            record.id = clean_name
+            if float(max_score) >= float(vs_cutoff):
+                high_confidence[record.id] = Record(record, "high_confidence", circular)
+            else:
+                low_confidence[record.id] = Record(record, "low_confidence", circular)
+
+    print(f"Virus Sorter found {len(high_confidence)} high confidence contigs.")
+    print(f"Virus Sorter found {len(low_confidence)} low confidence contigs.")
+    print(f"Virus Sorter found {len(prophages)} putative prophages contigs.")
+
+    return high_confidence, low_confidence, prophages
+
+
+def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
     """Parse VirSorter, VirFinder and PPR-Meta outputs and merge the results.
     High confidence viral contigs:
     -  VirSorter reported as categories 1 and 2
@@ -206,26 +329,57 @@ def merge_annotations(pprmeta, finder, sorter, assembly):
 
     pprmeta_lc = parse_pprmeta(pprmeta)
     finder_lc, finder_lowestc = parse_virus_finder(finder)
-    sorter_hc, sorter_lc, sorter_prophages = parse_virus_sorter(sorter)
+    sorter_hc, sorter_lc, sorter_prophages = (
+        parse_virus_sorter(sorter)
+        if sorter is not None
+        else parse_virus_sorter2(sorter2, vs_cutoff)
+    )
 
     for seq_record in SeqIO.parse(assembly, "fasta"):
-        # HC
-        if seq_record.id in sorter_hc:
-            hc_predictions_contigs.append(sorter_hc.get(seq_record.id).get_seq_record())
-        # Pro
-        elif seq_record.id in sorter_prophages:
-            # a contig may have several prophages
-            # for prophages write the record as it holds the
-            # sliced fasta
-            for record in sorter_prophages.get(seq_record.id):
-                prophage_predictions_contigs.append(record.get_seq_record())
-        # LC
-        elif seq_record.id in finder_lc:
-            lc_predictions_contigs.append(seq_record)
-        elif seq_record.id in sorter_lc and seq_record.id in finder_lowestc:
-            lc_predictions_contigs.append(sorter_lc.get(seq_record.id).get_seq_record())
-        elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
-            lc_predictions_contigs.append(seq_record)
+        if sorter:
+            if seq_record.id in sorter_hc:
+                hc_predictions_contigs.append(
+                    sorter_hc.get(seq_record.id).get_seq_record()
+                )
+                # Pro
+            elif seq_record.id in sorter_prophages:
+                # a contig may have several prophages
+                # for prophages write the record as it holds the
+                # sliced fasta
+                for record in sorter_prophages.get(seq_record.id):
+                    prophage_predictions_contigs.append(record.get_seq_record())
+                # LC
+            elif seq_record.id in finder_lc:
+                lc_predictions_contigs.append(seq_record)
+            elif seq_record.id in sorter_lc and seq_record.id in finder_lowestc:
+                lc_predictions_contigs.append(
+                    sorter_lc.get(seq_record.id).get_seq_record()
+                )
+            elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
+                lc_predictions_contigs.append(seq_record)
+        else:
+            # Pro
+            # TODO: check this decision because for VirSorter2 sequence can be in 2 categories
+            if seq_record.id in sorter_prophages:
+                # a contig may have several prophages
+                # for prophages write the record as it holds the
+                # sliced fasta
+                for record in sorter_prophages.get(seq_record.id):
+                    prophage_predictions_contigs.append(record.get_seq_record())
+            # HC
+            if seq_record.id in sorter_hc:
+                hc_predictions_contigs.append(
+                    sorter_hc.get(seq_record.id).get_seq_record()
+                )
+            # LC
+            elif seq_record.id in finder_lc:
+                lc_predictions_contigs.append(seq_record)
+            elif seq_record.id in sorter_lc and seq_record.id in finder_lowestc:
+                lc_predictions_contigs.append(
+                    sorter_lc.get(seq_record.id).get_seq_record()
+                )
+            elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
+                lc_predictions_contigs.append(seq_record)
 
     return (
         hc_predictions_contigs,
@@ -237,7 +391,7 @@ def merge_annotations(pprmeta, finder, sorter, assembly):
     )
 
 
-def main(pprmeta, finder, sorter, assembly, outdir, prefix=False):
+def main(pprmeta, finder, sorter, sorter2, assembly, outdir, vs_cutoff, prefix=False):
     """Parse VirSorter, VirFinder and PPR-Meta outputs and merge the results."""
     (
         hc_contigs,
@@ -246,7 +400,7 @@ def main(pprmeta, finder, sorter, assembly, outdir, prefix=False):
         sorter_hc,
         sorter_lc,
         sorter_prophages,
-    ) = merge_annotations(pprmeta, finder, sorter, assembly)
+    ) = merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff)
 
     at_least_one = False
     name_prefix = ""
@@ -254,6 +408,8 @@ def main(pprmeta, finder, sorter, assembly, outdir, prefix=False):
         name_prefix = Path(assembly).stem + "_"
 
     outdir_path = Path(outdir)
+    if not os.path.exists(outdir_path):
+        os.mkdir(outdir_path)
 
     if len(hc_contigs):
         SeqIO.write(
@@ -262,6 +418,9 @@ def main(pprmeta, finder, sorter, assembly, outdir, prefix=False):
             "fasta",
         )
         at_least_one = True
+    else:
+        print("No high confidence viral contigs found, skipping output file.")
+
     if len(lc_contigs):
         SeqIO.write(
             lc_contigs,
@@ -269,11 +428,16 @@ def main(pprmeta, finder, sorter, assembly, outdir, prefix=False):
             "fasta",
         )
         at_least_one = True
+    else:
+        print("No low confidence viral contigs found, skipping output file.")
+
     if len(prophage_contigs):
         SeqIO.write(
             prophage_contigs, outdir / Path(name_prefix + "prophages.fna"), "fasta"
         )
         at_least_one = True
+    else:
+        print("No prophage contigs found, skipping output file.")
 
     # VirSorter provides some metadata on each annotation
     # - is circular
@@ -336,11 +500,28 @@ if __name__ == "__main__":
         required=False,
     )
     parser.add_argument(
+        "-z",
+        "--vs2files",
+        dest="sorter2",
+        nargs="+",
+        help="VirSorter2 .tsv files (i.e. final-viral-{boundary,score}.tsv, final-viral-combined.fa)"
+        " VirSorter2 output",
+        required=False,
+    )
+    parser.add_argument(
         "-p",
         "--pmout",
         dest="pprmeta",
         help="Absolute or relative path to PPR-Meta output file" " PPR-Meta output",
         required=False,
+    )
+    parser.add_argument(
+        "-y",
+        "--vs_cutoff",
+        dest="vs_cutoff",
+        help="Cutoff to categorize sequences identified by VirSorter2 to high or low confidence (default: 0.9).",
+        default=0.9,
+        type=float,
     )
     parser.add_argument(
         "-r",
@@ -363,7 +544,9 @@ if __name__ == "__main__":
         args.pprmeta,
         args.finder,
         args.sorter,
+        args.sorter2,
         args.assembly,
         args.outdir,
+        args.vs_cutoff,
         prefix=args.prefix,
     )

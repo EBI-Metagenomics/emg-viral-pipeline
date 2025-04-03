@@ -6,11 +6,10 @@
 
 1. [ The VIRify pipeline ](#virify)
 2. [ Nextflow execution ](#nf)
-3. [ CWL execution (discontinued) ](#cwl)
-4. [ Pipeline overview ](#overview)
-5. [ Detour: Metatranscriptomics ](#metatranscriptome)
-6. [ Resources ](#resources)
-7. [ Citations ](#cite)
+3. [ Pipeline overview ](#overview)
+4. [ Detour: Metatranscriptomics ](#metatranscriptome)
+5. [ Resources ](#resources)
+6. [ Citations ](#cite)
 
 <a name="virify"></a>
 
@@ -22,14 +21,12 @@ VIRify is a pipeline for the detection, annotation, and taxonomic classification
 
 The pipeline is implemented in [Nextflow](#nf) and additionally only Docker or Singularity are needed to run VIRify. Details about installation and usage are given below.
 
-**Please note**, that until v1.0 the pipeline was also implemented in [CWL](#cwl) as an alternative to [Nextflow](#nf). However, later updates were only included in the [Nextflow](#nf) version of the pipeline. 
-
 
 <a name="nf"></a>
 
 # Nextflow
 
-A [Nextflow](https://www.nextflow.io/) implementation of the VIRify pipeline. In the backend, the same scripts are used as in the [CWL](#cwl) implementation.
+A [Nextflow](https://www.nextflow.io/) implementation of the VIRify pipeline.
 
 ## What do I need?
 
@@ -142,10 +139,143 @@ tower {
 
 You can also directly enter your access token here instead of generating the above-mentioned environment variable.
 
+## Results
+The outputs generated from viral prediction tools, ViPhOG annotation, taxonomy assign, and CheckV quality are integrated and summarized in a validated gff file.
+By default pipeline produces `08-final` folder with the following structure:
+<details>
+<summary>Structure example per-assembly</summary>
+
+    08-final
+        ├── annotation
+        │   ├── hmmer
+        │   │   ├── high_confidence_viral_contigs_prodigal_annotation.tsv
+        │   │   ├── low_confidence_viral_contigs_prodigal_annotation.tsv
+        │   │   └── prophages_prodigal_annotation.tsv
+        │   └── plot_contig_map
+        │       ├── high_confidence_viral_contigs_mapping_results
+        │       │   ├── high_confidence_viral_contigs_prot_ann_table_filtered.tsv
+        │       │   └── plot_pdfs.tar.gz
+        │       ├── low_confidence_viral_contigs_mapping_results
+        │       │   ├── low_confidence_viral_contigs_prot_ann_table_filtered.tsv
+        │       │   └── plot_pdfs.tar.gz
+        │       └── prophages_mapping_results
+        │           ├── plot_pdfs.tar.gz
+        │           └── prophages_prot_ann_table_filtered.tsv
+        ├── contigs
+        │   ├── high_confidence_viral_contigs_original.fasta
+        │   ├── low_confidence_viral_contigs_original.fasta
+        │   └── prophages_original.fasta
+        ├── chromomap [optional step]
+        ├── gff
+        │   └── ACCESSION_virify.gff
+        ├── krona
+        │   ├── ACCESSION.krona.html
+        │   ├── high_confidence_viral_contigs.krona.html
+        │   ├── low_confidence_viral_contigs.krona.html
+        │   └── prophages.krona.html
+        └── sankey
+            ├── ACCESSION.sankey.html
+            ├── high_confidence_viral_contigs.sankey.html
+            ├── low_confidence_viral_contigs.sankey.html
+            └── prophages.sankey.html
+</details>
+
+In order to have expanded output with more files use `--publish_all` option in pipeline execution.
+
+<details>
+<summary>Expanded structure example per-assembly</summary>
+
+    ├── 01-predictions
+    │   ├── ACCESSION_virus_predictions.stats
+    │   ├── pprmeta
+    │   │   └── ACCESSION_pprmeta.csv
+    │   ├── virfinder
+    │   │   └── ACCESSION.txt
+    │   └── virsorter2
+    │       ├── final-viral-boundary.tsv
+    │       ├── final-viral-combined.fa
+    │       ├── final-viral-score.tsv
+    │       └── virsorter_metadata.tsv
+    ├── 02-prodigal
+    │   ├── high_confidence_viral_contigs_prodigal.faa
+    │   └── low_confidence_viral_contigs_prodigal.faa
+    │   └── prophages_prodigal.faa  
+    ├── 03-hmmer
+    │   ├── high_confidence_viral_contigs_modified.tsv
+    │   ├── low_confidence_viral_contigs_modified.tsv
+    │   ├── prophages_modified.tsv 
+    │   ├── ratio_evalue_tables
+    │   │   ├── high_confidence_viral_contigs_modified_informative.tsv
+    │   │   ├── low_confidence_viral_contigs_modified_informative.tsv
+    │   │   └── prophages_modified_informative.tsv
+    │   └── vpHMM_database_v3
+    │       ├── high_confidence_viral_contigs_vpHMM_database_v3_hmmsearch.tbl
+    │       ├── low_confidence_viral_contigs_vpHMM_database_v3_hmmsearch.tbl
+    │       └── prophages_vpHMM_database_v3_hmmsearch.tbl
+    │   └── [other chosen optional HMM DBs]
+    ├── 04-blast [optional step]
+    ├── 05-plots
+    │   ├── krona
+    │   │   ├── ACCESSION.krona.tsv
+    │   │   ├── high_confidence_viral_contigs.krona.tsv
+    │   │   ├── low_confidence_viral_contigs.krona.tsv
+    │   │   └── prophages.krona.tsv
+    │   └── sankey
+    │       ├── all.sankey.filtered-25.json
+    │       ├── all.sankey.tsv
+    │       ├── high_confidence_viral_contigs.sankey.filtered-25.json
+    │       ├── high_confidence_viral_contigs.sankey.tsv
+    │       ├── low_confidence_viral_contigs.sankey.filtered-25.json
+    │       ├── low_confidence_viral_contigs.sankey.tsv
+    │       ├── prophages.sankey.filtered-25.json
+    │       └── prophages.sankey.tsv
+    ├── 06-taxonomy
+    │   ├── high_confidence_viral_contigs_prodigal_annotation_taxonomy.tsv
+    │   ├── low_confidence_viral_contigs_prodigal_annotation_taxonomy.tsv
+    │   └── prophages_prodigal_annotation_taxonomy.tsv
+    ├── 07-checkv
+    │   ├── high_confidence_viral_contigs_quality_summary.tsv
+    │   ├── low_confidence_viral_contigs_quality_summary.tsv
+    │   └── prophages_quality_summary.tsv
+    └── 08-final
+        ├── annotation
+        │   ├── hmmer
+        │   │   ├── high_confidence_viral_contigs_prodigal_annotation.tsv
+        │   │   ├── low_confidence_viral_contigs_prodigal_annotation.tsv
+        │   │   └── prophages_prodigal_annotation.tsv
+        │   └── plot_contig_map
+        │       ├── high_confidence_viral_contigs_mapping_results
+        │       │   ├── high_confidence_viral_contigs_prot_ann_table_filtered.tsv
+        │       │   └── plot_pdfs.tar.gz
+        │       ├── low_confidence_viral_contigs_mapping_results
+        │       │   ├── low_confidence_viral_contigs_prot_ann_table_filtered.tsv
+        │       │   └── plot_pdfs.tar.gz
+        │       └── prophages_mapping_results
+        │           ├── plot_pdfs.tar.gz
+        │           └── prophages_prot_ann_table_filtered.tsv
+        ├── contigs
+        │   ├── high_confidence_viral_contigs_original.fasta
+        │   ├── low_confidence_viral_contigs_original.fasta
+        │   └── prophages_original.fasta
+        ├── chromomap [optional step]
+        ├── gff
+        │   └── ACCESSION_virify.gff
+        ├── krona
+        │   ├── ACCESSION.krona.html
+        │   ├── high_confidence_viral_contigs.krona.html
+        │   ├── low_confidence_viral_contigs.krona.html
+        │   └── prophages.krona.html
+        └── sankey
+            ├── ACCESSION.sankey.html
+            ├── high_confidence_viral_contigs.sankey.html
+            ├── low_confidence_viral_contigs.sankey.html
+            └── prophages.sankey.html
+</details>
+
 
 ### GFF output files
 
-The outputs generated from viral prediction tools, ViPhOG annotation, taxonomy assign, and CheckV quality are integrated and summarized in a validated gff file. You can find such output in the `08-final/gff/` folder.
+You can find such output in the `08-final/gff/` folder.
 
 The labels used in the Type column of the gff file correspond to the following nomenclature according to the [Sequence Ontology resource](http://www.sequenceontology.org/browser/current_svn/term/SO:0000001):
 
@@ -155,26 +285,12 @@ The labels used in the Type column of the gff file correspond to the following n
 | prophage  | [SO:0001006](http://www.sequenceontology.org/browser/current_svn/term/SO:0001006) |
 | CDS | [SO:0000316](http://www.sequenceontology.org/browser/current_svn/term/SO:0000316) |
 
-Note that CDS are reported only when a ViPhOG match has been found. 
-
-
-<a name="cwl"></a>
-
-# Common Workflow Language (discontinued)
-
-**Until VIRify v1.0**, VIRify was implemented in [Common Workflow Language (CWL)](https://www.commonwl.org/) next to the Nextflow implementation. Both Workflow Management Systems were previously supported. 
-
-## What do I need?
-The implementation until v1.0 of VIRify uses CWL version 1.2. It was tested using Toil version 5.3.0 as the workflow engine and conda to manage the software dependencies.
-
-## How?
-For instructions go to the [CWL README](cwl/README.md).
-
+Note that CDS are reported only when a ViPhOG match has been found.
 
 <a name="overview"></a>
 
 # Pipeline overview
-![VIRify Overview](nextflow/figures/virify_fig1_workflow.png)
+![VIRify Overview](figures/virify_fig1_workflow.png)
 For further details please check: [doi.org/10.1101/2022.08.22.504484](https://doi.org/10.1101/2022.08.22.504484)
 
 

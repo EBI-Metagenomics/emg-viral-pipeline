@@ -1,8 +1,0 @@
-fasta_files:
-  - path: empty.fna
-    class: File
-    format: http://edamontology.org/format_1929
-database:
-  path: ../../../databases/IMG_VR_2018-07-01_4 
-  class: Directory
-number_of_cpus: 4

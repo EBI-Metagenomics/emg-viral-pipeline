@@ -1,4 +1,0 @@
-biopython==1.74
-ete3==3.1.1
-pandas==1.4.0
-toil[cwl]==5.6.0

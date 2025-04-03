@@ -1,0 +1,409 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/ebi-metagenomics/emg-viral-pipeline/master/nextflow_schema.json",
+    "title": "ebi-metagenomics/emg-viral-pipeline pipeline parameters",
+    "description": "Microbiome Informatics viral pipeline",
+    "type": "object",
+    "defs": {
+        "input_options": {
+            "title": "Inputs",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Files required for the workflow (reads or assemblies).",
+            "properties": {
+                "fasta": {
+                    "type": "string",
+                    "format": "file-path",
+                    "mimetype": "text/plain",
+                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
+                    "description": "Path to FASTA file, no assembly produced by pipeline",
+                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
+                    "fa_icon": "far fa-file-code"
+                },
+                "assemble": {
+                    "type": "boolean",
+                    "description": "file pairs, experimental feature that performs SPAdes assembly first",
+                },
+                "samplesheet": {
+                    "type": "string",
+                    "format": "file-path",
+                    "mimetype": "text/csv",
+                    "pattern": "^\\S+\\.csv$",
+                    "schema": "assets/schema_input.json",
+                    "description": "Path to comma-separated file containing information about inputs to be used.",
+                    "help_text": "You will need to create a design file with information about the assembly/raw_reads running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a minimum of 2 columns for assembly (ID, fasta) or 3 columns for raw reads (ID, fastq1, fastq2), and a header row.",
+                    "fa_icon": "fas fa-file-csv"
+                }
+            },
+            "oneOf": [
+              {
+                "required": ["fasta"],
+                "description": "An assembly file must be provided"
+              },
+              {
+                "required": ["samplesheet"],
+                "description": "Assembly or raw reads should be provided in samplesheet"
+              }
+            ],
+            "errorMessage": {
+              "oneOf": "You must specify either an assembly file or samplesheet input."
+            }
+        },
+        "options": {
+            "title": "Options",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Execution arguments.",
+            "properties": {
+                "max_cores": {
+                    "type": "integer",
+                    "default": 8,
+                    "description": "max cores per machine for local use"
+                },
+                "cores": {
+                    "type": "integer",
+                    "default": 2,
+                    "description": "max cores per process for local use"
+                },
+                "memory": {
+                    "type": "string",
+                    "default": "12.GB",
+                    "description": "max memory for local use"
+                },
+                "output": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "results",
+                    "description": "name of the result folder"
+                }
+            }
+        },
+        "databases": {
+            "title": "Databases",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Input databases.",
+            "properties": {
+                "virsorter": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "a virsorter database provided as 'virsorter/virsorter-data'"
+                },
+                "virsorter2": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "description": "a virsorter2 database"
+                },
+                "virfinder": {
+                    "type": "string",
+                    "description": "a virfinder model"
+                },
+                "viphog": {
+                    "type": "string",
+                    "description": "the ViPhOG database, hmmpress'ed"
+                },
+                "ncbi": {
+                    "type": "string",
+                    "description": "a NCBI taxonomy database, from ete3 import NCBITaxa, named ete3_ncbi_tax.sqlite"
+                },
+                "checkv": {
+                    "type": "string",
+                    "description": "the CheckV reference database for virus QC"
+                },
+                "rvdb": {
+                    "type": "string",
+                    "description": "the RVDB, hmmpress'ed"
+                },
+                "pvogs": {
+                    "type": "string",
+                    "description": "the pVOGS, hmmpress'ed"
+                },
+                "vogdb": {
+                    "type": "string",
+                    "description": "the VOGDB, hmmpress'ed"
+                },
+                "vpf": {
+                    "type": "string",
+                    "description": "the VPF from IMG/VR, hmmpress'ed"
+                },
+                "imgvr": {
+                    "type": "string",
+                    "description": "the IMG/VR, viral (meta)genome sequences"
+                },
+                "pprmeta": {
+                    "type": "string",
+                    "description": "the PPR-Meta github"
+                },
+                "meta": {
+                    "type": "string",
+                    "description": "the tsv dictionary w/ meta information about ViPhOG models"
+                },
+                "hmmextend": {
+                    "type": "boolean",
+                    "description": "Use additional databases for more hmmer results"
+                },
+                "blastextend": {
+                    "type": "boolean",
+                    "description": "Use additional BLAST database (IMG/VR) for more annotation"
+                }
+            }
+        },
+        "parameters": {
+            "title": "Parameters",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Input parameters",
+            "properties": {
+                "virome": {
+                    "type": "boolean",
+                    "description": "VirSorter parameter, set when running a data set mostly composed of viruses"
+                },
+                "chromomap": {
+                    "type": "boolean",
+                    "description": "feature to activate chromomap plot"
+                },
+                "balloon": {
+                    "type": "boolean",
+                    "description": "feature to activate balloon plot"
+                },
+                "onlyannotate": {
+                    "type": "boolean",
+                    "description": "Only annotate the input FASTA (no virus prediction, only contig length filtering)"
+                },
+                "use_virsorter_v1": {
+                    "type": "boolean",
+                    "description": "Use VirSorter instead of VirSorter2"
+                },
+                "use_proteins": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Use already predicted proteins instead of running Prodigal"
+                },
+                "publish_all": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Publish outputs for all steps"
+                },
+                "mashmap_len": {
+                    "type": "integer",
+                    "default": 2000,
+                    "description": "Mashmap mapping segment length, shorter sequences will be ignored"
+                },
+                "mashmap": {
+                    "type": "boolean",
+                    "description": "Map the viral contigs against the provided reference"
+                },
+                "evalue": {
+                    "type": "number",
+                    "default": 0.01,
+                    "description": "E-value used to filter ViPhOG hits in the ratio_evalue step"
+                },
+                "prop": {
+                    "type": "number",
+                    "default": 0.1,
+                    "description": "Minimum proportion of proteins with ViPhOG annotations to provide a taxonomic assignment"
+                },
+                "taxthres": {
+                    "type": "number",
+                    "default": 0.6,
+                    "description": "Minimum proportion of annotated genes required for taxonomic assignment"
+                },
+                "factor": {
+                    "type": "string",
+                    "default": "emg-viral-pipeline/references/viphogs_cds_per_taxon_cummulative.csv",
+                    "description": "Path to file with viral assemblies metadata, including taxon-specific factors"
+                },
+                "sankey": {
+                    "type": "integer",
+                    "default": 25,
+                    "description": "select the x taxa with highest count for sankey plot, try and error and use '-resume' to change plot"
+                },
+                "chunk": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "WIP: chunk FASTA files into smaller pieces for parallel calculation"
+                },
+                "length": {
+                    "type": "number",
+                    "default": 1.5,
+                    "description": "Initial length filter in kb"
+                },
+                "proteins_chunksize": {
+                    "type": "number",
+                    "default": 10000000,
+                    "description": "Chunk size for protein fasta"
+                },
+                "hmmer_tool": {
+                    "type": "string",
+                    "default": "hmmsearch",
+                    "description": "Use hmmscan or hmmsearch method for HMMER"
+                }
+            }
+        },
+        "development": {
+            "title": "Development",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Dev parameters",
+            "properties": {
+                "viphog_version": {
+                    "type": "string",
+                    "default": "v3",
+                    "description": "define the ViPhOG db version to be used. v1: no additional bit score filter (--cut_ga not applied, just e-value filtered). v2: --cut_ga, min score used as sequence-specific GA, 3 bit trimmed for domain-specific GA. v3: --cut_ga, like v2 but seq-specific GA trimmed by 3 bits if second best score is 'nan' (current default)"
+                },
+                "meta_version": {
+                    "type": "string",
+                    "default": "v4",
+                    "description": "define the metadata table version to be used. v1: older version of the meta data table using an outdated NCBI virus taxonomy, for reproducibility. v2: 2020 version of NCBI virus taxonomy. v3: 2022 version of NCBI virus taxonomy. v4: 2022 version of NCBI virus taxonomy"
+                }
+            }
+        },
+        "outputs": {
+            "title": "Outputs",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Output folders",
+            "properties": {
+                "assemblydir": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "00-assembly",
+                    "description": "output directory for assembly step",
+                    "fa_icon": "far fa-file-code"
+                },
+                "virusdir": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "01-predictions",
+                    "description": "output directory for detected viruses step"
+                },
+                "prodigaldir": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "02-prodigal",
+                    "description": "output directory for prodigal step"
+                },
+                "hmmerdir": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "03-hmmer",
+                    "description": "output directory for hmmer step"
+                },
+                "blastdir": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "04-blast",
+                    "description": "output directory for blast step"
+                },
+                "plotdir": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "05-plots",
+                    "description": "output directory for plots"
+                },
+                "taxdir": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "06-taxonomy",
+                    "description": "output directory for taxonomy results"
+                },
+                "checkvdir": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "07-checkv",
+                    "description": "output directory for checkV step"
+                },
+                "finaldir": {
+                    "type": "string",
+                    "format": "directory-path",
+                    "default": "08-final",
+                    "description": "final output directory"
+                }
+            }
+        },
+        "nextflow_args": {
+            "title": "Nextflow arguments",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Nextflow arguments",
+            "properties": {
+                "databases": {
+                    "type": "string",
+                    "default": "nextflow-autodownload-databases",
+                    "description": "directory path to databases"
+                },
+                "workdir": {
+                    "type": "string",
+                    "default": "work",
+                    "description": "working directory"
+                },
+                "singularity_cachedir": {
+                    "type": "string",
+                    "default": "singularity",
+                    "description": "singularity folder"
+                },
+                "cloudProcess": {
+                    "type": "boolean",
+                    "description": "run on cloud"
+                }
+            }
+        },
+        "generic_options": {
+            "title": "Generic options",
+            "type": "object",
+            "fa_icon": "fas fa-file-import",
+            "description": "Less common options for the pipeline, typically set in a config file.",
+            "help_text": "These options are common to all nf-core pipelines and allow you to customise some of the core preferences for how the pipeline runs.\n\nTypically these options would be set in a Nextflow config file loaded for all pipeline runs, such as `~/.nextflow/config`.",
+            "properties": {
+                "help": {
+                    "type": "boolean",
+                    "description": "Display help text.",
+                    "fa_icon": "fas fa-question-circle",
+                    "hidden": true
+                },
+                "publish_dir_mode": {
+                    "type": "string",
+                    "default": "copy",
+                    "description": "Method used to save pipeline results to output directory.",
+                    "help_text": "The Nextflow `publishDir` option specifies which intermediate files should be saved to the output directory. This option tells the pipeline what method should be used to move these files. See [Nextflow docs](https://www.nextflow.io/docs/latest/process.html#publishdir) for details.",
+                    "fa_icon": "fas fa-copy",
+                    "enum": [
+                        "symlink",
+                        "rellink",
+                        "link",
+                        "copy",
+                        "copyNoFollow",
+                        "move"
+                    ],
+                    "hidden": true
+                }
+            }
+        }
+    },
+    "allOf": [
+        {
+            "$ref": "#/defs/input_options"
+        },
+        {
+            "$ref": "#/defs/options"
+        },
+        {
+            "$ref": "#/defs/databases"
+        }, 
+        {
+            "$ref": "#/defs/parameters"
+        },
+        {
+            "$ref": "#/defs/development"
+        },
+        {
+            "$ref": "#/defs/outputs"
+        },
+        {
+            "$ref": "#/defs/nextflow_args"
+        },
+        {
+            "$ref": "#/defs/generic_options"
+        }
+    ]
+}
