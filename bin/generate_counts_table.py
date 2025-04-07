@@ -36,7 +36,7 @@ def _clean(arr):
             result.append(converted_tax[i])
     if converted_tax[-1] != "unclassified":
         result.append(converted_tax[-1])
-    return tuple(result)
+    return tuple(result[::-1])
 
 
 if __name__ == "__main__":
@@ -54,17 +54,20 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     taxons = []
-
+    header = False
     for input_table in args.files:
         tsv = Path(input_table)
         if not tsv.is_file():
             raise Exception("Input file missing. Path: " + input_table)
         with open(tsv, mode="r") as tsv_reader:
-            next(tsv_reader)  # header
-            # contig_ID	genus subfamily family order
             for line in tsv_reader:
-                tax_lineage = line.split("\t")[1:]
-                taxons.append(_clean(tax_lineage))
+                if not header:
+                    header = line.strip().split('\t')
+                    print('header', header)
+                else:
+                    tax_lineage = line.strip().split("\t")[1:]
+                    print(tax_lineage)
+                    taxons.append(_clean(tax_lineage))
 
     with open(args.outfile, "w", newline="") as tsv_out:
         tsv_writer = csv.writer(tsv_out, delimiter="\t",
