@@ -7,36 +7,31 @@ from collections import Counter
 from pathlib import Path
 
 
-def _clean(arr):
-    """Convert ratio values for missing pieces of the tax into "unclassified"
-    and remove empty entries.
-    Rules:
-        - if all the cols are unclassified then remove row.
-        - if there is no classification for either genus, subfamily or family then remove row.
-        - collapse unclassified values from low to high
-            - example: Caudovirales	unclassified	unclassified	unclassified
-              should be: Caudovirales
+def clean(arr, ranks):
+    """
+    Assigns ranks to annotations. 
+    If rank is not presented - add 'underfined rank' and closest defined rank
+    for example, Caudoviricetes --> Undefined Caudoviricetes (Order) --> Undefined Caudoviricetes (Family) --> Guernseyvirinae --> Jerseyvirus
     """
     converted_tax = []
-    for tax_value in arr[::-1]:
-        if tax_value == "" or \
-           tax_value == "\n" or \
-           re.match(r"^[+-]?\d(>?\.\d+)?$", tax_value):
-            converted_tax.append("unclassified")
-        else:
-            converted_tax.append(tax_value.strip())
-    # rule 1
-    if len(converted_tax) == converted_tax.count("unclassified"):
-        return tuple(("unclassified",))
-    # rule 2 and 3
-    result = []
-    for i in range(0, len(converted_tax) - 1):
-        if not (converted_tax[i] == "unclassified" and
-           converted_tax[i + 1] == "unclassified"):
-            result.append(converted_tax[i])
-    if converted_tax[-1] != "unclassified":
-        result.append(converted_tax[-1])
-    return tuple(result[::-1])
+    last_known_rank = ''
+    if len(arr) > 0:
+        if arr[0] == '':
+            # TODO: fix that bug in assign script
+            arr = arr[1:]   
+        for iter in range(len(arr)):
+            tax_value = arr[iter]
+            rank = ranks[iter]
+            if tax_value == "" or \
+                tax_value == "\n" or \
+                re.match(r"^[+-]?\d(>?\.\d+)?$", tax_value):
+                converted_tax.append(f"underfined_{rank}_{last_known_rank}")
+            else:
+                converted_tax.append(tax_value.strip())
+                last_known_rank = tax_value.strip()
+    else:
+        converted_tax = ["underfined"]
+    return tuple(converted_tax)
 
 
 if __name__ == "__main__":
@@ -63,11 +58,9 @@ if __name__ == "__main__":
             for line in tsv_reader:
                 if not header:
                     header = line.strip().split('\t')
-                    print('header', header)
                 else:
                     tax_lineage = line.strip().split("\t")[1:]
-                    print(tax_lineage)
-                    taxons.append(_clean(tax_lineage))
+                    taxons.append(clean(tax_lineage, header[1:]))
 
     with open(args.outfile, "w", newline="") as tsv_out:
         tsv_writer = csv.writer(tsv_out, delimiter="\t",
