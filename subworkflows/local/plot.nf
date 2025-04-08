@@ -25,9 +25,9 @@ Plot results. Basically runs krona and sankey. ChromoMap and Balloon are still e
 
         // sankey
         if (workflow.profile != 'conda') {
-          SANKEY(
-            GENERATE_SANKEY_TABLE(GENERATE_KRONA_TABLE.out)
-         )
+          GENERATE_SANKEY_TABLE( GENERATE_KRONA_TABLE.out )
+          
+          SANKEY( GENERATE_SANKEY_TABLE.out.sankey_filtered_json )
         }
 
         // chromomap

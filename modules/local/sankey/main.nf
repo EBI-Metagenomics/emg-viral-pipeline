@@ -7,7 +7,7 @@ process GENERATE_SANKEY_TABLE {
       tuple val(meta), val(set_name), path(krona_table)
     
     output:
-      tuple val(meta), val(set_name), path("${set_name}.sankey.filtered-${params.sankey}.json"), path("${set_name}.sankey.tsv")
+      tuple val(meta), val(set_name), path("${set_name}.sankey.filtered-${params.sankey}.json"), emit: sankey_filtered_json
     
     script:
     """
@@ -27,24 +27,14 @@ process SANKEY {
     container 'quay.io/microbiome-informatics/sankeyd3:0.12.3'
 
     input:
-      tuple val(meta), val(set_name), path(json), path(tsv)
+      tuple val(meta), val(set_name), path(json)
     
     output:
       tuple val(meta), val(set_name), path("*.sankey.html")
     
     script:
-    id = set_name
-    if (set_name == "all") { id = meta.id }
+    
     """
-    #!/usr/bin/env Rscript
-
-    library(sankeyD3)
-    library(magrittr)
-
-    Taxonomy <- jsonlite::fromJSON("${json}")
-
-    # print to HTML file
-    sankey = sankeyNetwork(Links = Taxonomy\$links, Nodes = Taxonomy\$nodes, Source = "source", Target = "target", Value = "value", NodeID = "name", units = "count", fontSize = 22, nodeWidth = 30, nodeShadow = TRUE, nodePadding = 30, nodeStrokeWidth = 1, nodeCornerRadius = 10, dragY = TRUE, dragX = TRUE, numberFormat = ",.3g", align = "left", orderByPath = TRUE)
-    saveNetwork(sankey, file = '${id}.sankey.html')
+    sankey_html.R ${json} "${meta.id}.${set_name}.sankey.html"
     """
 }
