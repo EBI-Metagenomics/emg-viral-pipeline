@@ -10,7 +10,7 @@ from pathlib import Path
 def clean(arr, ranks):
     """
     Assigns ranks to annotations. 
-    If rank is not presented - add 'underfined rank' and closest defined rank
+    If rank is not presented - add 'undefined rank' and closest defined rank
     for example, Caudoviricetes --> Undefined Caudoviricetes (Order) --> Undefined Caudoviricetes (Family) --> Guernseyvirinae --> Jerseyvirus
     """
     converted_tax = []
@@ -25,12 +25,12 @@ def clean(arr, ranks):
             if tax_value == "" or \
                 tax_value == "\n" or \
                 re.match(r"^[+-]?\d(>?\.\d+)?$", tax_value):
-                converted_tax.append(f"underfined_{rank}_{last_known_rank}")
+                converted_tax.append(f"undefined_{rank}_{last_known_rank}")
             else:
                 converted_tax.append(tax_value.strip())
                 last_known_rank = tax_value.strip()
     else:
-        converted_tax = ["underfined"]
+        converted_tax = ["undefined"]
     return tuple(converted_tax)
 
 

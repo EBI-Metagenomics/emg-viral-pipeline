@@ -1,11 +1,10 @@
 #!/usr/bin/env Rscript
 
-# Load necessary libraries
-suppressPackageStartupMessages({
-  library(sankeyD3)
-  library(magrittr)
-  library(jsonlite)
-})
+
+library(sankeyD3)
+library(magrittr)
+library(jsonlite)
+
 
 # Parse command-line arguments
 args <- commandArgs(trailingOnly = TRUE)
