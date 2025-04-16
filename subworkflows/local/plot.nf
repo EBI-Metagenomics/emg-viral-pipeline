@@ -1,6 +1,6 @@
 //visuals
 
-include { GENERATE_KRONA_TABLE     } from '../../modules/local/krona' 
+include { TAXONOMY_COUNTS_TABLE     } from '../../modules/local/taxonomy_counts' 
 include { GENERATE_SANKEY_TABLE    } from '../../modules/local/sankey'
 include { GENERATE_CHROMOMAP_TABLE } from '../../modules/local/chromomap'
 include { KRONA                    } from '../../modules/local/krona'
@@ -17,15 +17,18 @@ Plot results. Basically runs krona and sankey. ChromoMap and Balloon are still e
       annotated_proteins_ch
 
     main:
-        // krona
+        // general taxonomy counts
         combined_assigned_lineages_ch = assigned_lineages_ch.groupTuple().map { tuple(it[0], 'all', it[2]) }.concat(assigned_lineages_ch)
+        TAXONOMY_COUNTS_TABLE(combined_assigned_lineages_ch)
+        
+        // krona (without undefined taxa)
         KRONA(
-          GENERATE_KRONA_TABLE(combined_assigned_lineages_ch)
+          TAXONOMY_COUNTS_TABLE.out.tsv
         )
 
         // sankey
         if (workflow.profile != 'conda') {
-          GENERATE_SANKEY_TABLE( GENERATE_KRONA_TABLE.out )
+          GENERATE_SANKEY_TABLE( TAXONOMY_COUNTS_TABLE.out.tsv )
           
           SANKEY( GENERATE_SANKEY_TABLE.out.sankey_filtered_json )
         }

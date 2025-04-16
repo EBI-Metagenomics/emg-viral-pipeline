@@ -11,7 +11,7 @@ def clean(arr, ranks):
     """
     Assigns ranks to annotations. 
     If rank is not presented - add 'undefined rank' and closest defined rank
-    for example, Caudoviricetes --> Undefined Caudoviricetes (Order) --> Undefined Caudoviricetes (Family) --> Guernseyvirinae --> Jerseyvirus
+    for example, Caudoviricetes --> undefined_order_Caudoviricetes --> undefined_family_Caudoviricetes --> Guernseyvirinae --> Jerseyvirus
     """
     converted_tax = []
     last_known_rank = ''
