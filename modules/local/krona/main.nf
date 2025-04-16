@@ -14,7 +14,7 @@ process KRONA {
     script:
       """
       export accession="${meta.id}"
-      if [[ "${set_name}" == "all" ]]; then
+      if [ "${set_name}" != "all" ]; then
         export accession="${set_name}"
       fi
       
