@@ -11,14 +11,12 @@ process TAXONOMY_COUNTS_TABLE {
     
     script:
     """
-    if [[ "${set_name}" == "all" ]]; then
-      grep contig_ID *.tsv | awk 'BEGIN{FS=":"};{print \$2}' | uniq > ${meta.id}.tmp
-      grep -v "contig_ID" *.tsv | awk 'BEGIN{FS=":"};{print \$2}' | uniq >> ${meta.id}.tmp
-      cp ${meta.id}.tmp ${meta.id}.tsv
-      generate_counts_table.py -f ${meta.id}.tsv -o ${meta.id}.counts.tsv
-    else
-      generate_counts_table.py -f ${tbl} -o ${set_name}.counts.tsv
+    export accession="${meta.id}"
+    if [ "${set_name}" != "all" ]; then
+      export accession="${set_name}"
     fi
+      
+    generate_counts_table.py -f ${tbl} -o \${accession}.counts.tsv
     """
 }
 
