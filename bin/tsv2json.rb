@@ -52,7 +52,7 @@ TSV.close
 JSON << '{"nodes":[' << "\n"
 pos = 1
 id2taxa.each do |name, id|
-    clean_name = name.include?("undefined") ? "" : name
+    clean_name = name.include?("undefined_") ? "" : name
     if pos == id2taxa.keys.size
         JSON << "\t{\"name\":\"#{clean_name}\",\"id\":#{id}}\n\t],\"links\":[\n"
     else
