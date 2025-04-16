@@ -13,9 +13,9 @@ process KRONA {
       
     script:
       """
-      export accession=${meta.id}
+      export accession="${meta.id}"
       if [ "${set_name}" == "all" ]; then
-        accession=${set_name}
+        export accession="${set_name}"
       fi
       
       # remove all undefined_taxa
