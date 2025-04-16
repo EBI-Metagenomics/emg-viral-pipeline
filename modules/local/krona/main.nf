@@ -21,7 +21,7 @@ process KRONA {
       # remove all undefined_taxa
       sed 's/undefined_[^ \\t]*//g' ${input_file} > cleaned.tsv
       
-      // krona
+      # krona
       ktImportText -o \${accession}.krona.html cleaned.tsv
       """
 }
