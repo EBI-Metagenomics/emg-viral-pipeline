@@ -15,6 +15,7 @@ def clean(arr, ranks):
     """
     converted_tax = []
     last_known_rank = ''
+    undefined_count = 0
     if len(arr) > 0:
         if arr[0] == '':
             # TODO: fix that bug in assign script
@@ -25,10 +26,25 @@ def clean(arr, ranks):
             if tax_value == "" or \
                 tax_value == "\n" or \
                 re.match(r"^[+-]?\d(>?\.\d+)?$", tax_value):
-                converted_tax.append(f"undefined_{rank}_{last_known_rank}")
+                if last_known_rank:
+                    converted_tax.append(f"undefined_{rank}_{last_known_rank}")
+                else:
+                    converted_tax.append(f"undefined_{rank}")
+                undefined_count += 1
             else:
                 converted_tax.append(tax_value.strip())
                 last_known_rank = tax_value.strip()
+        if len(arr) == undefined_count:
+            return(tuple(["undefined"]))
+        # check last values should not end to undefined_
+        remove_elements = 0
+        for item in reversed(converted_tax):
+            if item.startswith('undefined'):
+                remove_elements += 1  
+            else:
+                break
+        if remove_elements:
+            converted_tax = converted_tax[:-remove_elements]    
     else:
         converted_tax = ["undefined"]
     return tuple(converted_tax)
