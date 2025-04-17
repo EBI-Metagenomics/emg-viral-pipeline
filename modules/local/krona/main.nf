@@ -12,12 +12,7 @@ process KRONA {
       file("*.krona.html")
       
     script:
-      """
-      export accession="${meta.id}"
-      if [ "${set_name}" != "all" ]; then
-        export accession="${set_name}"
-      fi
-      
-      ktImportText -n ${meta.id} -o \${accession}.krona.html ${input_file}
+      """  
+      ktImportText -n ${meta.id} -o "${meta.id}.${set_name}.krona.html" ${input_file}
       """
 }
