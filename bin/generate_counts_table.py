@@ -65,8 +65,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     taxons = []
-    header = False
     for input_table in args.files:
+        header = False
         tsv = Path(input_table)
         if not tsv.is_file():
             raise Exception("Input file missing. Path: " + input_table)
