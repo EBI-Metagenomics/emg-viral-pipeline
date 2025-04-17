@@ -8,6 +8,7 @@ process GENERATE_SANKEY_TABLE {
     
     output:
       tuple val(meta), val(set_name), path("${set_name}.sankey.filtered-${params.sankey}.json"), emit: sankey_filtered_json
+      tuple val(meta), val(set_name), path("${set_name}.sankey.filtered.tsv"),                   emit: sankey_filtered_tsv
     
     script:
     """
