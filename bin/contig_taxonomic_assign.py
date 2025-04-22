@@ -11,6 +11,39 @@ import pandas as pd
 from ete3 import NCBITaxa
 
 
+# Some taxa are discontinued, we should exclude them (https://github.com/EBI-Metagenomics/emg-viral-pipeline/issues/113):
+EXCLUDE_TAXA = ["Allolevivirus",
+                "Autographivirinae",
+                "Buttersvirus",
+                "Caudovirales",
+                "Chungbukvirus",
+                "Incheonvirus",
+                "Leviviridae",
+                "Levivirus",
+                "Mandarivirus",
+                "Pbi1virus",
+                "Phicbkvirus",
+                "Radnorvirus",
+                "Sitaravirus",
+                "Vidavervirus",
+                "Myoviridae",
+                "Siphoviridae",
+                "Podoviridae",
+                "Viunavirus",
+                "Orthohepevirus",
+                "Klosneuvirus",
+                "Hendrixvirus",
+                "Rubulavirus",
+                "Avulavirus",
+                "Catovirus",
+                "Nucleorhabdovirus",
+                "Viunavirus",
+                "Gammalipothrixvirus",
+                "Peduovirinae",
+                "Sedoreovirinae"
+                ]
+
+
 def main(args):
     """Generate tabular file with taxonomic assignment of viral contigs based on ViPhOG annotations"""
     input_df = pd.read_csv(args.input_file, sep="\t")
@@ -57,7 +90,7 @@ def contig_tax(annot_df, ncbi_db, tax_thres, taxon_factor_dict, output_taxa_orde
     contig_set = set(annot_df["Contig"])
 
     for contig in contig_set:
-        contig_lineage = [contig]
+        contig_lineage = []
         contig_df = annot_df[annot_df["Contig"] == contig]
         total_prot = len(contig_df)
         annot_prot = sum(contig_df["Best_hit"] != "No hit")
@@ -78,12 +111,14 @@ def contig_tax(annot_df, ncbi_db, tax_thres, taxon_factor_dict, output_taxa_orde
                 try:
                     for x, y in ncbi.get_rank(ncbi.get_lineage(item)).items():
                         if y in viphog_rank:
-                            lineage_dict[y] = ncbi.get_taxid_translator([x])[x]
-                    hit_lineages.append(lineage_dict)
+                            taxa_to_check = ncbi.get_taxid_translator([x])[x]
+                            if taxa_to_check not in EXCLUDE_TAXA:
+                                lineage_dict[y] = taxa_to_check
+                    if lineage_dict:
+                        hit_lineages.append(lineage_dict)
                 except ValueError:
                     print(f'Can not return lineage for {item}')
-                    pass  
-
+                    pass
             for rank in output_taxa_order[::-1][:-1]:
                 taxon_list = [item.get(rank) for item in hit_lineages]
                 total_hits = sum(pd.notnull(taxon_list))
@@ -111,7 +146,7 @@ def contig_tax(annot_df, ncbi_db, tax_thres, taxon_factor_dict, output_taxa_orde
                             over_thres.append((hit_taxon, prop_hits))
                     if len(over_thres) == 0:
                         best_under = sorted(under_thres, key=lambda x: x[1])[0]
-                        contig_lineage.append(best_under[1])
+                        contig_lineage.append(best_under[0])
                     else:
                         sorted_over_thres = [
                             x
@@ -144,8 +179,10 @@ def contig_tax(annot_df, ncbi_db, tax_thres, taxon_factor_dict, output_taxa_orde
                         else:
                             contig_lineage.append("")
                             continue
-                        contig_lineage.extend(taxon_lineage_list)
+                        contig_lineage.reverse()
+                        contig_lineage = taxon_lineage_list + contig_lineage
                         break
+        contig_lineage = [contig] + contig_lineage
         yield contig_lineage
 
 
