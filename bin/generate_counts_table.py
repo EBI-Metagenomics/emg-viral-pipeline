@@ -20,9 +20,7 @@ def clean(arr, ranks):
         if arr[0] == '':
             # TODO: fix that bug in assign script
             arr = arr[1:]   
-        for iter in range(len(arr)):
-            tax_value = arr[iter]
-            rank = ranks[iter]
+        for tax_value, rank in zip(arr, ranks):
             if tax_value == "" or \
                 tax_value == "\n" or \
                 re.match(r"^[+-]?\d(>?\.\d+)?$", tax_value):
