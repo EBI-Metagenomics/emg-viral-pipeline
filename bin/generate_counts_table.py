@@ -7,7 +7,7 @@ from collections import Counter
 from pathlib import Path
 
 
-def clean(arr, ranks):
+def clean(lineage_parts, ranks):
     """
     Assigns ranks to annotations. 
     If rank is not presented - add 'undefined rank' and closest defined rank
@@ -16,11 +16,11 @@ def clean(arr, ranks):
     converted_tax = []
     last_known_rank = ''
     undefined_count = 0
-    if arr:
-        if arr[0] == '':
+    if lineage_parts:
+        if lineage_parts[0] == '':
             # TODO: fix that bug in assign script
-            arr = arr[1:]   
-        for tax_value, rank in zip(arr, ranks):
+            lineage_parts = lineage_parts[1:]   
+        for tax_value, rank in zip(lineage_parts, ranks):
             if tax_value == "" or \
                 tax_value == "\n" or \
                 re.match(r"^[+-]?\d(>?\.\d+)?$", tax_value):
@@ -32,7 +32,7 @@ def clean(arr, ranks):
             else:
                 converted_tax.append(tax_value.strip())
                 last_known_rank = tax_value.strip()
-        if len(arr) == undefined_count:
+        if len(lineage_parts) == undefined_count:
             return(tuple(["undefined"]))
         # check last values should not end to undefined_
         remove_elements = 0
