@@ -16,7 +16,7 @@ def clean(arr, ranks):
     converted_tax = []
     last_known_rank = ''
     undefined_count = 0
-    if len(arr) > 0:
+    if arr:
         if arr[0] == '':
             # TODO: fix that bug in assign script
             arr = arr[1:]   
