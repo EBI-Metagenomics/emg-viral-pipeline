@@ -1,7 +1,7 @@
 contig_ID	superkingdom	kingdom	phylum	subphylum	class	order	suborder	family	subfamily	genus
-pos.phage.5		Viruses	Bamfordvirae	Nucleocytoviricota		Megaviricetes	Imitervirales		Mimiviridae	Klosneuvirinae
-pos.phage.1										
-pos.phage.7	Viruses	Heunggongvirae	Uroviricota		Caudoviricetes			Autographiviridae		Pradovirus
-pos.phage.6	Viruses	Heunggongvirae	Uroviricota		Caudoviricetes			Autographiviridae		Pradovirus
 pos.phage.2										
+pos.phage.6	Viruses	Heunggongvirae	Uroviricota		Caudoviricetes			Autographiviridae		Pradovirus
+pos.phage.1										
+pos.phage.5	Viruses	Bamfordvirae	Nucleocytoviricota		Megaviricetes	Imitervirales		Mimiviridae	Klosneuvirinae	
 pos.phage.8	Viruses	Heunggongvirae	Uroviricota		Caudoviricetes				Guernseyvirinae	Jerseyvirus
+pos.phage.7	Viruses	Heunggongvirae	Uroviricota		Caudoviricetes			Autographiviridae		Pradovirus

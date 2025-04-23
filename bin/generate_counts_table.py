@@ -17,9 +17,6 @@ def clean(lineage_parts, ranks):
     last_known_rank = ''
     undefined_count = 0
     if lineage_parts:
-        if lineage_parts[0] == '':
-            # TODO: fix that bug in assign script
-            lineage_parts = lineage_parts[1:]   
         for tax_value, rank in zip(lineage_parts, ranks):
             if tax_value == "" or \
                 tax_value == "\n" or \

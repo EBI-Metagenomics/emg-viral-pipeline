@@ -35,11 +35,11 @@ class GenerateCountTable(unittest.TestCase):
         self.assertEqual(clean(inp, ranks[-4:]), exp)
 
     def test_all_unclassified(self):
-        inp = "				"
+        inp = "\t\t\t\t"
         exp = ("undefined",)
-        self.assertEqual(clean(inp.split("\t"), ranks[-4:]), exp)
+        self.assertEqual(clean(inp.split("\t"), ranks[-5:]), exp)
 
-        inp_t = "0.2	0.4	0.4	0.4"
+        inp_t = "0.2\t\t0.4\t0.4\t0.4"
         self.assertEqual(clean(inp_t.split("\t"), ranks[-5:]), exp)
 
 
