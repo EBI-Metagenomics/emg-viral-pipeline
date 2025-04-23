@@ -14,7 +14,7 @@ process GENERATE_SANKEY_TABLE {
     """
     krona_table_2_sankey_table.rb ${krona_table} ${set_name}.sankey.tsv
     
-    # select the top ${params. } hits with highest count because otherwise sankey gets messy
+    # select the top ${params.sankey} hits with highest count because otherwise sankey gets messy
     sort -k1,1nr ${set_name}.sankey.tsv | head -${params.sankey} > ${set_name}.sankey.filtered.tsv
 
     tsv2json.rb ${set_name}.sankey.filtered.tsv ${set_name}.sankey.filtered-${params.sankey}.json
