@@ -21,7 +21,7 @@ class TestContigTaxonomicAssignation(unittest.TestCase):
     def test_correct_assignation(self):
 
         input_args = namedtuple(
-            "input_args", "input_file ncbi_db factor outdir tax_thres"
+            "input_args", "input_file ncbi_db factor outdir tax_thres version4"
         )
 
         args = {
@@ -33,6 +33,7 @@ class TestContigTaxonomicAssignation(unittest.TestCase):
             ),
             "outdir": str(self._fixtures_folder),
             "tax_thres": 0.6,
+            "version4": True
         }
 
         contig_taxonomic_assign_main(input_args(**args))

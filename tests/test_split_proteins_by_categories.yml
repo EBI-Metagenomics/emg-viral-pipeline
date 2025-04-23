@@ -12,4 +12,4 @@
   command: python -m bin.split_proteins_by_categories -i tests/split_proteins/test_prophages.fna -p tests/split_proteins/test_prophages.faa -o test_prophages_split.faa
   files:
     - path: "test_prophages_split.faa"
-      md5sum: e11dd4fce9a49ede8de1dd5679629e22
+      md5sum: 4e2bd9a13bada991693321839e958e40

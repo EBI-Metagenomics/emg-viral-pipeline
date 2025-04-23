@@ -1,2 +1,2 @@
-contig_ID	genus	subfamily	family	order
-pos.phage.0|prophage-21696:135184	0.4	Vequintavirinae	Myoviridae	Caudovirales
+contig_ID	superkingdom	kingdom	phylum	subphylum	class	order	suborder	family	subfamily	genus
+pos.phage.0|prophage-21696:135184	Viruses	Heunggongvirae	Uroviricota		Caudoviricetes				Vequintavirinae	Certrevirus
