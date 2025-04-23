@@ -1,8 +1,10 @@
 process CHECKV {
     label 'process_high'
     tag "${meta.id} ${confidence_set_name}"    
-    container 'quay.io/microbiome-informatics/checkv:0.8.1__1'
-    
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/checkv:1.0.1--pyhdfd78af_0':
+        'biocontainers/checkv:1.0.1--pyhdfd78af_0' }"
+        
     input:
         tuple val(meta), val(confidence_set_name), path(fasta)
         path(database)
