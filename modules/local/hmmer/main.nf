@@ -7,6 +7,7 @@ process HMMER {
     input:
       tuple val(meta), val(set_name), path(faa) 
       path(db)
+      val(is_viphog_db)
     
     output:
       tuple val(meta), val(set_name), path("${faa.baseName}_*_${params.hmmer_tool}.tbl")
@@ -16,7 +17,7 @@ process HMMER {
     def execution_tool = params.hmmer_tool
     
     """
-    if [ "${params.hmmextend}" == "false" ]; then
+    if [ "${is_viphog_db}" == "true" ]; then
       if [ "${params.viphog_version}" == "v1" ]; then
         ${execution_tool} --cpu ${task.cpus} --noali -E "0.001" --domtblout ${faa.baseName}_${db.baseName}_${execution_tool}.tbl ${db}/${db}.hmm ${faa}
       else

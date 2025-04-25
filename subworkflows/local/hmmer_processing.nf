@@ -29,7 +29,7 @@ workflow HMMER_PREDICTION {
     )
     def ch_protein_chunks = SEQKIT_SPLIT2.out.assembly.transpose()
 
-    HMMER_VIPHOGS( ch_protein_chunks, viphog_db )
+    HMMER_VIPHOGS( ch_protein_chunks, viphog_db, true )
     
     CONCATENATE_HMMER_TBLOUT(
         HMMER_VIPHOGS.out.groupTuple(by: [0,1])
@@ -39,10 +39,10 @@ workflow HMMER_PREDICTION {
 
     // hmmer additional databases
     if ( params.hmmextend ) {
-      HMMER_RVDB( proteins, rvdb_db )
-      HMMER_PVOGS( proteins, pvogs_db )
-      HMMER_VOGDB( proteins, vogdb_db )
-      HMMER_VPF( proteins, vpf_db )
+      HMMER_RVDB( proteins, rvdb_db, false )
+      HMMER_PVOGS( proteins, pvogs_db, false )
+      HMMER_VOGDB( proteins, vogdb_db, false )
+      HMMER_VPF( proteins, vpf_db, false )
     }
     
     emit:
