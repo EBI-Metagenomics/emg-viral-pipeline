@@ -1,29 +1,3 @@
-process VIRSORTER {
-    label 'process_medium'
-    tag "${meta.id}"
-    container 'quay.io/microbiome-informatics/virsorter:1.0.6_edfeb8c5e72'
-    
-    input:
-    tuple val(meta), path(fasta), val(contig_number) 
-    path(database) 
-
-    when: 
-    contig_number.toInteger() > 0 
-
-    output:
-    tuple val(meta), path("*")
-    
-    script:
-    if (params.virome)
-    """
-    wrapper_phage_contigs_sorter_iPlant.pl -f ${fasta} --db 2 --wdir virsorter --ncpu ${task.cpus} --data-dir ${database} --virome
-    """
-    else
-    """
-    wrapper_phage_contigs_sorter_iPlant.pl -f ${fasta} --db 2 --wdir virsorter --ncpu ${task.cpus} --data-dir ${database}
-    """
-}
-
 /*
   usage: wrapper_phage_contigs_sorter_iPlant.pl --fasta sequences.fa
 
@@ -57,5 +31,35 @@ process VIRSORTER {
                      instead of the C script to calculate enrichment statistics. Note that
                      VirSorter will be slower with this option.
       --help         Show help and exit
-
 */
+
+process VIRSORTER {
+
+  label 'process_medium'
+
+  tag "${meta.id}"
+
+  container 'quay.io/microbiome-informatics/virsorter:1.0.6_edfeb8c5e72'
+
+  input:
+  tuple val(meta), path(fasta), val(contig_number)
+  path database
+
+  output:
+  tuple val(meta), path("*")
+
+  when:
+  contig_number.toInteger() > 0
+
+  script:
+  if (params.virome) {
+    """
+    wrapper_phage_contigs_sorter_iPlant.pl -f ${fasta} --db 2 --wdir virsorter --ncpu ${task.cpus} --data-dir ${database} --virome
+    """
+  }
+  else {
+    """
+    wrapper_phage_contigs_sorter_iPlant.pl -f ${fasta} --db 2 --wdir virsorter --ncpu ${task.cpus} --data-dir ${database}
+    """
+  }
+}
