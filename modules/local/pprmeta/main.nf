@@ -20,7 +20,7 @@ process PPRMETA {
     """
 }
 
-process PPRMETA_GETDB {
+process pprmetaGet {
 
   // TODO: use a community supported image
   container 'nanozoo/template:3.8--ccd0653'
