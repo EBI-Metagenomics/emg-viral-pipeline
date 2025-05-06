@@ -7,36 +7,42 @@ from collections import Counter
 from pathlib import Path
 
 
-def _clean(arr):
-    """Convert ratio values for missing pieces of the tax into "unclassified"
-    and remove empty entries.
-    Rules:
-        - if all the cols are unclassified then remove row.
-        - if there is no classification for either genus, subfamily or family then remove row.
-        - collapse unclassified values from low to high
-            - example: Caudovirales	unclassified	unclassified	unclassified
-              should be: Caudovirales
+def clean(lineage_parts, ranks):
+    """
+    Assigns ranks to annotations. 
+    If rank is not presented - add 'undefined rank' and closest defined rank
+    for example, Caudoviricetes --> undefined_order_Caudoviricetes --> undefined_family_Caudoviricetes --> Guernseyvirinae --> Jerseyvirus
     """
     converted_tax = []
-    for tax_value in arr[::-1]:
-        if tax_value == "" or \
-           tax_value == "\n" or \
-           re.match(r"^[+-]?\d(>?\.\d+)?$", tax_value):
-            converted_tax.append("unclassified")
-        else:
-            converted_tax.append(tax_value.strip())
-    # rule 1
-    if len(converted_tax) == converted_tax.count("unclassified"):
-        return tuple(("unclassified",))
-    # rule 2 and 3
-    result = []
-    for i in range(0, len(converted_tax) - 1):
-        if not (converted_tax[i] == "unclassified" and
-           converted_tax[i + 1] == "unclassified"):
-            result.append(converted_tax[i])
-    if converted_tax[-1] != "unclassified":
-        result.append(converted_tax[-1])
-    return tuple(result)
+    last_known_rank = ''
+    undefined_count = 0
+    if lineage_parts:
+        for tax_value, rank in zip(lineage_parts, ranks):
+            if tax_value == "" or \
+                tax_value == "\n" or \
+                re.match(r"^[+-]?\d(>?\.\d+)?$", tax_value):
+                if last_known_rank:
+                    converted_tax.append(f"undefined_{rank}_{last_known_rank}")
+                else:
+                    converted_tax.append(f"undefined_{rank}")
+                undefined_count += 1
+            else:
+                converted_tax.append(tax_value.strip())
+                last_known_rank = tax_value.strip()
+        if len(lineage_parts) == undefined_count:
+            return(tuple(["undefined"]))
+        # check last values should not end to undefined_
+        remove_elements = 0
+        for item in reversed(converted_tax):
+            if item.startswith('undefined'):
+                remove_elements += 1  
+            else:
+                break
+        if remove_elements:
+            converted_tax = converted_tax[:-remove_elements]    
+    else:
+        converted_tax = ["undefined"]
+    return tuple(converted_tax)
 
 
 if __name__ == "__main__":
@@ -54,17 +60,18 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     taxons = []
-
     for input_table in args.files:
+        header = False
         tsv = Path(input_table)
         if not tsv.is_file():
             raise Exception("Input file missing. Path: " + input_table)
         with open(tsv, mode="r") as tsv_reader:
-            next(tsv_reader)  # header
-            # contig_ID	genus subfamily family order
             for line in tsv_reader:
-                tax_lineage = line.split("\t")[1:]
-                taxons.append(_clean(tax_lineage))
+                if not header:
+                    header = line.strip().split('\t')
+                else:
+                    tax_lineage = line.strip().split("\t")[1:]
+                    taxons.append(clean(tax_lineage, header[1:]))
 
     with open(args.outfile, "w", newline="") as tsv_out:
         tsv_writer = csv.writer(tsv_out, delimiter="\t",

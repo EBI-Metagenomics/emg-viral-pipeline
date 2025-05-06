@@ -14,7 +14,7 @@
 <a name="virify"></a>
 
 # VIRify
-![Sankey plot](nextflow/figures/2023-sankey-neto.png)
+![Sankey plot](figures/2023-sankey-neto.png)
 
 ## General
 VIRify is a pipeline for the detection, annotation, and taxonomic classification of viral contigs in metagenomic and metatranscriptomic assemblies. The pipeline is part of the repertoire of analysis services offered by [MGnify](https://www.ebi.ac.uk/metagenomics/). VIRify's taxonomic classification relies on the detection of taxon-specific profile hidden Markov models (HMMs), built upon a set of 22,013 orthologous protein domains and [referred to as ViPhOGs](https://doi.org/10.3390/v13061164). 
@@ -57,7 +57,9 @@ While singularity can be installed via Conda, we recommend setting up a _true_ S
 
 ### Install
 
-While it is possible to clone this repository and directly execute the `virify.nf`, we _recommend_ to let Nextflow handle the installation. Get the pipeline code via:
+While it is possible to clone this repository and directly execute the `virify.nf`, but we _recommend_ letting Nextflow handle the installation.
+
+Get the pipeline code via:
 ```bash
 nextflow pull EBI-Metagenomics/emg-viral-pipeline
 ```
@@ -69,9 +71,10 @@ nextflow run EBI-Metagenomics/emg-viral-pipeline --help
 
 ### Run specific pipeline version
 
-We __highly recommend__ to always run stable [releases](https://github.com/EBI-Metagenomics/emg-viral-pipeline/releases), also for reproducibility:
+We __highly recommend__ to always run from a [release](https://github.com/EBI-Metagenomics/emg-viral-pipeline/releases):
+
 ```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.4.0 --help
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v3.0.0 --help
 ```
 
 Check the [release page](https://github.com/EBI-Metagenomics/emg-viral-pipeline/releases) to figure out the newest version of the pipelne. Or run:
@@ -80,11 +83,37 @@ Check the [release page](https://github.com/EBI-Metagenomics/emg-viral-pipeline/
 nextflow info EBI-Metagenomics/emg-viral-pipeline
 ```
 
+### Input
+
+The pipeline accepts the assembly either using the `--fasta` parameter for a single one. Or the `--samplesheet` parameter to indicate a .csv that contains as many assemblies. The former allows for greater parallelization as one head nextflow job can run many assemblies at once.
+Samplesheet
+
+#### Samplesheet
+
+The samplesheet must be a .csv file that contains the following columns:
+
+- id - Sample identifier (mandatory)
+- assembly - Assembly file in FASTA format (optional)
+- fastq_1 - FastQ file for reads 1 in '.fq.gz' or '.fastq.gz' format (optional)
+- fastq_2 - FastQ file for reads 2 in '.fq.gz' or '.fastq.gz' format
+- protein - Proteins file in FASTA format (optional)
+ 
+The fastq_1 and fastq_2 files are optional and can be provided if the user wants the reads to be assembled. The proteins file is also optional and can be provided to avoid calling the protein caller again.
+
+[Example](assets/example_input.csv)
+```
+id,assembly,fastq_1,fastq_2,proteins
+ERZ123,ERZ123.fasta,,,
+```
+
 ### Example execution
 
 Run annotation for a small assembly file (10 contigs, 0.78 Mbp) on your local Linux machine using Docker containers (per default `--cores 4`; takes approximately 10 min on a 8 core i7 laptop + time for database download; ~19 GB):
+
 ```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.4.0 --fasta "$HOME/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" --cores 4 -profile local,docker
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v3.0.0 \\
+    --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" \\
+    --cores 4 -profile local,docker
 ```
 
 __Please note__ that in particular the following parameters are important to handle where Nextflow writes files. 
@@ -125,7 +154,10 @@ You can save this variable in your `.bashrc` or `.profile` to not need to enter 
 Now run:
 
 ```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.4.0 --fasta "$HOME/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" --cores 4 -profile local,docker -with-tower
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.4.0 \\
+    --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" \\
+    --cores 4 -profile local,docker \\
+    -with-tower
 ```
 
 Alternatively, you can also pull the code from this repository and activate the Tower connection within the `nextflow.config` file located in the root GitHub directory:

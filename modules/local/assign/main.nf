@@ -18,7 +18,8 @@ process ASSIGN {
       tuple val(meta), val(set_name), path("*_taxonomy.tsv")
     
     script:
+    def version4 = params.meta_version == 'v4' ? '--version4' : ''
     """
-    contig_taxonomic_assign.py -i ${tab} -d ${db} --factor ${factor} --taxthres ${params.taxthres}
+    contig_taxonomic_assign.py ${version4} -i ${tab} -d ${db} --factor ${factor} --taxthres ${params.taxthres} 
     """
 }

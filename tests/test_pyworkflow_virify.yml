@@ -1,5 +1,5 @@
 - name: virify - assembly.fasta
-  command: nextflow run -profile jenkins -c ./tests/config/nextflow.config virify.nf --fasta ./nextflow/test/assembly.fasta
+  command: nextflow run -profile jenkins -c ./tests/config/nextflow.config virify.nf --fasta ./tests/test_data/assembly.fasta
   files:
     - path: "results/assembly/08-final/annotation/high_confidence_viral_contigs_prodigal_annotation.tsv"
       encoding: UTF-8
