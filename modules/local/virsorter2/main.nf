@@ -4,7 +4,8 @@ process VIRSORTER2 {
 
   label 'process_high'
 
-  container 'quay.io/microbiome-informatics/virsorter:2.2.4'
+  container 'quay.io/microbiome-informatics/virsorter:2.2.4_1'
+  // container 'quay.io/biocontainers/virsorter:2.2.4--pyhdfd78af_2'
 
   input:
   tuple val(meta), file(fasta), val(number_of_contigs)
@@ -20,24 +21,20 @@ process VIRSORTER2 {
   script:
   def args = task.ext.args ?: ''
   """
-  # Settings to speed up hmmsearch
-  # TODO: this needs to be tested, it doesn't seem to speed up so we decided to chunk the fasta instead
-  # virsorter config --set HMMSEARCH_THREADS=4
-  # virsorter config --set FAA_BP_PER_SPLIT=50000
-  
-  # extract chunk number to rename output files
+  # Extract chunk number to rename output files
   filename=\$(basename ${fasta})
   # Extract VALUE (assuming the filename is in format NAME.VALUE.fasta)
   export value="all"
   value=\$(echo "\$filename" | cut -d'.' -f2)
 
-  virsorter run \
-            --db-dir ${database} \
-            -w virsorter2 \
-            -i ${fasta} \
-            -j ${task.cpus} \
-            ${args} \
-            all
+  virsorter run \\
+    --db-dir ${database} \\
+    --use-conda-off \\
+    --working-dir virsorter2 \\
+    --seqfile ${fasta} \\
+    --jobs ${task.cpus} \\
+    ${args} \\
+    all
 
   # Rename files
   mv virsorter2/final-viral-score.tsv "\${value}.final-viral-score.tsv"
