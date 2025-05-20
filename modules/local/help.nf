@@ -104,7 +104,7 @@ def helpMSG() {
 
       Or use a ${c_yellow}pre-configured${c_reset} setup instead:
         standard (local,docker) [default]
-        ebi (lsf,singularity; preconfigured for the EBI cluster)
+        ebi (slurm,singularity; preconfigured for the EBI cluster)
         gcloud (use this as template for your own GCP setup)
       ${c_reset}
 
