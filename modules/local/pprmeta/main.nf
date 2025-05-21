@@ -15,15 +15,17 @@ process PPRMETA {
 
   script:
   """
-    [ -d "pprmeta" ] && cp pprmeta/* .
-    ./PPR_Meta ${fasta} ${meta.id}_pprmeta.csv
-    """
+  export MCR_CACHE_ROOT="\$(pwd)/mcr_cache_root"
+  mkdir -p \$(pwd)/mcr_cache_root
+
+  [ -d "pprmeta" ] && cp pprmeta/* .
+  ./PPR_Meta ${fasta} ${meta.id}_pprmeta.csv
+  """
 }
 
 process pprmetaGet {
 
-  // TODO: use a community supported image
-  container 'nanozoo/template:3.8--ccd0653'
+  container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'
 
   label 'process_single'
 
@@ -32,8 +34,10 @@ process pprmetaGet {
 
   script:
   """
-  git clone https://github.com/mult1fractal/PPR-Meta.git
-  mv PPR-Meta/* .  
-  rm -r PPR-Meta
+  wget -nH https://github.com/zhenchengfang/PPR-Meta/archive/refs/tags/v1.1.tar.gz
+  tar -xzf v1.1.tar.gz && rm v1.1.tar.gz
+  mv PPR-Meta-1.1/* .
+  chmod +xr *
+  rm -r PPR-Meta-1.1
   """
 }
