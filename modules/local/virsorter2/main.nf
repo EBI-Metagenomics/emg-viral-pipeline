@@ -5,16 +5,15 @@ process VIRSORTER2 {
   label 'process_high'
 
   container 'quay.io/microbiome-informatics/virsorter:2.2.4_1'
-  // container 'quay.io/biocontainers/virsorter:2.2.4--pyhdfd78af_2'
 
   input:
   tuple val(meta), file(fasta), val(number_of_contigs)
   path database
 
   output:
-  tuple val(meta), path("*.final-viral-score.tsv"), emit: score_tsv
+  tuple val(meta), path("*.final-viral-score.tsv"),    emit: score_tsv
   tuple val(meta), path("*.final-viral-boundary.tsv"), emit: boundary_tsv
-  tuple val(meta), path("*.final-viral-combined.fa"), emit: combined_fa
+  tuple val(meta), path("*.final-viral-combined.fa"),  emit: combined_fa
 
   when: number_of_contigs.toInteger() > 0
 
@@ -29,7 +28,6 @@ process VIRSORTER2 {
 
   virsorter run \\
     --db-dir ${database} \\
-    --use-conda-off \\
     --working-dir virsorter2 \\
     --seqfile ${fasta} \\
     --jobs ${task.cpus} \\
