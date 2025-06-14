@@ -15,6 +15,6 @@ process BLAST_FILTER {
 
   script:
   """
-  imgvr_merge.py -f ${blast_filtered} -d ${db}/IMG_VR_2018-07-01_4/IMGVR_all_Sequence_information.tsv -o \$(basename ${blast_filtered} .blast).meta
+  imgvr_merge.py -f ${blast_filtered} -d ${db}/IMGVR_all_Sequence_information.tsv -o \$(basename ${blast_filtered} .blast).meta
   """
 }
