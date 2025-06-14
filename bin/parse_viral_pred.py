@@ -164,21 +164,22 @@ def parse_virus_sorter(sorter_files):
     for file in sorter_files or []:
         if not isfile(file) or ".fasta" not in file:
             continue
-        for record in SeqIO.parse(file, "fasta"):
-            category = record.id[-1:]
-            clean_name, circular, prange = _parse_virsorter_metadata(record.id)
-            record.id = clean_name
-            if category in ["1", "2"]:
-                high_confidence[record.id] = Record(record, "high_confidence", circular)
-            elif category == "3":
-                low_confidence[record.id] = Record(record, "low_confidence", circular)
-            elif category in ["4", "5"]:
-                # add the prophage position within the contig
-                prophages.setdefault(record.id, []).append(
-                    Record(record, "prophage", circular, prange)
-                )
-            else:
-                print(f"Contig has an invalid category : {category}")
+        with open(file) as handle:
+            for record in SeqIO.parse(handle, "fasta"):
+                category = record.id[-1:]
+                clean_name, circular, prange = _parse_virsorter_metadata(record.id)
+                record.id = clean_name
+                if category in ["1", "2"]:
+                    high_confidence[record.id] = Record(record, "high_confidence", circular)
+                elif category == "3":
+                    low_confidence[record.id] = Record(record, "low_confidence", circular)
+                elif category in ["4", "5"]:
+                    # add the prophage position within the contig
+                    prophages.setdefault(record.id, []).append(
+                        Record(record, "prophage", circular, prange)
+                    )
+                else:
+                    print(f"Contig has an invalid category : {category}")
 
     print(f"Virus Sorter found {len(high_confidence)} high confidence contigs.")
     print(f"Virus Sorter found {len(low_confidence)} low confidence contigs.")
@@ -276,31 +277,32 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
         how="left",
         suffixes=("_score", "_boundary"),
     ).dropna(subset=["shape"])
+        
+    with open(final_combined_fa_file) as handle:
+        for record in SeqIO.parse(handle, "fasta"):
+            clean_name = record.id.split("|")[0]
+            max_score = meta["max_score"].get(clean_name, None)
+            circular = meta["shape"].get(clean_name, None)
+            prange = [
+                meta["trim_bp_start"].get(clean_name, None),
+                meta["trim_bp_end"].get(clean_name, None),
+            ]
+            if not circular or not max_score:
+                continue
+            circular = circular.startswith("circular")
 
-    for record in SeqIO.parse(final_combined_fa_file, "fasta"):
-        clean_name = record.id.split("|")[0]
-        max_score = meta["max_score"].get(clean_name, None)
-        circular = meta["shape"].get(clean_name, None)
-        prange = [
-            meta["trim_bp_start"].get(clean_name, None),
-            meta["trim_bp_end"].get(clean_name, None),
-        ]
-        if not circular or not max_score:
-            continue
-        circular = circular.startswith("circular")
-
-        if "partial" in record.id:
-            # add the prophage position within the contig
-            record.id = clean_name
-            prophages.setdefault(clean_name, []).append(
-                Record(record, "prophage", circular, prange)
-            )
-        else:
-            record.id = clean_name
-            if float(max_score) >= float(vs_cutoff):
-                high_confidence[record.id] = Record(record, "high_confidence", circular)
+            if "partial" in record.id:
+                # add the prophage position within the contig
+                record.id = clean_name
+                prophages.setdefault(clean_name, []).append(
+                    Record(record, "prophage", circular, prange)
+                )
             else:
-                low_confidence[record.id] = Record(record, "low_confidence", circular)
+                record.id = clean_name
+                if float(max_score) >= float(vs_cutoff):
+                    high_confidence[record.id] = Record(record, "high_confidence", circular)
+                else:
+                    low_confidence[record.id] = Record(record, "low_confidence", circular)
 
     print(f"Virus Sorter found {len(high_confidence)} high confidence contigs.")
     print(f"Virus Sorter found {len(low_confidence)} low confidence contigs.")
@@ -335,51 +337,52 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
         else parse_virus_sorter2(sorter2, vs_cutoff)
     )
 
-    for seq_record in SeqIO.parse(assembly, "fasta"):
-        if sorter:
-            if seq_record.id in sorter_hc:
-                hc_predictions_contigs.append(
-                    sorter_hc.get(seq_record.id).get_seq_record()
-                )
+    with open(assembly) as handle:
+        for seq_record in SeqIO.parse(handle, "fasta"):
+            if sorter:
+                if seq_record.id in sorter_hc:
+                    hc_predictions_contigs.append(
+                        sorter_hc.get(seq_record.id).get_seq_record()
+                    )
+                    # Pro
+                elif seq_record.id in sorter_prophages:
+                    # a contig may have several prophages
+                    # for prophages write the record as it holds the
+                    # sliced fasta
+                    for record in sorter_prophages.get(seq_record.id):
+                        prophage_predictions_contigs.append(record.get_seq_record())
+                    # LC
+                elif seq_record.id in finder_lc:
+                    lc_predictions_contigs.append(seq_record)
+                elif seq_record.id in sorter_lc and seq_record.id in finder_lowestc:
+                    lc_predictions_contigs.append(
+                        sorter_lc.get(seq_record.id).get_seq_record()
+                    )
+                elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
+                    lc_predictions_contigs.append(seq_record)
+            else:
                 # Pro
-            elif seq_record.id in sorter_prophages:
-                # a contig may have several prophages
-                # for prophages write the record as it holds the
-                # sliced fasta
-                for record in sorter_prophages.get(seq_record.id):
-                    prophage_predictions_contigs.append(record.get_seq_record())
+                # TODO: check this decision because for VirSorter2 sequence can be in 2 categories
+                if seq_record.id in sorter_prophages:
+                    # a contig may have several prophages
+                    # for prophages write the record as it holds the
+                    # sliced fasta
+                    for record in sorter_prophages.get(seq_record.id):
+                        prophage_predictions_contigs.append(record.get_seq_record())
+                # HC
+                if seq_record.id in sorter_hc:
+                    hc_predictions_contigs.append(
+                        sorter_hc.get(seq_record.id).get_seq_record()
+                    )
                 # LC
-            elif seq_record.id in finder_lc:
-                lc_predictions_contigs.append(seq_record)
-            elif seq_record.id in sorter_lc and seq_record.id in finder_lowestc:
-                lc_predictions_contigs.append(
-                    sorter_lc.get(seq_record.id).get_seq_record()
-                )
-            elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
-                lc_predictions_contigs.append(seq_record)
-        else:
-            # Pro
-            # TODO: check this decision because for VirSorter2 sequence can be in 2 categories
-            if seq_record.id in sorter_prophages:
-                # a contig may have several prophages
-                # for prophages write the record as it holds the
-                # sliced fasta
-                for record in sorter_prophages.get(seq_record.id):
-                    prophage_predictions_contigs.append(record.get_seq_record())
-            # HC
-            if seq_record.id in sorter_hc:
-                hc_predictions_contigs.append(
-                    sorter_hc.get(seq_record.id).get_seq_record()
-                )
-            # LC
-            elif seq_record.id in finder_lc:
-                lc_predictions_contigs.append(seq_record)
-            elif seq_record.id in sorter_lc and seq_record.id in finder_lowestc:
-                lc_predictions_contigs.append(
-                    sorter_lc.get(seq_record.id).get_seq_record()
-                )
-            elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
-                lc_predictions_contigs.append(seq_record)
+                elif seq_record.id in finder_lc:
+                    lc_predictions_contigs.append(seq_record)
+                elif seq_record.id in sorter_lc and seq_record.id in finder_lowestc:
+                    lc_predictions_contigs.append(
+                        sorter_lc.get(seq_record.id).get_seq_record()
+                    )
+                elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
+                    lc_predictions_contigs.append(seq_record)
 
     return (
         hc_predictions_contigs,
