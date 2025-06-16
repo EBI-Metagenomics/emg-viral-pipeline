@@ -362,7 +362,6 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
                     lc_predictions_contigs.append(seq_record)
             else:
                 # Pro
-                # TODO: check this decision because for VirSorter2 sequence can be in 2 categories
                 if seq_record.id in sorter_prophages:
                     # a contig may have several prophages
                     # for prophages write the record as it holds the
