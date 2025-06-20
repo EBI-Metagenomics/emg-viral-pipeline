@@ -5,7 +5,6 @@ import argparse
 import sys
 import gzip
 import csv
-import re
 
 from parse_viral_pred import Record
 
@@ -54,7 +53,7 @@ def aggregate_annotations(virify_annotation_files, use_proteins=False):
     virify_quality = {}
 
     for virify_summary in virify_annotation_files:
-        quality = ""
+        quality = "unknown"
         if "taxonomy" in virify_summary:
             continue
         if "high_confidence_viral" in virify_summary:
@@ -63,6 +62,7 @@ def aggregate_annotations(virify_annotation_files, use_proteins=False):
             quality = "LC"
         elif "prophages" in virify_summary:
             quality = "PP"
+
         with open(virify_summary, "r") as table_handle:
             csv_reader = csv.DictReader(table_handle, delimiter="\t")
             for row in csv_reader:
@@ -220,12 +220,11 @@ def write_gff(
                 taxonomy_dict[contig] = taxonomy_string
 
     # Read unmodified contig length from the renamed assembly file
-    handle = open_fasta_file(assembly_file)
-    for record in SeqIO.parse(handle, "fasta"):
-        contig_id = str(record.id)
-        seq_len = len(str(record.seq))
-        contigs_len_dict[contig_id] = seq_len
-    handle.close()
+    with open_fasta_file(assembly_file) as handle:
+        for record in SeqIO.parse(handle, "fasta"):
+            contig_id = str(record.id)
+            seq_len = len(str(record.seq))
+            contigs_len_dict[contig_id] = seq_len
 
     with open(output_filename, "w") as gff:
         print("##gff-version 3", file=gff)
@@ -317,7 +316,6 @@ def write_gff(
                 # TODO: review this rule.
                 if end > contigs_len_dict[contig_name]:
                     end = contigs_len_dict[contig_name]
-                cleaned_name = re.sub(r"_[^_]*$", "", contig_name)
 
                 quality = (
                     virify_quality[contig_name]
