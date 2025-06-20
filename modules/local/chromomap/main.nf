@@ -4,7 +4,7 @@ process GENERATE_CHROMOMAP_TABLE {
 
   tag "${meta.id} ${set_name}"
 
-  container 'quay.io/microbiome-informatics/bioruby:2.0.1'
+  container 'microbiome-informatics/bioruby:2.0.1'
 
   input:
   tuple val(meta), val(set_name), path(assembly), path(annotation_table)
@@ -39,7 +39,7 @@ process CHROMOMAP {
 
   tag "${meta.id} ${set_name}"
 
-  container 'quay.io/microbiome-informatics/r_chromomap:0.3'
+  container 'microbiome-informatics/r_chromomap:1.0.1'
 
   input:
   tuple val(meta), val(set_name), file(contigs), file(annotations)

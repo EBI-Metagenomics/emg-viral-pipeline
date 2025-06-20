@@ -1,6 +1,6 @@
 process ncbiGetDB {
   label 'process_low'    
-  container 'nanozoo/template:3.8--ccd0653'
+  container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'
   
   if (params.cloudProcess) { 
     publishDir "${params.databases}/ncbi/", mode: 'copy', pattern: "ete3_ncbi_tax.sqlite" 

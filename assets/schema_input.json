@@ -15,7 +15,7 @@
             },
             "assembly": {
                 "type": "string",
-                "pattern": "^\\S+\\.f(ast)?a(\\.gz)?$",
+                "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
                 "errorMessage": "Assembly file in FASTA format",
                 "minLength": 3
             },
