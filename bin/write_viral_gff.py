@@ -98,8 +98,8 @@ def aggregate_annotations(virify_annotation_files, use_proteins=False):
                         end = end + prophage_start
                     viral_sequence_type = f"prophage-{prophage_start}:{prophage_end}"
 
-                # save HC, LC, PP (removing |prophage from contig name)
-                virify_quality.setdefault(contig.split("|")[0], quality)
+                # save HC, LC, PP 
+                virify_quality.setdefault(contig, quality)
                 # We use the contig name without any extra annotations
                 # This also collapses multiples prophages annotations
                 # per contig, if any.
@@ -230,7 +230,6 @@ def write_gff(
         print("##gff-version 3", file=gff)
         # Constants
         SCORE = "."
-
         # Writing the gff header
         used_contigs = []
         for contig_name in viral_sequences.keys():
@@ -252,16 +251,17 @@ def write_gff(
 
         # Writing the mobile genetic elements (viral sequences)
         # coordinates and attributes
+ 
         for contig_name, viral_sequence_types in viral_sequences.items():
             clean_contig_name = Record.remove_prophage_from_contig(contig_name)
             quality = (
-                virify_quality[clean_contig_name]
-                if clean_contig_name in virify_quality
+                virify_quality[contig_name]
+                if contig_name in virify_quality
                 else "unknown"
             )
+
             for viral_seq_type in viral_sequence_types:
                 element_category = "viral_sequence"
-
                 id_ = f"ID={clean_contig_name}|viral_sequence"
                 start = "1"
                 end = contigs_len_dict[clean_contig_name]
@@ -310,16 +310,16 @@ def write_gff(
         for contig_name, contig_cds in cds_annotations.items():
             for cds_data in contig_cds:
                 cds_id, start, end, direction, viphog_annotation = cds_data
-
+                region_name = '_'.join(cds_id.split('_')[:-1])
                 cds_id = cds_id.replace("prophage-0:", "prophage-1:")
 
                 # TODO: review this rule.
                 if end > contigs_len_dict[contig_name]:
                     end = contigs_len_dict[contig_name]
-
+     
                 quality = (
-                    virify_quality[contig_name]
-                    if contig_name in virify_quality
+                    virify_quality[region_name]
+                    if region_name in virify_quality
                     else "unknown"
                 )
                 cds_attributes = [

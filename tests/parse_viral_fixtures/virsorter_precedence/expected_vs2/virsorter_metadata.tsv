@@ -1,11 +1,11 @@
 contig	category	circular	prophage_start	prophage_end
-seq2	high_confidence	False
-seq4	high_confidence	False
 seq3	high_confidence	False
+seq4	high_confidence	False
 seq5	high_confidence	False
 seq6	high_confidence	False
-seq9	high_confidence	False
-seq7	low_confidence	True
+seq7	high_confidence	False
 seq8	low_confidence	False
-seq10	low_confidence	False
-seq1	prophage	False	1	23146
+seq1	prophage	False	1665815	1723488
+seq1	prophage	False	4242306	4282616
+seq2	prophage	False	1091800	1136454
+seq2	prophage	False	340692	352077

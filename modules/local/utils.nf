@@ -1,4 +1,4 @@
-process CONCATENATE_VIRSORTER2_FILES {
+process CONCATENATE_FILES {
     tag "${meta.id}"
     label "process_medium"
 
