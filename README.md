@@ -8,8 +8,9 @@
 2. [ Nextflow execution ](#nf)
 3. [ Pipeline overview ](#overview)
 4. [ Detour: Metatranscriptomics ](#metatranscriptome)
-5. [ Resources ](#resources)
-6. [ Citations ](#cite)
+5. [ Frequently Asked Questions (FAQ) ](#faq)
+6. [ Resources ](#resources)
+7. [ Citations ](#cite)
 
 <a name="virify"></a>
 
@@ -339,6 +340,32 @@ Although VIRify has been benchmarked and validated with metagenomic data in mind
 **3. Post-processing:** Metatranscriptomes generate highly fragmented assemblies. Therefore, filtering contigs based on a set minimum length has a substantial impact in the number of contigs processed in VIRify. It has also been observed that the number of false-positive detections of [VirFinder](https://github.com/jessieren/VirFinder/releases) (one of the tools included in VIRify) is lower among larger contigs. The choice of a length threshold will depend on the complexity of the sample and the sequencing technology used, but in our experience any contigs <2 kb should be analysed with caution.
 
 **4. Classification:** The classification module of VIRify depends on the presence of a minimum number and proportion of phylogenetically-informative genes within each contig in order to confidently assign a taxonomic lineage. Therefore, short contigs typically obtained from metatranscriptome assemblies remain generally unclassified. For targeted classification of RNA viruses (for instance, to search for Coronavirus-related sequences), alternative DNA- or protein-based classification methods can be used. Two of the possible options are: (i) using [MashMap](https://github.com/marbl/MashMap/releases) to screen the VIRify contigs against a database of RNA viruses (e.g. Coronaviridae) or (ii) using [hmmsearch](http://hmmer.org/download.html) to screen the proteins obtained in the VIRify contigs against marker genes of the taxon of interest.
+
+<a name="faq"></a>
+
+# Frequently Asked Questions (FAQ)
+
+## GFF validation errors
+
+### Problem: GFF3 validation fails with error messages like:
+```
+gt gff3validator: error: token "ID" on line XXXX in file "SAMPLE_virify.gff" does not contain exactly one '='
+```
+
+**Cause:** This error typically occurs when FASTA headers contain special characters that interfere with GFF3 format requirements. Characters like hyphens (`-`), periods (`.`), and equals signs (`=`) in sequence identifiers can cause issues during the GFF validation step.
+
+**Example of problematic FASTA headers:**
+```
+>k141_1615808-flag=1-multi=1.0000-len=1122
+>contig-1.2=scaffold_01
+```
+
+**Solution:** Clean your FASTA headers before running VIRify by replacing problematic characters with underscores:
+
+```bash
+# Replace hyphens, periods, and equals signs with underscores
+sed '/^>/ s/[-.=]/_/g' original.fasta > cleaned.fasta
+```
 
 <a name="resources"></a>
 
