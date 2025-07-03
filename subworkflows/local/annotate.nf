@@ -86,7 +86,7 @@ workflow ANNOTATE {
     viphos_annotations = ANNOTATION.out.annotations.map{meta, type, annotation -> [meta, annotation]}.groupTuple()
     taxonomy_annotations = ASSIGN.out.map{meta, type, annotation -> [meta, annotation]}.groupTuple()
     checkv_results = CHECKV.out.map{meta, type, quality -> [meta, quality]}.groupTuple()
-
+    
     WRITE_GFF(
       contigs.join(viphos_annotations).join(taxonomy_annotations).join(checkv_results)
     )

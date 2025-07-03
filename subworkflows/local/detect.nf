@@ -7,9 +7,9 @@ include { VIRSORTER2                                                 } from '../
 include { VIRFINDER                                                  } from '../../modules/local/virfinder'
 include { PPRMETA                                                    } from '../../modules/local/pprmeta'
 include { PARSE                                                      } from '../../modules/local/parse'
-include { CONCATENATE_VIRSORTER2_FILES as CONCATENATE_FILES_SCORE    } from '../../modules/local/utils'
-include { CONCATENATE_VIRSORTER2_FILES as CONCATENATE_FILES_BOUNDARY } from '../../modules/local/utils'
-include { CONCATENATE_VIRSORTER2_FILES as CONCATENATE_FILES_FA       } from '../../modules/local/utils'
+include { CONCATENATE_FILES as CONCATENATE_FILES_SCORE               } from '../../modules/local/utils'
+include { CONCATENATE_FILES as CONCATENATE_FILES_BOUNDARY            } from '../../modules/local/utils'
+include { CONCATENATE_FILES as CONCATENATE_FILES_FA                  } from '../../modules/local/utils'
 
 workflow DETECT {
   take:
