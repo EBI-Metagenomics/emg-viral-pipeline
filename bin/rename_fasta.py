@@ -89,7 +89,12 @@ def restore(args):
                         )
                         original = mod
                     if len(metadata):
-                        fasta_out.write(f">{original}|{'|'.join(metadata)}\n")
+                        contig_name = original.split(' ')
+                        identifier = contig_name[0]
+                        contig_metadata = ' '.join(contig_name[1:])
+                        # example, ERZ|propahge NODE_177_length_32232_cov_60.889673
+                        output_contig_name = f"{identifier}|{'|'.join(metadata)} {contig_metadata}"  # was {original}|{'|'.join(metadata)}
+                        fasta_out.write(f">{output_contig_name}\n")
                     else:
                         fasta_out.write(f">{original}\n")
                 else:
