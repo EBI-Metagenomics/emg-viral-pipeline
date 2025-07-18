@@ -42,15 +42,17 @@ def rename(args):
     print("Renaming " + args.input)
     with open(args.input, "r") as fasta_in:
         with open(args.output, "w") as fasta_out, open(args.map, "w") as map_tsv:
-            count = 1
+            count = 0
             tsv_map = csv.writer(map_tsv, delimiter="\t")
-            tsv_map.writerow(["original", "renamed"])
+            tsv_map.writerow(["original", "temporary", "short"])
             for line in fasta_in:
                 if line.startswith(">"):
+                    count += 1
                     fasta_out.write(f">{args.prefix}{count}\n")
                     name, _ = _parse_name(line)
-                    tsv_map.writerow([name, f"{args.prefix}{count}"])
-                    count += 1
+                    short_name = name.split(' ')[0]
+                    temporary_name = f"{args.prefix}{count}"
+                    tsv_map.writerow([name, temporary_name, short_name])
                 else:
                     fasta_out.write(line)
     print(f"Wrote {count} sequences to {args.output}.")
@@ -73,7 +75,7 @@ def restore(args):
     mapping = {}
     with open(args.map, "r") as map_tsv:
         for m in csv.DictReader(map_tsv, delimiter="\t"):
-            mapping[m["renamed"]] = m["original"]
+            mapping[m[args.from_restore]] = m[args.to_restore]
 
     with open(args.input, "r") as fasta_in:
         with open(args.output, "w") as fasta_out:
@@ -89,12 +91,7 @@ def restore(args):
                         )
                         original = mod
                     if len(metadata):
-                        contig_name = original.split(' ')
-                        identifier = contig_name[0]
-                        contig_metadata = ' '.join(contig_name[1:])
-                        # example, ERZ|propahge NODE_177_length_32232_cov_60.889673
-                        output_contig_name = f"{identifier}|{'|'.join(metadata)} {contig_metadata}"  # was {original}|{'|'.join(metadata)}
-                        fasta_out.write(f">{output_contig_name}\n")
+                        fasta_out.write(f">{original}|{'|'.join(metadata)}\n")
                     else:
                         fasta_out.write(f">{original}\n")
                 else:
@@ -131,6 +128,18 @@ def main():
     rename_parser.set_defaults(func=rename)
 
     restore_parser = subparser.add_parser("restore")
+    restore_parser.add_argument(
+        "--from-restore",
+        help="Name of column FROM what do renaming",
+        type=str,
+        choices=['temporary', 'original', 'short']
+    )
+    restore_parser.add_argument(
+        "--to-restore",
+        help="Name of column TO what do renaming",
+        type=str,
+        choices=['temporary', 'original', 'short']
+    )
     restore_parser.set_defaults(func=restore)
 
     args = parser.parse_args()

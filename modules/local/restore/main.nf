@@ -9,6 +9,8 @@ process RESTORE {
 
     input:
     tuple val(meta), path(fasta), path(map) 
+    val from_restore
+    val to_restore
     
     output:
     tuple val(meta), env(BN), path("*_original.fasta")
@@ -16,7 +18,7 @@ process RESTORE {
     script:
     """    
     BN=\$(basename ${fasta} .fna)
-    rename_fasta.py -i ${fasta} -m ${map} -o \${BN}_original.fasta restore 2> /dev/null
+    rename_fasta.py -i ${fasta} -m ${map} -o \${BN}_original.fasta restore --from-restore ${from_restore} --to-restore ${to_restore} 2> /dev/null
     """
 }
 
