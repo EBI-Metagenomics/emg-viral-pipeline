@@ -144,7 +144,7 @@ workflow VIRIFY {
     category_fasta = RESTORE_CATEGORY_FASTA.out  // (meta, type(HC/LC/PP), fasta)
     
     // Rename contigs to names before space for original assembly
-    RESTORE_FILTERED_FASTA(filtered_assembly.join(mapfile), "original", "short")
+    RESTORE_FILTERED_FASTA(filtered_assembly.join(mapfile), "temporary", "short")
     assembly_with_short_contignames = RESTORE_FILTERED_FASTA.out
   }
 
