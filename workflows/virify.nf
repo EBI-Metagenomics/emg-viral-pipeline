@@ -130,6 +130,7 @@ workflow VIRIFY {
     RESTORE_FOR_ONLY_ANNOTATE(filtered_assembly.join(mapfile), "original", "short")
     category_fasta = RESTORE_FOR_ONLY_ANNOTATE.out
     assembly_with_short_contignames = RESTORE_FOR_ONLY_ANNOTATE.out
+  }
   else {
     DETECT(
       renamed_assembly_and_contig_number,
