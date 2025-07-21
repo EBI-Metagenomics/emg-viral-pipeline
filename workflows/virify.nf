@@ -152,7 +152,7 @@ workflow VIRIFY {
     
     // Rename contigs to names before space for original assembly
     RESTORE_FILTERED_FASTA(filtered_assembly.join(mapfile), "temporary", "short")
-    assembly_with_short_contignames = RESTORE_FILTERED_FASTA.out
+    assembly_with_short_contignames = RESTORE_FILTERED_FASTA.out.map{meta, name, fasta -> [meta, fasta]}
   }
 
   // ----------- split proteins into HC/LC/PP - if provided
