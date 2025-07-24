@@ -71,7 +71,7 @@ def restore(args):
         print("File " + args.input + " doesn't exist. Skipping")
         return
 
-    print("Restoring " + args.input)
+    print(f"Restoring {args.input} from {args.from_restore} to {args.to_restore}")
     mapping = {}
     with open(args.map, "r") as map_tsv:
         for m in csv.DictReader(map_tsv, delimiter="\t"):

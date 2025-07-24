@@ -18,7 +18,7 @@ process RESTORE {
     script:
     """    
     BN=\$(basename ${fasta} .fna)
-    rename_fasta.py -i ${fasta} -m ${map} -o \${BN}_original.fasta restore --from-restore ${from_restore} --to-restore ${to_restore} 2> /dev/null
+    rename_fasta.py -i ${fasta} -m ${map} -o \${BN}_original.fasta restore --from-restore "${from_restore}" --to-restore "${to_restore}" 2> /dev/null
     """
 }
 
