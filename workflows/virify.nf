@@ -5,7 +5,6 @@ include { samplesheetToList            } from 'plugin/nf-schema'
 /************************** 
 * MODULES
 **************************/
-include { RESTORE as RESTORE_FOR_ONLY_ANNOTATE } from '../modules/local/restore'
 include { RESTORE as RESTORE_CATEGORY_FASTA    } from '../modules/local/restore'
 include { RESTORE as RESTORE_FILTERED_FASTA    } from '../modules/local/restore'
 include { MULTIQC                              } from '../modules/nf-core/multiqc'
@@ -120,20 +119,21 @@ workflow VIRIFY {
   // ----------- rename fasta + length filtering
   // out: (meta, renamed_fasta, map, filtered_fasta, env)
   PREPROCESS(assembly_ch)
-  mapfile = PREPROCESS.out.preprocessed_data.map { name, _renamed_fasta, map, _filtered_fasta, _contig_number -> tuple(name, map) }
-  filtered_assembly = PREPROCESS.out.preprocessed_data.map { name, _renamed_fasta, _map, filtered_fasta, _contig_number -> tuple(name, filtered_fasta) }
-  renamed_assembly_and_contig_number = PREPROCESS.out.preprocessed_data.map { name, renamed_fasta, _map, _filtered_fasta, contig_number -> tuple(name, renamed_fasta, contig_number) }
+  mapfile = PREPROCESS.out.preprocessed_data.map { meta, _renamed_fasta, map, _filtered_fasta, _contig_number -> tuple(meta, map) }
+  filtered_assembly = PREPROCESS.out.preprocessed_data.map { meta, _renamed_fasta, _map, filtered_fasta, contig_number -> tuple(meta, filtered_fasta, contig_number) }
+ 
+  // Rename contigs to names before space for original assembly
+  RESTORE_FILTERED_FASTA(filtered_assembly.map{meta, fasta, _contig_number -> [meta, fasta]}.join(mapfile), "temporary", "short")
+  assembly_with_short_contignames = RESTORE_FILTERED_FASTA.out.map{meta, name, fasta -> [meta, fasta]}
   
   // ----------- if --onlyannotate - skip DETECT step
   if (params.onlyannotate) {
-    // use filtered fasta, need to convert original names into short names
-    RESTORE_FOR_ONLY_ANNOTATE(filtered_assembly.join(mapfile), "original", "short")
-    category_fasta = RESTORE_FOR_ONLY_ANNOTATE.out
-    assembly_with_short_contignames = RESTORE_FOR_ONLY_ANNOTATE.out
+    // use filtered fasta with short names
+    category_fasta = RESTORE_FILTERED_FASTA.out  // (meta, name, fasta)
   }
   else {
     DETECT(
-      renamed_assembly_and_contig_number,
+      filtered_assembly,
       DOWNLOAD_DATABASES.out.virsorter_db,
       DOWNLOAD_DATABASES.out.virfinder_db,
       DOWNLOAD_DATABASES.out.pprmeta_git,
@@ -149,10 +149,6 @@ workflow VIRIFY {
     }
     RESTORE_CATEGORY_FASTA(files_to_restore, "temporary", "short")
     category_fasta = RESTORE_CATEGORY_FASTA.out  // (meta, type(HC/LC/PP), fasta)
-    
-    // Rename contigs to names before space for original assembly
-    RESTORE_FILTERED_FASTA(filtered_assembly.join(mapfile), "temporary", "short")
-    assembly_with_short_contignames = RESTORE_FILTERED_FASTA.out.map{meta, name, fasta -> [meta, fasta]}
   }
 
   // ----------- split proteins into HC/LC/PP - if provided
