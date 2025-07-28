@@ -130,13 +130,15 @@ def main():
     restore_parser = subparser.add_parser("restore")
     restore_parser.add_argument(
         "--from-restore",
-        help="Name of column FROM what do renaming",
+        help="Name of column FROM what do renaming. "
+             "Example, temporary name: seq1, short name: ERZ.1, original name: ERZ1 NODE1_len10_cov3.8",
         type=str,
         choices=['temporary', 'original', 'short']
     )
     restore_parser.add_argument(
         "--to-restore",
-        help="Name of column TO what do renaming",
+        help="Name of column TO what do renaming. "
+             "Example, temporary name: seq1, short name: ERZ.1, original name: ERZ1 NODE1_len10_cov3.8",
         type=str,
         choices=['temporary', 'original', 'short']
     )
