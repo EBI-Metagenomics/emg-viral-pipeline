@@ -75,5 +75,5 @@ workflow DETECT {
   PARSE(renamed_assembly_and_contigs_count.join(VIRFINDER.out).join(virsorter_output).join(PPRMETA.out))
 
   emit:
-  detect_output = PARSE.out.map { meta, fasta, _vs_meta, _log -> tuple(meta, fasta) }.transpose()
+  detect_output = PARSE.out.map { meta, fasta, _vs_meta, _log -> tuple(meta, fasta) }
 }
