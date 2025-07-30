@@ -1,6 +1,6 @@
-original	renamed
-NODE_1_length_79063_cov_13.902377	test.1
-NODE_2_length_876543_cov_16.902388	test.2
-NODE_3_length_637829_cov_11.42453	test.3
-NODE_3_length_637829_cov_11.99	test.4
-NODE_3_length_637829_cov_11.100	test.5
+original	temporary	short
+ERZ1.1 NODE_1_length_79063_cov_13.902377	test.1	ERZ1.1
+ERZ1.2 NODE_2_length_876543_cov_16.902388	test.2	ERZ1.2
+ERZ1.3 NODE_3_length_637829_cov_11.42453	test.3	ERZ1.3
+ERZ1.4 NODE_3_length_637829_cov_11.99	test.4	ERZ1.4
+ERZ1.5 NODE_3_length_637829_cov_11.100	test.5	ERZ1.5

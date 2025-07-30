@@ -39,7 +39,7 @@ class Record:
         """Get the SeqRecord with the category and prange encoded in the header."""
         seq_record = copy(self.seq_record)
         if self.category == "prophage" and len(self.prange):
-            seq_record.id += f"|prophage-{self.prange[0]}:{self.prange[1]}"
+            seq_record.id += f"|prophage-{int(self.prange[0])}:{int(self.prange[1])}"
         if self.circular:
             seq_record.id += "|phage-circular"
         # clean
