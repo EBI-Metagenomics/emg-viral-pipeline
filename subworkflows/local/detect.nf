@@ -13,7 +13,7 @@ include { CONCATENATE_FILES as CONCATENATE_FILES_FA                  } from '../
 
 workflow DETECT {
   take:
-  renamed_assembly_and_contig_number
+  renamed_assembly_and_contigs_count
   virsorter_db
   virfinder_db
   pprmeta_git
@@ -26,17 +26,17 @@ workflow DETECT {
 
   if (params.use_virsorter_v1) {
 
-    VIRSORTER(renamed_assembly_and_contig_number, virsorter_db)
+    VIRSORTER(renamed_assembly_and_contigs_count, virsorter_db)
 
     virsorter_output = VIRSORTER.out
   }
   else {
 
     // chunk fasta by 500Mb
-    chunked_ch = renamed_assembly_and_contig_number.flatMap { meta, fasta, value ->
+    chunked_ch = renamed_assembly_and_contigs_count.flatMap { meta, fasta, contigs_count ->
       def chunks = fasta.splitFasta(file: true, size: 500.MB)
       chunks.collect { chunk ->
-        return tuple(meta, chunk, value)
+        return tuple(meta, chunk, contigs_count)
       }
     }
     VIRSORTER2(chunked_ch, virsorter_db)
@@ -67,12 +67,12 @@ workflow DETECT {
       }
   }
 
-  VIRFINDER(renamed_assembly_and_contig_number, virfinder_db)
+  VIRFINDER(renamed_assembly_and_contigs_count, virfinder_db)
 
-  PPRMETA(renamed_assembly_and_contig_number, pprmeta_git)
+  PPRMETA(renamed_assembly_and_contigs_count, pprmeta_git)
 
   // parsing predictions
-  PARSE(renamed_assembly_and_contig_number.join(VIRFINDER.out).join(virsorter_output).join(PPRMETA.out))
+  PARSE(renamed_assembly_and_contigs_count.join(VIRFINDER.out).join(virsorter_output).join(PPRMETA.out))
 
   emit:
   detect_output = PARSE.out.map { meta, fasta, _vs_meta, _log -> tuple(meta, fasta) }.transpose()
