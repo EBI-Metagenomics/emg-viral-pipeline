@@ -140,7 +140,12 @@ workflow VIRIFY {
     )   // output: (meta, fasta)
     
     // ----------- restore fasta files for each category fasta
-    files_to_restore = DETECT.out.detect_output.join(mapfile).transpose(by:1)
+    files_to_restore = DETECT.out.detect_output.join(mapfile)
+    .map { meta, files, mapfile ->
+        // Ensure files is always a list
+        def filesList = files instanceof List ? files : [files]
+        [meta, filesList, mapfile]
+    }.transpose(by:1)
     RESTORE_CATEGORY_FASTA(files_to_restore, "temporary", "short")
     category_fasta = RESTORE_CATEGORY_FASTA.out  // (meta, type(HC/LC/PP), fasta)
   }
