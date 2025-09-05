@@ -17,9 +17,10 @@ class RenameTests(unittest.TestCase):
         renamed = self._build_path("/rename_fixtures/renamed.fasta")
         mapfile = self._build_path("/rename_fixtures/map.tsv")
 
-        input_args = namedtuple("input_args", "prefix input output map")
+        input_args_rename = namedtuple("input_args", "prefix input output map")
+        input_args_restore = namedtuple("input_args", "prefix input output map from_restore to_restore")
 
-        rename(input_args(prefix="test.", input=fasta, output=renamed, map=mapfile))
+        rename(input_args_rename(prefix="test.", input=fasta, output=renamed, map=mapfile))
 
         obtained = []
         with open(renamed, "r") as output_file:
@@ -37,8 +38,13 @@ class RenameTests(unittest.TestCase):
         output_restored = self._build_path("/rename_fixtures/restored.fasta")
 
         restore(
-            input_args(
-                prefix="not-used", input=renamed, output=output_restored, map=mapfile
+            input_args_restore(
+                prefix="not-used", 
+                input=renamed, 
+                output=output_restored, 
+                map=mapfile, 
+                from_restore="temporary", 
+                to_restore="original"
             )
         )
 
@@ -73,11 +79,16 @@ class RenameTests(unittest.TestCase):
 
         output_restored = self._build_path("/rename_fixtures/restored.fasta")
 
-        input_args = namedtuple("input_args", "prefix input output map")
+        input_args = namedtuple("input_args", "prefix input output map from_restore to_restore")
 
         restore(
             input_args(
-                prefix="not-used", input=renamed, output=output_restored, map=mapfile
+                prefix="not-used", 
+                input=renamed, 
+                output=output_restored, 
+                map=mapfile, 
+                from_restore="temporary", 
+                to_restore="short"
             )
         )
 
@@ -91,12 +102,12 @@ class RenameTests(unittest.TestCase):
             self.assertEqual(24, lines)
 
         expected = [
-            "NODE_1_length_79063_cov_13.902377",
-            "NODE_2_length_876543_cov_16.902388|phage-circular",
-            "NODE_3_length_637829_cov_11.42453|prophage-21696:135184",
-            "NODE_3_length_637829_cov_11.42453|prophage-100:500",
-            "NODE_3_length_637829_cov_11.99|prophage-100:500|prophage-500:700",
-            "NODE_3_length_637829_cov_11.100|phage-circular|prophage-100:500|prophage-500:700",
+            "ERZ1.1",
+            "ERZ1.2|phage-circular",
+            "ERZ1.3|prophage-21696:135184",
+            "ERZ1.3|prophage-100:500",
+            "ERZ1.4|prophage-100:500|prophage-500:700",
+            "ERZ1.5|phage-circular|prophage-100:500|prophage-500:700",
         ]
 
         self.assertListEqual(sorted(obtained), sorted(expected))

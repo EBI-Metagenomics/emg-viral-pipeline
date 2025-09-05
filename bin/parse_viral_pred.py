@@ -39,7 +39,7 @@ class Record:
         """Get the SeqRecord with the category and prange encoded in the header."""
         seq_record = copy(self.seq_record)
         if self.category == "prophage" and len(self.prange):
-            seq_record.id += f"|prophage-{self.prange[0]}:{self.prange[1]}"
+            seq_record.id += f"|prophage-{int(self.prange[0])}:{int(self.prange[1])}"
         if self.circular:
             seq_record.id += "|phage-circular"
         # clean
@@ -57,7 +57,7 @@ class Record:
         """
         circular = "phage-circular" in contig_header
         if "prophage" in contig_header:
-            prange = contig_header.split("|")[1].replace("prophage-", "")
+            prange = contig_header.split("prophage-")[1]
             match = re.search(
                 "(?P<start>\d+):(?P<end>\d+)", prange, re.IGNORECASE
             ).groupdict()
@@ -211,20 +211,6 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
     you can use --keep-original-seq option.
     """
 
-    boundary_columns = [
-        "seqname",
-        "trim_orf_index_start",
-        "trim_orf_index_end",
-        "trim_bp_start",
-        "trim_bp_end",
-        "trim_pr",
-        "partial",
-        "pr_full",
-        "hallmark_cnt",
-        "group",
-        "shape",
-    ]
-
     boundary_dtypes = {
         "seqname": "object",
         "trim_orf_index_start": "int64",
@@ -237,6 +223,7 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
         "hallmark_cnt": "int64",
         "group": "object",
         "shape": "object",
+        "seqname_new": "object",
     }
 
     high_confidence = dict()
@@ -261,13 +248,12 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
     boundary_df = pd.read_csv(
         final_boundary_file,
         sep="\t",
-        index_col="seqname",
-        usecols=boundary_columns,
+        usecols=list(boundary_dtypes.keys()),
         dtype=boundary_dtypes,
     )
+    boundary_df.set_index("seqname_new", inplace=True)
 
     score_df = pd.read_csv(final_score_file, sep="\t")
-    score_df["seqname"] = score_df["seqname"].str.replace(r"\|\|.*", "", regex=True)
     score_df.set_index("seqname", inplace=True)
 
     meta = score_df.merge(
@@ -277,36 +263,38 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
         how="left",
         suffixes=("_score", "_boundary"),
     ).dropna(subset=["shape"])
-        
+
     with open(final_combined_fa_file) as handle:
         for record in SeqIO.parse(handle, "fasta"):
             clean_name = record.id.split("|")[0]
-            max_score = meta["max_score"].get(clean_name, None)
-            circular = meta["shape"].get(clean_name, None)
+            record_name = record.id  # does include ||
+            max_score = meta["max_score"].get(record_name, None)
+            circular = meta["shape"].get(record_name, None)
             prange = [
-                meta["trim_bp_start"].get(clean_name, None),
-                meta["trim_bp_end"].get(clean_name, None),
+                meta["trim_bp_start"].get(record_name, None),
+                meta["trim_bp_end"].get(record_name, None),
             ]
+
             if not circular or not max_score:
                 continue
             circular = circular.startswith("circular")
-
+            
             if "partial" in record.id:
-                # add the prophage position within the contig
                 record.id = clean_name
+                # add the prophage position within the contig
                 prophages.setdefault(clean_name, []).append(
                     Record(record, "prophage", circular, prange)
                 )
             else:
                 record.id = clean_name
                 if float(max_score) >= float(vs_cutoff):
-                    high_confidence[record.id] = Record(record, "high_confidence", circular)
+                    high_confidence[clean_name] = Record(record, "high_confidence", circular)
                 else:
-                    low_confidence[record.id] = Record(record, "low_confidence", circular)
-
-    print(f"Virus Sorter found {len(high_confidence)} high confidence contigs.")
-    print(f"Virus Sorter found {len(low_confidence)} low confidence contigs.")
-    print(f"Virus Sorter found {len(prophages)} putative prophages contigs.")
+                    low_confidence[clean_name] = Record(record, "low_confidence", circular)
+    number_of_phages = sum([len(prophages[i]) for i in prophages])
+    print(f"Virus Sorter2 found {len(high_confidence)} high confidence contigs.")
+    print(f"Virus Sorter2 found {len(low_confidence)} low confidence contigs.")
+    print(f"Virus Sorter2 found {number_of_phages} putative prophages contigs.")
 
     return high_confidence, low_confidence, prophages
 
@@ -340,6 +328,7 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
     with open(assembly) as handle:
         for seq_record in SeqIO.parse(handle, "fasta"):
             if sorter:
+                # VirSorter1
                 if seq_record.id in sorter_hc:
                     hc_predictions_contigs.append(
                         sorter_hc.get(seq_record.id).get_seq_record()
@@ -361,6 +350,7 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
                 elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
                     lc_predictions_contigs.append(seq_record)
             else:
+                # VirSorter2
                 # Pro
                 if seq_record.id in sorter_prophages:
                     # a contig may have several prophages

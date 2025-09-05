@@ -18,9 +18,9 @@ workflow PREDICT_PROTEINS {
     } else {
       // ORF detection --> prodigal
       predicted_contigs = input_fastas.map{meta, type, pred_contigs, contigs -> tuple(meta, type, pred_contigs)}
+      contigs = input_fastas.map{meta, type, pred_contigs, contigs -> tuple(meta, contigs)}
       PRODIGAL( predicted_contigs )
       proteins = PRODIGAL.out
-      contigs = input_fastas.map{meta, type, pred_contigs, contigs -> tuple(meta, contigs)}
     }
     
     emit:

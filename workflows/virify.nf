@@ -5,8 +5,9 @@ include { samplesheetToList            } from 'plugin/nf-schema'
 /************************** 
 * MODULES
 **************************/
-
-include { MULTIQC                      } from '../modules/nf-core/multiqc'
+include { RESTORE as RESTORE_CATEGORY_FASTA    } from '../modules/local/restore'
+include { RESTORE as RESTORE_FILTERED_FASTA    } from '../modules/local/restore'
+include { MULTIQC                              } from '../modules/nf-core/multiqc'
 
 /************************** 
 * SUB WORKFLOWS
@@ -17,7 +18,6 @@ include { ANNOTATE                     } from '../subworkflows/local/annotate'
 include { DETECT                       } from '../subworkflows/local/detect'
 include { DOWNLOAD_DATABASES           } from '../subworkflows/local/download_databases'
 include { PLOT                         } from '../subworkflows/local/plot'
-include { POSTPROCESS                  } from '../subworkflows/local/postprocess'
 include { PREPROCESS                   } from '../subworkflows/local/preprocess'
 include { SPLIT_PROTEINS_BY_CATEGORIES } from '../subworkflows/local/split_proteins_by_categories'
 
@@ -119,28 +119,36 @@ workflow VIRIFY {
   // ----------- rename fasta + length filtering
   // out: (meta, renamed_fasta, map, filtered_fasta, env)
   PREPROCESS(assembly_ch)
-
+  mapfile = PREPROCESS.out.preprocessed_data.map { meta, _renamed_fasta, map, _filtered_fasta, _contig_number -> tuple(meta, map) }
+  filtered_assembly = PREPROCESS.out.preprocessed_data.map { meta, _renamed_fasta, _map, filtered_fasta, contig_number -> tuple(meta, filtered_fasta, contig_number) }
+ 
+  // Rename contigs to names before space for original assembly
+  RESTORE_FILTERED_FASTA(filtered_assembly.map{meta, fasta, _contig_number -> [meta, fasta]}.join(mapfile), "temporary", "short")
+  assembly_with_short_contignames = RESTORE_FILTERED_FASTA.out.map{meta, name, fasta -> [meta, fasta]}
+  
   // ----------- if --onlyannotate - skip DETECT step
-  postprocess_input_ch = Channel.empty()
-
   if (params.onlyannotate) {
-    postprocess_input_ch = PREPROCESS.out.preprocessed_data.map { name, _renamed_fasta, map, filtered_fasta, _contig_number -> tuple(name, filtered_fasta, map) }
+    // use filtered fasta with short names
+    category_fasta = RESTORE_FILTERED_FASTA.out  // (meta, name, fasta)
   }
   else {
     DETECT(
-      PREPROCESS.out.preprocessed_data,
+      filtered_assembly,
       DOWNLOAD_DATABASES.out.virsorter_db,
       DOWNLOAD_DATABASES.out.virfinder_db,
       DOWNLOAD_DATABASES.out.pprmeta_git,
-    )
-    // (meta, fasta, map)
-    postprocess_input_ch = DETECT.out.detect_output
+    )   // output: (meta, fasta)
+    
+    // ----------- restore fasta files for each category fasta
+    files_to_restore = DETECT.out.detect_output.join(mapfile)
+    .map { meta, files, mapfile ->
+        // Ensure files is always a list
+        def filesList = files instanceof List ? files : [files]
+        [meta, filesList, mapfile]
+    }.transpose(by:1)
+    RESTORE_CATEGORY_FASTA(files_to_restore, "temporary", "short")
+    category_fasta = RESTORE_CATEGORY_FASTA.out  // (meta, type(HC/LC/PP), fasta)
   }
-
-  // ----------- POSTPROCESS: restore fasta file
-  POSTPROCESS(postprocess_input_ch)
-  category_fasta = POSTPROCESS.out.restored_fasta
-  // (meta, type(HC/LC/PP), fasta)
 
   // ----------- split proteins into HC/LC/PP - if provided
   if (params.use_proteins) {
@@ -154,28 +162,28 @@ workflow VIRIFY {
 
   // ----------- ANNOTATE
   if (params.use_proteins) {
-    // (meta, [type](HC/LC/PP), [fasta], [faa], assembly) -> [(meta, type, fasta, faa, assembly)]
+    // (meta, [type](HC/LC/PP), [fasta], [faa], original_assembly) -> [(meta, type, fasta, faa, original_assembly)]
     annotate_input = proteins_ch
       .groupTuple()
-      .join(assembly_ch)
-      .flatMap { meta, types, fasta_paths, faa_paths, common_path ->
+      .join(assembly_with_short_contignames)
+      .flatMap { meta, types, fasta_paths, faa_paths, original_contigs ->
         types
           .indexed()
           .collect { i, type ->
-            tuple(meta, type, fasta_paths[i], faa_paths[i], common_path)
+            tuple(meta, type, fasta_paths[i], faa_paths[i], original_contigs)
           }
       }
   }
   else {
-    // (meta, [type](HC/LC/PP), [fasta], assembly) -> [(meta, type, fasta, assembly)]
+    // (meta, [type](HC/LC/PP), [fasta], original_assembly) -> [(meta, type, fasta, original_assembly)]
     annotate_input = category_fasta
       .groupTuple()
-      .join(assembly_ch)
-      .flatMap { meta, types, fasta_paths, common_path ->
+      .join(assembly_with_short_contignames)
+      .flatMap { meta, types, fasta_paths, original_contigs ->
         types
           .indexed()
           .collect { i, type ->
-            tuple(meta, type, fasta_paths[i], common_path)
+            tuple(meta, type, fasta_paths[i], original_contigs)
           }
       }
   }

@@ -1,0 +1,11 @@
+seqname	trim_orf_index_start	trim_orf_index_end	trim_bp_start	trim_bp_end	trim_pr	trim_pr_max	prox_orf_index_start	prox_orf_index_end	prox_bp_start	prox_bp_end	prox_pr	prox_pr_max	partial	full_orf_index_start	full_orf_index_end	full_bp_start	full_bp_end	pr_full	arc	bac	euk	vir	mix	unaligned	hallmark_cnt	group	shape	seqname_new	final_max_score	final_max_score_group
+seq8	1	8	1	4056	0.887	0.887	1	8	1	4056	NA	NA	0	1	8	1	4056	0.887	0.0	0.0	0.0	62.5	12.5	25.0	0	dsDNAphage	linear	seq8||full	0.887	dsDNAphage
+seq7	1	9	1	4242	1.0	1.0	1	9	1	4242	NA	NA	0	1	9	1	4242	1.0	0.0	0.0	0.0	66.7	0.0	33.3	1	dsDNAphage	linear	seq7||full	1.0	dsDNAphage
+seq6	1	14	2	9314	0.987	0.987	1	14	2	9314	NA	NA	0	1	14	2	9314	0.987	0.0	0.0	0.0	71.4	0.0	28.6	3	dsDNAphage	linear	seq6||full	0.987	dsDNAphage
+seq5	1	21	1	9597	1.0	1.0	1	21	1	9597	NA	NA	0	1	21	1	9597	1.0	0.0	0.0	0.0	47.6	0.0	52.4	0	dsDNAphage	linear	seq5||full	1.0	dsDNAphage
+seq4	1	14	2	9513	0.987	0.987	1	14	2	9513	NA	NA	0	1	14	2	9513	0.987	0.0	0.0	0.0	64.3	0.0	35.7	2	dsDNAphage	linear	seq4||full	0.987	dsDNAphage
+seq3	1	21	21	13002	0.967	0.993	1	21	21	13002	NA	NA	0	1	21	21	13002	0.967	0.0	0.0	0.0	76.2	0.0	23.8	6	dsDNAphage	linear	seq3||full	0.967	dsDNAphage
+seq2	906	936	1091800	1136454	0.9	0.933	906	936	1091800	1136454	0.9	0.987	1	1	1290	2	1543364	0.567	0.0	20.9	0.0	32.6	23.3	23.3	4	dsDNAphage	linear	seq2||0_partial	0.9	dsDNAphage
+seq2	298	312	340692	352077	0.887	0.887	298	312	340692	352077	0.887	0.96	1	1	1290	2	1543364	0.567	0.0	44.4	0.0	25.9	11.1	18.5	1	dsDNAphage	linear	seq2||1_partial	0.887	dsDNAphage
+seq1	1490	1555	1665815	1723488	0.933	0.98	1490	1556	1665815	1726646	0.927	1.0	1	1	4325	305	5065013	0.567	0.0	24.1	0.0	22.8	10.1	43.0	1	dsDNAphage	linear	seq1||0_partial	0.933	dsDNAphage
+seq1	3658	3695	4242306	4282616	0.88	0.893	3658	3695	4242306	4282616	0.88	0.96	1	1	4325	305	5065013	0.567	0.0	36.0	0.0	24.0	24.0	16.0	3	dsDNAphage	linear	seq1||1_partial	0.88	dsDNAphage
