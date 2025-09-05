@@ -2,7 +2,7 @@ process BALLOON {
     tag "${meta.id}"
     label 'process_single'
     
-    container 'microbiome-informatics/r_balloon:3.1.1'
+    container 'microbiome-informatics/r_balloon:3.1.2'
     
     input:
       tuple val(meta), val(set_name), path(tbl)

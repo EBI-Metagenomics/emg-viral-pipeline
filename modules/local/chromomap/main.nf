@@ -39,7 +39,7 @@ process CHROMOMAP {
 
   tag "${meta.id} ${set_name}"
 
-  container 'microbiome-informatics/r_chromomap:1.0.1'
+  container 'microbiome-informatics/r_chromomap:1.0.2'
 
   input:
   tuple val(meta), val(set_name), file(contigs), file(annotations)
