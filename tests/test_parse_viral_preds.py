@@ -1,6 +1,8 @@
 #!/bin/env python3
 
 import hashlib
+import contextlib
+import io
 import os
 import shutil
 import tempfile
@@ -112,7 +114,7 @@ class ParseViralPredictions(unittest.TestCase):
 
         vs_files = [os.path.join(vs_path, f) for f in os.listdir(vs_path)]
 
-        hc, lc, pp, *_ = merge_annotations(pprmeta_path, vf_path, vs_files, None, assembly, 0.9)
+        hc, lc, pp, _1, _2, _3, count_skipped_contigs = merge_annotations(pprmeta_path, vf_path, vs_files, None, assembly, 0.9)
 
         hc_ids = set([h.id for h in hc])
         lc_ids = set([l.id for l in lc])
@@ -125,6 +127,9 @@ class ParseViralPredictions(unittest.TestCase):
         self.assertEqual(False, bool(hc_ids & lc_ids))
         self.assertEqual(False, bool(hc_ids & pp_ids))
         self.assertEqual(False, bool(lc_ids & pp_ids))
+        
+        assert count_skipped_contigs == 1
+
 
     def test_full(self):
         """Test output files

@@ -14,6 +14,9 @@ from Bio import SeqIO
 import pandas as pd
 
 
+MAX_N_PCT = 50
+
+
 class Record:
     """Simple class to aggregate the results"""
 
@@ -299,6 +302,15 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
     return high_confidence, low_confidence, prophages
 
 
+def sanity_check_sequence(sequence):
+    sequence = sequence.upper()
+    # checking percentage of N-s in sequence
+    n_pct = sequence.count("N") / len(sequence) * 100
+    if n_pct > MAX_N_PCT:
+        return False
+    return True
+
+
 def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
     """Parse VirSorter, VirFinder and PPR-Meta outputs and merge the results.
     High confidence viral contigs:
@@ -324,9 +336,12 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
         if sorter is not None
         else parse_virus_sorter2(sorter2, vs_cutoff)
     )
-
+    count_skipped_contigs = 0
     with open(assembly) as handle:
         for seq_record in SeqIO.parse(handle, "fasta"):
+            if not sanity_check_sequence(seq_record.seq):
+                count_skipped_contigs += 1
+                continue
             if sorter:
                 # VirSorter1
                 if seq_record.id in sorter_hc:
@@ -372,7 +387,9 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
                     )
                 elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
                     lc_predictions_contigs.append(seq_record)
-
+                    
+    print(f"Number of skipped contigs {count_skipped_contigs}")
+    
     return (
         hc_predictions_contigs,
         lc_predictions_contigs,
@@ -380,6 +397,7 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
         sorter_hc,
         sorter_lc,
         sorter_prophages,
+        count_skipped_contigs
     )
 
 
@@ -392,6 +410,7 @@ def main(pprmeta, finder, sorter, sorter2, assembly, outdir, vs_cutoff, prefix=F
         sorter_hc,
         sorter_lc,
         sorter_prophages,
+        _
     ) = merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff)
 
     at_least_one = False
