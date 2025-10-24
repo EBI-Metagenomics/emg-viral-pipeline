@@ -107,6 +107,7 @@ class ParseViralPredictions(unittest.TestCase):
     def test_parsing_with_dups(self):
         """Test that no duplicates are reported
         """
+        test_dir = tempfile.mkdtemp()
         pprmeta_path = self._build_path("/kleiner2015/pprmeta.csv")
         vf_path = self._build_path("/kleiner2015/virfinder.txt")
         vs_path = self._build_path("/kleiner2015/predicted_viral_sequences")
@@ -114,7 +115,7 @@ class ParseViralPredictions(unittest.TestCase):
 
         vs_files = [os.path.join(vs_path, f) for f in os.listdir(vs_path)]
 
-        hc, lc, pp, _1, _2, _3, count_skipped_contigs = merge_annotations(pprmeta_path, vf_path, vs_files, None, assembly, 0.9)
+        hc, lc, pp, _1, _2, _3 = merge_annotations(pprmeta_path, vf_path, vs_files, None, assembly, 0.9, test_dir)
 
         hc_ids = set([h.id for h in hc])
         lc_ids = set([l.id for l in lc])
@@ -128,7 +129,11 @@ class ParseViralPredictions(unittest.TestCase):
         self.assertEqual(False, bool(hc_ids & pp_ids))
         self.assertEqual(False, bool(lc_ids & pp_ids))
         
-        assert count_skipped_contigs == 1
+        assert os.path.exists(f'{test_dir}/sanity_check_failed_contigs.txt')
+        with open(f'{test_dir}/sanity_check_failed_contigs.txt', 'r') as file_in:
+            output = file_in.readlines()
+            assert len(output) == 1
+            assert 'seq23948' in '\t'.join(output)
 
 
     def test_full(self):
