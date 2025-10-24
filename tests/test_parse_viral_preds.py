@@ -1,8 +1,6 @@
 #!/bin/env python3
 
 import hashlib
-import contextlib
-import io
 import os
 import shutil
 import tempfile
@@ -115,7 +113,7 @@ class ParseViralPredictions(unittest.TestCase):
 
         vs_files = [os.path.join(vs_path, f) for f in os.listdir(vs_path)]
 
-        hc, lc, pp, _1, _2, _3 = merge_annotations(pprmeta_path, vf_path, vs_files, None, assembly, 0.9, test_dir)
+        hc, lc, pp, *_ = merge_annotations(pprmeta_path, vf_path, vs_files, None, assembly, 0.9, test_dir)
 
         hc_ids = set([h.id for h in hc])
         lc_ids = set([l.id for l in lc])

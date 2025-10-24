@@ -400,7 +400,7 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff, out
         prophage_predictions_contigs,
         sorter_hc,
         sorter_lc,
-        sorter_prophages
+        sorter_prophages,
     )
 
 
@@ -413,7 +413,7 @@ def main(pprmeta, finder, sorter, sorter2, assembly, outdir, vs_cutoff, prefix=F
         prophage_contigs,
         sorter_hc,
         sorter_lc,
-        sorter_prophages
+        sorter_prophages,
     ) = merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff, outdir)
 
     at_least_one = False
