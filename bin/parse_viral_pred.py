@@ -14,6 +14,9 @@ from Bio import SeqIO
 import pandas as pd
 
 
+MAX_N_PCT = 50
+
+
 class Record:
     """Simple class to aggregate the results"""
 
@@ -299,7 +302,14 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
     return high_confidence, low_confidence, prophages
 
 
-def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
+def sanity_check_sequence(sequence):
+    sequence = sequence.upper()
+    # checking percentage of N-s in sequence
+    n_pct = sequence.count("N") / len(sequence) * 100
+    return n_pct < MAX_N_PCT
+
+
+def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff, outdir):
     """Parse VirSorter, VirFinder and PPR-Meta outputs and merge the results.
     High confidence viral contigs:
     -  VirSorter reported as categories 1 and 2
@@ -324,9 +334,12 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
         if sorter is not None
         else parse_virus_sorter2(sorter2, vs_cutoff)
     )
-
+    skipped_contigs = []
     with open(assembly) as handle:
         for seq_record in SeqIO.parse(handle, "fasta"):
+            if not sanity_check_sequence(seq_record.seq):
+                skipped_contigs.append(seq_record.id)
+                continue
             if sorter:
                 # VirSorter1
                 if seq_record.id in sorter_hc:
@@ -372,7 +385,15 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
                     )
                 elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
                     lc_predictions_contigs.append(seq_record)
-
+                    
+    print(f"Number of skipped contigs {len(skipped_contigs)}")
+    # report skipped contigs
+    if skipped_contigs:
+        output_file = os.path.join(outdir, 'sanity_check_failed_contigs.txt')
+        with open(output_file, 'w') as file_out:
+            file_out.write('\n'.join(skipped_contigs))
+            print("Skipped contigs were written to {}")
+    
     return (
         hc_predictions_contigs,
         lc_predictions_contigs,
@@ -385,6 +406,7 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff):
 
 def main(pprmeta, finder, sorter, sorter2, assembly, outdir, vs_cutoff, prefix=False):
     """Parse VirSorter, VirFinder and PPR-Meta outputs and merge the results."""
+    outdir_path = Path(outdir)
     (
         hc_contigs,
         lc_contigs,
@@ -392,14 +414,13 @@ def main(pprmeta, finder, sorter, sorter2, assembly, outdir, vs_cutoff, prefix=F
         sorter_hc,
         sorter_lc,
         sorter_prophages,
-    ) = merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff)
+    ) = merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff, outdir)
 
     at_least_one = False
     name_prefix = ""
     if prefix:
         name_prefix = Path(assembly).stem + "_"
 
-    outdir_path = Path(outdir)
     if not os.path.exists(outdir_path):
         os.mkdir(outdir_path)
 
