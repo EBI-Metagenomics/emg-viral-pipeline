@@ -226,120 +226,144 @@ def write_gff(
             seq_len = len(str(record.seq))
             contigs_len_dict[contig_id] = seq_len
 
-    with open(output_filename, "w") as gff:
-        print("##gff-version 3", file=gff)
-        # Constants
-        SCORE = "."
-        # Writing the gff header
-        used_contigs = []
-        for contig_name in viral_sequences.keys():
-            clean_contig_name = Record.remove_prophage_from_contig(contig_name)
-            contig_length = contigs_len_dict[clean_contig_name]
-            if clean_contig_name not in used_contigs:
-                used_contigs.append(clean_contig_name)
-                print(
-                    "\t".join(
-                        [
-                            "##sequence-region",
-                            clean_contig_name,
-                            "1",
-                            str(contig_length),
-                        ]
-                    ),
-                    file=gff,
-                )
+    # Constants
+    SCORE = "."
 
-        # Writing the mobile genetic elements (viral sequences)
-        # coordinates and attributes
- 
-        for contig_name, viral_sequence_types in viral_sequences.items():
-            clean_contig_name = Record.remove_prophage_from_contig(contig_name)
+    # Collect all sequence-region headers
+    sequence_regions = []
+    used_contigs = set()
+    for contig_name in viral_sequences.keys():
+        clean_contig_name = Record.remove_prophage_from_contig(contig_name)
+        if clean_contig_name not in used_contigs:
+            used_contigs.add(clean_contig_name)
+            contig_length = contigs_len_dict[clean_contig_name]
+            sequence_regions.append((clean_contig_name, contig_length))
+
+    # Sort sequence-region headers by contig name
+    sequence_regions.sort(key=lambda x: x[0])
+
+    # Collect all GFF records (both mobile elements and CDS) before writing
+    all_records = []
+
+    # Collect mobile genetic elements (viral sequences)
+    for contig_name, viral_sequence_types in viral_sequences.items():
+        clean_contig_name = Record.remove_prophage_from_contig(contig_name)
+        quality = (
+            virify_quality[contig_name]
+            if contig_name in virify_quality
+            else "unknown"
+        )
+
+        for viral_seq_type in viral_sequence_types:
+            element_category = "viral_sequence"
+            id_ = f"ID={clean_contig_name}|viral_sequence"
+            start = 1
+            end = contigs_len_dict[clean_contig_name]
+            mobile_element_type = viral_seq_type
+
+            if "prophage" in viral_seq_type:
+                id_ = f"ID={clean_contig_name}|{viral_seq_type}"
+                # Prophages include the start and the end in the string
+                # encoding: prophage:{prophage_start}-{prophage_end}
+                start_str, end_str = viral_seq_type.split("prophage-")[1].split(":")
+                start = int(start_str)
+                end = int(end_str)
+
+                if start == 0:
+                    start = 1
+                    id_ = id_.replace("prophage-0:", "prophage-1:")
+
+                element_category = "prophage"
+                mobile_element_type = "prophage"
+
+            mobile_element_attributes = [
+                id_,
+                f"virify_quality={quality}",
+                "gbkey=mobile_element",
+                f"mobile_element_type={mobile_element_type}",
+                checkv_dict[contig_name],
+            ]
+
+            taxonomy = taxonomy_dict.get(contig_name)
+            if taxonomy:
+                mobile_element_attributes.append(f"taxonomy={taxonomy}")
+
+            mobile_elements_line = [
+                clean_contig_name,
+                "VIRify",
+                element_category,
+                str(start),
+                str(end),
+                SCORE,
+                ".",
+                ".",
+                ";".join(mobile_element_attributes),
+            ]
+
+            # Store as tuple: (contig_name, start_position, line_as_string)
+            all_records.append((clean_contig_name, start, "\t".join(mobile_elements_line)))
+
+    # Collect CDS records
+    for contig_name, contig_cds in cds_annotations.items():
+        for cds_data in contig_cds:
+            cds_id, start, end, direction, viphog_annotation = cds_data
+            region_name = '_'.join(cds_id.split('_')[:-1])
+            cds_id = cds_id.replace("prophage-0:", "prophage-1:")
+
+            # TODO: review this rule.
+            if end > contigs_len_dict[contig_name]:
+                end = contigs_len_dict[contig_name]
+
             quality = (
-                virify_quality[contig_name]
-                if contig_name in virify_quality
+                virify_quality[region_name]
+                if region_name in virify_quality
                 else "unknown"
             )
+            cds_attributes = [
+                f"ID={cds_id}",
+                f"virify_quality={quality}",
+                "gbkey=CDS",
+                viphog_annotation,
+            ]
+            cds_line = [
+                contig_name,
+                "Prodigal",
+                "CDS",
+                str(start),
+                str(end),
+                SCORE,
+                direction,
+                "0",  # phase
+                ";".join(cds_attributes),
+            ]
 
-            for viral_seq_type in viral_sequence_types:
-                element_category = "viral_sequence"
-                id_ = f"ID={clean_contig_name}|viral_sequence"
-                start = "1"
-                end = contigs_len_dict[clean_contig_name]
-                mobile_element_type = viral_seq_type
+            # Store as tuple: (contig_name, start_position, line_as_string)
+            all_records.append((contig_name, start, "\t".join(cds_line)))
 
-                if "prophage" in viral_seq_type:
-                    id_ = f"ID={clean_contig_name}|{viral_seq_type}"
-                    # Prophages include the start and the end in the string
-                    # encoding: prophage:{prophage_start}-{prophage_end}
-                    start, end = viral_seq_type.split("prophage-")[1].split(":")
+    # Sort all records by contig name (lexicographically) then by start position (numerically)
+    all_records.sort(key=lambda x: (x[0], x[1]))
 
-                    if int(start) == 0:
-                        start = "1"
-                        id_ = id_.replace("prophage-0:", "prophage-1:")
+    # Write the GFF file with sorted content
+    with open(output_filename, "w") as gff:
+        print("##gff-version 3", file=gff)
 
-                    element_category = "prophage"
-                    mobile_element_type = "prophage"
+        # Write sorted sequence-region headers
+        for contig_name, contig_length in sequence_regions:
+            print(
+                "\t".join(
+                    [
+                        "##sequence-region",
+                        contig_name,
+                        "1",
+                        str(contig_length),
+                    ]
+                ),
+                file=gff,
+            )
 
-                mobile_element_attributes = [
-                    id_,
-                    f"virify_quality={quality}",
-                    "gbkey=mobile_element",
-                    f"mobile_element_type={mobile_element_type}",
-                    checkv_dict[contig_name],
-                ]
-
-                taxonomy = taxonomy_dict.get(contig_name)
-                if taxonomy:
-                    mobile_element_attributes.append(f"taxonomy={taxonomy}")
-
-                mobile_elements_line = [
-                    clean_contig_name,
-                    "VIRify",
-                    element_category,
-                    start,
-                    end,
-                    SCORE,
-                    ".",
-                    ".",
-                    ";".join(mobile_element_attributes),
-                ]
-
-                print("\t".join(map(str, mobile_elements_line)), file=gff)
-
-        # Write the CDS for the viral sequences
-        for contig_name, contig_cds in cds_annotations.items():
-            for cds_data in contig_cds:
-                cds_id, start, end, direction, viphog_annotation = cds_data
-                region_name = '_'.join(cds_id.split('_')[:-1])
-                cds_id = cds_id.replace("prophage-0:", "prophage-1:")
-
-                # TODO: review this rule.
-                if end > contigs_len_dict[contig_name]:
-                    end = contigs_len_dict[contig_name]
-     
-                quality = (
-                    virify_quality[region_name]
-                    if region_name in virify_quality
-                    else "unknown"
-                )
-                cds_attributes = [
-                    f"ID={cds_id}",
-                    f"virify_quality={quality}",
-                    "gbkey=CDS",
-                    viphog_annotation,
-                ]
-                cds_line = [
-                    contig_name,
-                    "Prodigal",
-                    "CDS",
-                    start,
-                    end,
-                    SCORE,
-                    direction,
-                    "0",  # phase
-                    ";".join(cds_attributes),
-                ]
-                print("\t".join(map(str, cds_line)), file=gff)
+        # Write all sorted records
+        for contig_name, start_pos, record_line in all_records:
+            print(record_line, file=gff)
 
 
 if __name__ == "__main__":
