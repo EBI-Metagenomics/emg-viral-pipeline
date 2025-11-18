@@ -124,7 +124,7 @@ workflow VIRIFY {
  
   // Rename contigs to names before space for original assembly
   RESTORE_FILTERED_FASTA(filtered_assembly.map{meta, fasta, _contig_number -> [meta, fasta]}.join(mapfile), "temporary", "short")
-  assembly_with_short_contignames = RESTORE_FILTERED_FASTA.out.map{meta, name, fasta -> [meta, fasta]}
+  assembly_with_short_contignames = RESTORE_FILTERED_FASTA.out.map{meta, _name, fasta -> [meta, fasta]}
   
   // ----------- if --onlyannotate - skip DETECT step
   if (params.onlyannotate) {
@@ -141,10 +141,10 @@ workflow VIRIFY {
     
     // ----------- restore fasta files for each category fasta
     files_to_restore = DETECT.out.detect_output.join(mapfile)
-    .map { meta, files, mapfile ->
+    .map { meta, files, mapping_file ->
         // Ensure files is always a list
         def filesList = files instanceof List ? files : [files]
-        [meta, filesList, mapfile]
+        [meta, filesList, mapping_file]
     }.transpose(by:1)
     RESTORE_CATEGORY_FASTA(files_to_restore, "temporary", "short")
     category_fasta = RESTORE_CATEGORY_FASTA.out  // (meta, type(HC/LC/PP), fasta)

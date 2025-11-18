@@ -8,7 +8,7 @@ process WRITE_GFF {
     tuple val(meta), path(fasta), path(viphos_annotations), path(taxonomies), path(quality_summaries)
 
     output:
-    path("${meta.id}_virify.gff")
+    tuple val(meta), path("${meta.id}_virify.gff"), emit: gff
 
     script:
     def use_proteins_flag = params.use_proteins ? "--use-proteins": "" ;

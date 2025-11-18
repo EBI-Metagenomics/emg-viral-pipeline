@@ -1,0 +1,142 @@
+{
+    "sarscov2_bed_tbi": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "tbi_test"
+                        },
+                        "tbi_test.bed.gz:md5,fe4053cf4de3aebbdfc3be2efb125a74",
+                        "tbi_test.bed.gz.tbi:md5,ca06caf88b1e3c67d5fcba0a1460b52c"
+                    ]
+                ],
+                "1": [
+                    "versions.yml:md5,0d1392ca932108ed1febfb29a29ae919"
+                ],
+                "gz_index": [
+                    [
+                        {
+                            "id": "tbi_test"
+                        },
+                        "tbi_test.bed.gz:md5,fe4053cf4de3aebbdfc3be2efb125a74",
+                        "tbi_test.bed.gz.tbi:md5,ca06caf88b1e3c67d5fcba0a1460b52c"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,0d1392ca932108ed1febfb29a29ae919"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2025-11-05T16:34:13.48540422"
+    },
+    "sarscov2_bed_csi": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "csi_test"
+                        },
+                        "csi_test.bed.gz:md5,fe4053cf4de3aebbdfc3be2efb125a74",
+                        "csi_test.bed.gz.csi:md5,c9c0377de58fdc89672bb3005a0d69f5"
+                    ]
+                ],
+                "1": [
+                    "versions.yml:md5,0d1392ca932108ed1febfb29a29ae919"
+                ],
+                "gz_index": [
+                    [
+                        {
+                            "id": "csi_test"
+                        },
+                        "csi_test.bed.gz:md5,fe4053cf4de3aebbdfc3be2efb125a74",
+                        "csi_test.bed.gz.csi:md5,c9c0377de58fdc89672bb3005a0d69f5"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,0d1392ca932108ed1febfb29a29ae919"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2025-11-05T16:34:20.086259093"
+    },
+    "sarscov2_bed_tbi_stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                        "test.bed.gz.tbi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    "versions.yml:md5,0d1392ca932108ed1febfb29a29ae919"
+                ],
+                "gz_index": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                        "test.bed.gz.tbi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,0d1392ca932108ed1febfb29a29ae919"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2025-11-05T16:34:33.98173417"
+    },
+    "sarscov2_bed_csi_stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                        "test.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    "versions.yml:md5,0d1392ca932108ed1febfb29a29ae919"
+                ],
+                "gz_index": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.bed.gz:md5,68b329da9893e34099c7d8ad5cb9c940",
+                        "test.bed.gz.csi:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions": [
+                    "versions.yml:md5,0d1392ca932108ed1febfb29a29ae919"
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2025-11-05T16:34:26.832450064"
+    }
+}
