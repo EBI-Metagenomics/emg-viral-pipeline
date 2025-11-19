@@ -9,6 +9,11 @@
  * Then, all results are summarized for reporting and plotting. 
  */
 
+/* nf-core modules */
+include { TABIX_BGZIP                 } from '../../modules/nf-core/tabix/bgzip/main'
+include { TABIX_BGZIPTABIX            } from '../../modules/nf-core/tabix/bgziptabix/main'
+
+/* Local modules */
 include { VIRSORTER                   } from '../../modules/local/virsorter' 
 include { VIRFINDER                   } from '../../modules/local/virfinder' 
 include { PPRMETA                     } from '../../modules/local/pprmeta'
@@ -91,6 +96,17 @@ workflow ANNOTATE {
       contigs.join(viphos_annotations).join(taxonomy_annotations).join(checkv_results)
     )
     
+    /**********************************************/
+    /* Compressed and indexed GFF (.gzi and .csi) */
+    /**********************************************/
+    TABIX_BGZIP(
+      WRITE_GFF.out.gff
+    )
+
+    TABIX_BGZIPTABIX(
+      WRITE_GFF.out.gff
+    )
+
     predicted_contigs_filtered = predicted_contigs.map { meta, set_name, fasta -> [set_name, meta, fasta] }
     plot_contig_map_filtered = PLOT_CONTIG_MAP.out.map { meta, set_name, dir, table -> [set_name, table] }
     chromomap_ch = predicted_contigs_filtered.join(plot_contig_map_filtered).map { set_name, assembly_name, fasta, tsv -> [assembly_name, set_name, fasta, tsv]}
