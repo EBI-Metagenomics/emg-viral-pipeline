@@ -14,6 +14,11 @@ logging.basicConfig(level=logging.INFO)
 
 
 def get_ena_contig_mapping(ena_contig_file):
+    """Create a mapping between contig names and ENA accession numbers.
+
+    :param ena_contig_file: Path to ENA contig file in FASTA format
+    :return: Dictionary mapping contig names to ENA accessions
+    """
     ena_mapping = {}
     with gzip.open(ena_contig_file, "rt") as ena_contigs:
         for record in SeqIO.parse(ena_contigs, "fasta"):
@@ -23,12 +28,51 @@ def get_ena_contig_mapping(ena_contig_file):
     return ena_mapping
 
 
-def aggregate_annotations(virify_annotation_files, use_proteins=False):
+def get_contig_lengths_per_contig(assembly_file):
+    """Build a dictionary mapping contig names to their lengths.
+
+    :param assembly_file: Path to assembly file in FASTA format
+    :return: Dictionary with contig names as keys and lengths as values
+    """
+    contigs_len_dict = {}
+    with open_fasta_file(assembly_file) as handle:
+        for record in SeqIO.parse(handle, "fasta"):
+            contig_id = str(record.id)
+            seq_len = len(str(record.seq))
+            contigs_len_dict[contig_id] = seq_len
+    return contigs_len_dict
+
+
+def open_fasta_file(filename):
+    """Open a FASTA file, handling both gzipped and uncompressed files.
+
+    :param filename: Path to FASTA file (can be .gz or regular file)
+    :return: File handle for reading the FASTA file
+    """
+    if filename.endswith(".gz"):
+        f = gzip.open(filename, "rt")
+    else:
+        f = open(filename, "rt")
+    return f
+
+
+def aggregate_annotations(
+    virify_annotation_files, contigs_len_dict, use_proteins=False
+):
     """Aggregate all the virify annotations into a single data structure for
     easier handling when writing the GFF file.
 
+    Handling of VS2's circular genome processing where contigs are extended by duplication (see https://github.com/jiarong/VirSorter2/issues/243)
+    - If prophage_end > contig_length, prophage_end is truncated to contig_length
+    - Original prophage_start is preserved, only prophage_end is truncated if needed
+
     :param virify_annotation_files: The virify 08-final/*.annotations tsv files
-    :return: 2 dicts, one with the viral_sequences elements, and one for the cds
+    :param contigs_len_dict: Dictionary mapping contig names to their lengths for prophage coordinate validation.
+                             If provided, prophage end coordinates exceeding contig length will be truncated
+                             to handle VS2 circular genome artifacts where extended contigs can lead to
+                             prophage predictions that exceed the original contig boundaries.
+    :param use_proteins: Boolean flag indicating if the pipeline used already predicted proteins as input
+    :return: 3 values - viral_sequences dict, cds_annotations dict, and virify_quality dict
     """
     # structure of the viral_sequences
     # {
@@ -96,9 +140,19 @@ def aggregate_annotations(virify_annotation_files, use_proteins=False):
                         # contig_1|prophage-132033:161324	contig_1|prophage-132033:161324_1	2	256	1	No hit	NA
                         start = start + prophage_start
                         end = end + prophage_start
+
+                    # Fix for circular prophages: truncate end coordinate if it exceeds contig length
+                    # This handles the VS2 artifact where circular genomes are extended
+                    # and prophage predictions can extend beyond the original contig boundaries
+                    clean_contig_name = Record.remove_prophage_from_contig(contig)
+                    if (
+                        clean_contig_name in contigs_len_dict
+                        and prophage_end > contigs_len_dict[clean_contig_name]
+                    ):
+                        prophage_end = contigs_len_dict[clean_contig_name]
                     viral_sequence_type = f"prophage-{prophage_start}:{prophage_end}"
 
-                # save HC, LC, PP 
+                # save HC, LC, PP
                 virify_quality.setdefault(contig, quality)
                 # We use the contig name without any extra annotations
                 # This also collapses multiples prophages annotations
@@ -132,14 +186,6 @@ def aggregate_annotations(virify_annotation_files, use_proteins=False):
     return viral_sequences, cds_annotations, virify_quality
 
 
-def open_fasta_file(filename):
-    if filename.endswith(".gz"):
-        f = gzip.open(filename, "rt")
-    else:
-        f = open(filename, "rt")
-    return f
-
-
 def write_gff(
     checkv_files,
     taxonomy_files,
@@ -148,8 +194,28 @@ def write_gff(
     viral_sequences,
     cds_annotations,
     virify_quality,
+    contigs_len_dict,
     ena_mapping=None,
 ):
+    """Generate a GFF3 file from VIRify output files with comprehensive viral sequence annotations.
+
+    This function creates a GFF3 file containing viral sequence predictions, prophage regions,
+    and CDS annotations with ViPhOG information. It handles the VS2 circular genome artifact
+    by truncating prophage coordinates that exceed contig boundaries.
+
+    :param checkv_files: List of CheckV summary files containing quality metrics
+    :param taxonomy_files: List of taxonomic annotation files
+    :param sample_prefix: Prefix for output GFF filename
+    :param assembly_file: Assembly FASTA file (used for contig lengths if contigs_len_dict not provided)
+    :param viral_sequences: Dictionary of viral sequence annotations from aggregate_annotations()
+    :param cds_annotations: Dictionary of CDS annotations from aggregate_annotations()
+    :param virify_quality: Dictionary of quality annotations from aggregate_annotations()
+    :param ena_mapping: Optional ENA contig mapping for renaming (ERZ accession will be used if provided)
+    :param contigs_len_dict: Optional pre-loaded dictionary mapping contig names to lengths.
+                            If not provided, will be loaded from assembly_file.
+
+    :return: None (writes GFF file to disk)
+    """
     if ena_mapping:
         ena_assembly_accession = list(ena_mapping.values())[0].split(".")[0]
         output_filename = f"{ena_assembly_accession}_virify.gff"
@@ -157,7 +223,7 @@ def write_gff(
         output_filename = f"{sample_prefix}_virify.gff"
 
     # Auxiliary dictionaries to collect some more contig related data
-    checkv_dict, taxonomy_dict, contigs_len_dict = {}, {}, {}
+    checkv_dict, taxonomy_dict = {}, {}
 
     # Getting the checkv evaluation of each contig
     for checkv_file in checkv_files:
@@ -219,13 +285,6 @@ def write_gff(
                     )
                 taxonomy_dict[contig] = taxonomy_string
 
-    # Read unmodified contig length from the renamed assembly file
-    with open_fasta_file(assembly_file) as handle:
-        for record in SeqIO.parse(handle, "fasta"):
-            contig_id = str(record.id)
-            seq_len = len(str(record.seq))
-            contigs_len_dict[contig_id] = seq_len
-
     # Constants
     SCORE = "."
 
@@ -249,9 +308,7 @@ def write_gff(
     for contig_name, viral_sequence_types in viral_sequences.items():
         clean_contig_name = Record.remove_prophage_from_contig(contig_name)
         quality = (
-            virify_quality[contig_name]
-            if contig_name in virify_quality
-            else "unknown"
+            virify_quality[contig_name] if contig_name in virify_quality else "unknown"
         )
 
         for viral_seq_type in viral_sequence_types:
@@ -301,13 +358,15 @@ def write_gff(
             ]
 
             # Store as tuple: (contig_name, start_position, line_as_string)
-            all_records.append((clean_contig_name, start, "\t".join(mobile_elements_line)))
+            all_records.append(
+                (clean_contig_name, start, "\t".join(mobile_elements_line))
+            )
 
     # Collect CDS records
     for contig_name, contig_cds in cds_annotations.items():
         for cds_data in contig_cds:
             cds_id, start, end, direction, viphog_annotation = cds_data
-            region_name = '_'.join(cds_id.split('_')[:-1])
+            region_name = "_".join(cds_id.split("_")[:-1])
             cds_id = cds_id.replace("prophage-0:", "prophage-1:")
 
             # TODO: review this rule.
@@ -487,8 +546,11 @@ if __name__ == "__main__":
 
     logging.info("Collecting annotation data")
 
+    # Load contig lengths once for prophage coordinate validation
+    contigs_len_dict = get_contig_lengths_per_contig(assembly_file)
+
     viral_sequences, cds_annotations, virify_quality = aggregate_annotations(
-        virify_files, args.use_proteins
+        virify_files, contigs_len_dict, args.use_proteins
     )
 
     logging.info("Generating the gff output")
@@ -500,5 +562,6 @@ if __name__ == "__main__":
         viral_sequences,
         cds_annotations,
         virify_quality,
+        contigs_len_dict,
         ena_mapping=ena_mapping,
     )
