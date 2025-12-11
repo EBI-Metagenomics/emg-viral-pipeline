@@ -161,6 +161,7 @@ class TestWriteGFF(unittest.TestCase):
             gff_content = gff_file.read()
             # The prophage end coordinate should be truncated from 1200 to 1000
             self.assertIn("prophage-500:1000", gff_content)
+            self.assertTrue("prophage-500:1000_2", gff_content)
             self.assertNotIn("prophage-500:1200", gff_content)
 
         # Clean up

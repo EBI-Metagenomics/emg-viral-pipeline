@@ -124,8 +124,10 @@ def aggregate_annotations(
                     circular,
                 ) = Record.get_prophage_metadata_from_contig(contig)
 
-                if circular is True:
+                if circular:
                     viral_sequence_type = "phage_circular"
+
+                does_the_prophage_overrun = False
 
                 if prophage_start is not None and prophage_end is not None:
                     if use_proteins:
@@ -145,12 +147,18 @@ def aggregate_annotations(
                     # This handles the VS2 artifact where circular genomes are extended
                     # and prophage predictions can extend beyond the original contig boundaries
                     clean_contig_name = Record.remove_prophage_from_contig(contig)
-                    if (
-                        clean_contig_name in contigs_len_dict
-                        and prophage_end > contigs_len_dict[clean_contig_name]
-                    ):
-                        prophage_end = contigs_len_dict[clean_contig_name]
-                    viral_sequence_type = f"prophage-{prophage_start}:{prophage_end}"
+                    contig_len = contigs_len_dict[clean_contig_name]
+                    does_the_prophage_overrun = (
+                        prophage_end > contig_len
+                    )
+
+                    if does_the_prophage_overrun:
+                        # We truncate as the prophage_end could overrun
+                        viral_sequence_type = f"prophage-{prophage_start}:{contigs_len_dict[clean_contig_name]}"
+                    else:
+                        viral_sequence_type = (
+                            f"prophage-{prophage_start}:{prophage_end}"
+                        )
 
                 # save HC, LC, PP
                 virify_quality.setdefault(contig, quality)
@@ -173,6 +181,14 @@ def aggregate_annotations(
                     )
                     # We need to remove all the virify prophage annotations, if any
                     contig_name_clean = Record.remove_prophage_from_contig(contig)
+
+                    if does_the_prophage_overrun:
+                        # We need to adjust the end here too
+                        cds_id = cds_id.replace(
+                            f"prophage-{prophage_start}:{prophage_end}",
+                            f"prophage-{prophage_start}:{contig_len}",
+                        )
+
                     cds_annotations.setdefault(contig_name_clean, []).append(
                         [
                             cds_id,

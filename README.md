@@ -435,6 +435,8 @@ VIRify automatically detects and truncates prophage end coordinates that exceed 
 
 For more details, see [VirSorter2 issue #243](https://github.com/jiarong/VirSorter2/issues/243).
 
+Note that CheckV carries over the overhang end from VirSorter2, so be mindful of this when using the results.
+
 <a name="cite"></a>
 
 # Cite
