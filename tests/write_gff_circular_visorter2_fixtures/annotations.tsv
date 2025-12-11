@@ -1,0 +1,3 @@
+Contig	CDS_ID	Start	End	Direction	Best_hit	Abs_Evalue_exp	Label
+test_contig|prophage-500:1200	test_contig|prophage-500:1200_1	1	100	1	No hit	NA	
+test_contig|prophage-500:1200	test_contig|prophage-500:1200_2	400	1200	1	ViPhOGXXX.100	1	
