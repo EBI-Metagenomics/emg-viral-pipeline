@@ -11,6 +11,7 @@ report_section_order:
     order: -1002
 
 export_plots: true
+show_analysis_paths: false
 
 data_format: "yaml"
 

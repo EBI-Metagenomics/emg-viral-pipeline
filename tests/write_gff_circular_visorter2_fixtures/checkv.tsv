@@ -1,0 +1,2 @@
+contig_id	provirus	checkv_quality	miuvig_quality	kmer_freq	viral_genes
+test_contig|prophage-500:1200	complete	complete	high	 0.9	10

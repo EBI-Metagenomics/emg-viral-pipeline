@@ -10,7 +10,8 @@
 4. [ Detour: Metatranscriptomics ](#metatranscriptome)
 5. [ Frequently Asked Questions (FAQ) ](#faq)
 6. [ Resources ](#resources)
-7. [ Citations ](#cite)
+7. [ Technical Details ](#technical)
+8. [ Citations ](#cite)
 
 <a name="virify"></a>
 
@@ -420,6 +421,21 @@ Here, we also list databases used and automatically downloaded by the pipeline *
 * **IMG/VR**
     * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/IMG_VR_2018-07-01_4.tar.gz`
     * [Publication](https://doi.org/10.1093/nar/gkw1030)
+
+
+<a name="technical"></a>
+
+# Technical Details
+
+## VirSorter2 Circular Genome Handling
+
+VIRify includes special handling for circular genome artifacts produced by VirSorter2 (VS2). When processing circular genomes, VS2 extends the annotation beyond the end of the contig to avoid truncating the gene annotation. This can result in prophage coordinates that exceed the original contig boundaries.
+
+VIRify automatically detects and truncates prophage end coordinates that exceed contig lengths, while preserving the original prophage start coordinates.
+
+For more details, see [VirSorter2 issue #243](https://github.com/jiarong/VirSorter2/issues/243).
+
+Note that CheckV carries over the overhang end from VirSorter2, so be mindful of this when using the results. In addition, extended genes are also trimmed in the final output of VIRIfy.
 
 
 <a name="cite"></a>
