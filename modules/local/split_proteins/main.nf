@@ -11,7 +11,16 @@ process SPLIT_PROTEINS {
     tuple val(meta), val(confidence_set_name), path(fasta), path("*_split.faa")
     
     script:
-    """    
-    split_proteins_by_categories.py -i ${fasta} -o ${confidence_set_name}_split.faa -p ${proteins}
+    def fasta_file = fasta.name.endsWith('.gz') ? fasta.baseName : fasta.name
+    def proteins_file = proteins.name.endsWith('.gz') ? proteins.baseName : proteins.name
+    """
+    if [[ ${fasta} == *.gz ]]; then
+        gunzip -c ${fasta} > ${fasta_file}
+    fi
+    if [[ ${proteins} == *.gz ]]; then
+        gunzip -c ${proteins} > ${proteins_file}
+    fi
+    
+    split_proteins_by_categories.py -i ${fasta_file} -o ${confidence_set_name}_split.faa -p ${proteins_file}
     """
 }
