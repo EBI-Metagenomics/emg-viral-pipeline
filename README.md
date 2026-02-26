@@ -102,6 +102,9 @@ The samplesheet must be a .csv file that contains the following columns:
  
 The fastq_1 and fastq_2 files are optional and can be provided if the user wants the reads to be assembled. The proteins file is also optional and can be provided to avoid calling the protein caller again.
 
+> [!NOTE]  
+> The pipeline expects proteins in Prodigal (Pyrodigal too) format with specific description fields (e.g., `>contig1_1 # 1 # 100 # 200 # +`). Only proteins with this format will be processed for ViPhOG annotation. Proteins from other gene callers (e.g., FrageneScan) that don't follow this format will be automatically excluded from the annotation process.
+
 [Example](assets/example_input.csv)
 ```
 id,assembly,fastq_1,fastq_2,proteins
