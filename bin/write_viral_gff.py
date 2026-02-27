@@ -210,7 +210,7 @@ def write_gff(
     virify_quality,
     contigs_len_dict,
     ena_mapping=None,
-    user_proteins=False,
+    use_proteins=False,
 ):
     """Generate a GFF3 file from VIRify output files with comprehensive viral sequence annotations.
 
@@ -229,7 +229,7 @@ def write_gff(
     :param contigs_len_dict: Optional pre-loaded dictionary mapping contig names to lengths.
                             If not provided, will be loaded from assembly_file.
     :param ena_mapping: ENA mapping dict
-    :param user_proteins: Flag used when users provide their "proteins"
+    :param use_proteins: Flag used when users provide their "proteins"
     :return: None (writes GFF file to disk)
     """
     if ena_mapping:
@@ -261,7 +261,7 @@ def write_gff(
                         f"checkv_viral_genes={viral_genes}",
                     ]
                 )
-                checkv_dict[contig_id] = checkv_info
+                checkv_dict[Record.remove_prophage_from_contig(contig_id)] = checkv_info
 
     # Recovering taxonomic information and integrating the lineage
     # as Uroviricota;Caudoviricetes,Caudovirales;
@@ -315,12 +315,14 @@ def write_gff(
         if clean_contig_name not in used_contigs:
             used_contigs.add(clean_contig_name)
             # Users may provide proteins for all the contigs, but VIRify only considers contigs
-            # that are longer than 150K, so when users provide a proteins file (--user_proteins)
-            # we allow mismatches here. Guard applies regardless of user_proteins to avoid
-            # writing None as contig length in the GFF3 sequence-region directive.
+            # that are longer than 150K, so when users provide a proteins file (--use_proteins)
+            # we allow mismatches here. 
             contig_length = contigs_len_dict.get(clean_contig_name)
             if contig_length is None:
-                missed_contigs += 1
+                if use_proteins:
+                    missed_contigs += 1
+                else:
+                    raise ValueError(f"Contig {clean_contig_name} not found in the assembly.")
                 continue
             sequence_regions.append((clean_contig_name, contig_length))
 
@@ -376,7 +378,7 @@ def write_gff(
                 f"virify_quality={quality}",
                 "gbkey=mobile_element",
                 f"mobile_element_type={mobile_element_type}",
-                checkv_dict[contig_name],
+                checkv_dict[clean_contig_name],
             ]
 
             taxonomy = taxonomy_dict.get(contig_name)
@@ -606,5 +608,5 @@ if __name__ == "__main__":
         virify_quality,
         contigs_len_dict,
         ena_mapping=ena_mapping,
-        user_proteins=args.use_proteins,
+        use_proteins=args.use_proteins,
     )

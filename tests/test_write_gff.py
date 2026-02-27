@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import patch
 import glob
 import hashlib
+import pytest
 
 from bin.parse_viral_pred import Record
 from bin.write_viral_gff import (
@@ -171,6 +172,58 @@ class TestWriteGFF(unittest.TestCase):
             os.unlink("test_sample_virify.gff")
 
 
+def test_phage_circular_checkv_key_normalization(tmp_path):
+    """CheckV contig_id with |phage-circular suffix is correctly matched to
+    the cleaned contig name used for the assembly lookup.
+
+    Regression test for KeyError when checkV stores contig_id as
+    'contig1|phage-circular' but write_gff looks up by the cleaned name
+    'contig1'. The checkv_dict must be indexed by the cleaned name so that
+    the lookup at the mobile-element attribute stage succeeds.
+    """
+    fixtures = Path(__file__).parent / "write_gff_phage_circular_checkv_fixtures"
+    assembly_fasta = fixtures / "assembly.fasta"
+    annotation_tsv = fixtures / "annotations.tsv"
+    checkv_tsv = fixtures / "checkv.tsv"
+    taxonomy_tsv = fixtures / "taxonomy.tsv"
+
+    contigs_len_dict = get_contig_lengths_per_contig(str(assembly_fasta))
+
+    viral_sequences, cds_annotations, virify_quality = aggregate_annotations(
+        [str(annotation_tsv)], contigs_len_dict
+    )
+
+    assert "contig1|phage-circular" in viral_sequences
+
+    sample_prefix = str(tmp_path / "test_phage_circular")
+
+    # Must not raise KeyError
+    write_gff(
+        [str(checkv_tsv)],
+        [str(taxonomy_tsv)],
+        sample_prefix,
+        str(assembly_fasta),
+        viral_sequences,
+        cds_annotations,
+        virify_quality,
+        contigs_len_dict,
+    )
+
+    output_gff = tmp_path / "test_phage_circular_virify.gff"
+    gff_content = output_gff.read_text()
+
+    # The seqid column (col 1) must use the clean base name; the |phage-circular
+    # suffix may still appear in CDS ID attributes, but never as a seqid.
+    data_lines = [
+        l for l in gff_content.splitlines() if l.strip() and not l.startswith("#")
+    ]
+    assert data_lines, "GFF output contains no data lines"
+    seqids = {line.split("\t")[0] for line in data_lines}
+    assert seqids == {"contig1"}, f"Unexpected seqids: {seqids}"
+    # CheckV attributes must appear in the output
+    assert "checkv_quality=High-quality" in gff_content
+
+
 def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
     """Contig present in annotation TSV but absent from the assembly FASTA is skipped.
 
@@ -210,6 +263,7 @@ def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
             cds_annotations,
             virify_quality,
             contigs_len_dict,
+            use_proteins=True
         )
 
     warned_messages = [str(call) for call in mock_warn.call_args_list]
@@ -222,3 +276,19 @@ def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
     gff_content = output_gff.read_text()
     assert "valid_contig" in gff_content
     assert "missing_contig" not in gff_content
+
+    with pytest.raises(ValueError) as _e:
+        # When the flag use_proteins is off if a contig id is not found
+        # An exception is thrown, as this is not expected
+        write_gff(
+            [str(checkv_tsv)],
+            [str(taxonomy_tsv)],
+            sample_prefix,
+            str(assembly_fasta),
+            viral_sequences,
+            cds_annotations,
+            virify_quality,
+            contigs_len_dict,
+            use_proteins=False
+        )
+
