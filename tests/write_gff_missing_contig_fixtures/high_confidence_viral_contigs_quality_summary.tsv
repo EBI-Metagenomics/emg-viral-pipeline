@@ -1,0 +1,3 @@
+contig_id	contig_length	provirus	proviral_length	gene_count	viral_genes	host_genes	checkv_quality	miuvig_quality	completeness	completeness_method	contamination	kmer_freq	warnings
+valid_contig	1000	No	NA	2	1	0	Medium-quality	Genome-fragment	80.0	HMM-based	0.0	1.0
+missing_contig	1000	No	NA	2	1	0	Medium-quality	Genome-fragment	80.0	HMM-based	0.0	1.0

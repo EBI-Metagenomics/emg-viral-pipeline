@@ -14,10 +14,6 @@ include { TABIX_BGZIP                 } from '../../modules/nf-core/tabix/bgzip/
 include { TABIX_BGZIPTABIX            } from '../../modules/nf-core/tabix/bgziptabix/main'
 
 /* Local modules */
-include { VIRSORTER                   } from '../../modules/local/virsorter' 
-include { VIRFINDER                   } from '../../modules/local/virfinder' 
-include { PPRMETA                     } from '../../modules/local/pprmeta'
-include { LENGTH_FILTERING            } from '../../modules/local/length_filtering'  
 include { RATIO_EVALUE                } from '../../modules/local/ratio_evalue' 
 include { ANNOTATION                  } from '../../modules/local/annotation' 
 include { ASSIGN                      } from '../../modules/local/assign' 
@@ -54,6 +50,7 @@ workflow ANNOTATE {
     
     // prodigal
     PREDICT_PROTEINS( input_fastas )
+
     contigs = PREDICT_PROTEINS.out.contigs
     proteins = PREDICT_PROTEINS.out.proteins
     predicted_contigs = PREDICT_PROTEINS.out.predicted_contigs
@@ -88,12 +85,12 @@ workflow ANNOTATE {
       checkv_db.first()
     )
     
-    viphos_annotations = ANNOTATION.out.annotations.map{meta, type, annotation -> [meta, annotation]}.groupTuple()
-    taxonomy_annotations = ASSIGN.out.map{meta, type, annotation -> [meta, annotation]}.groupTuple()
-    checkv_results = CHECKV.out.map{meta, type, quality -> [meta, quality]}.groupTuple()
+    viphos_annotations = ANNOTATION.out.annotations.map { meta, _type, annotation -> [meta, annotation] }.groupTuple()
+    taxonomy_annotations = ASSIGN.out.map { meta, _type, annotation -> [meta, annotation] }.groupTuple()
+    checkv_results = CHECKV.out.map { meta, _type, quality -> [meta, quality] }.groupTuple()
     
     WRITE_GFF(
-      contigs.join(viphos_annotations).join(taxonomy_annotations).join(checkv_results)
+      contigs.join(viphos_annotations).join(taxonomy_annotations).join(checkv_results),
     )
     
     /**********************************************/

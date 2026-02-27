@@ -19,4 +19,4 @@ indent_size = 2
 indent_size = 2
 
 [*.nf]
-indent_size = 2
+indent_size = 4

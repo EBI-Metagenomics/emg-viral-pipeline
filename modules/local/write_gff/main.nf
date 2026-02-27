@@ -13,13 +13,13 @@ process WRITE_GFF {
     script:
     def use_proteins_flag = params.use_proteins ? "--use-proteins": "" ;
     """
-    write_viral_gff.py \
-    $use_proteins_flag \
-    -v ${viphos_annotations.join(' ')} \
-    -c ${quality_summaries.join(' ')} \
-    -t ${taxonomies.join(' ')} \
-    -s ${meta.id} \
-    -a ${fasta}
+    write_viral_gff.py \\
+      $use_proteins_flag \\
+      -v ${viphos_annotations.join(' ')} \\
+      -c ${quality_summaries.join(' ')} \\
+      -t ${taxonomies.join(' ')} \\
+      -s ${meta.id} \\
+      -a ${fasta}
 
     gt gff3validator ${meta.id}_virify.gff
     """

@@ -1,0 +1,3 @@
+Contig	CDS_ID	Start	End	Direction	Best_hit	Abs_Evalue_exp	Label
+valid_contig	valid_contig_1	1	100	1	No hit	NA
+missing_contig	missing_contig_1	1	100	1	No hit	NA
