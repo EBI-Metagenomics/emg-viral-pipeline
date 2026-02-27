@@ -1,7 +1,9 @@
 #!/bin/env python3
 
 import os
+from pathlib import Path
 import unittest
+from unittest.mock import patch
 import glob
 import hashlib
 
@@ -167,3 +169,56 @@ class TestWriteGFF(unittest.TestCase):
         # Clean up
         if os.path.exists("test_sample_virify.gff"):
             os.unlink("test_sample_virify.gff")
+
+
+def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
+    """Contig present in annotation TSV but absent from the assembly FASTA is skipped.
+
+    Regression test for KeyError: '<contig_name>' when a contig in the
+    annotation file has no matching entry in contigs_len_dict.
+    Both the sequence-region header, the mobile-element record, and any
+    associated CDS records for the missing contig must be omitted from the
+    output GFF, and a WARNING must be emitted reporting the count.
+    """
+
+    fixtures = Path(__file__).parent / "write_gff_missing_contig_fixtures"
+    assembly_fasta = fixtures / "assembly.fasta"
+    annotation_tsv = fixtures / "high_confidence_viral_contigs_annotation.tsv"
+    checkv_tsv = fixtures / "high_confidence_viral_contigs_quality_summary.tsv"
+    taxonomy_tsv = fixtures / "high_confidence_viral_contigs_annotation_taxonomy.tsv"
+
+    contigs_len_dict = get_contig_lengths_per_contig(str(assembly_fasta))
+
+    viral_sequences, cds_annotations, virify_quality = aggregate_annotations(
+        [str(annotation_tsv)], contigs_len_dict
+    )
+
+    # Both contigs appear in annotation output before write_gff filtering
+    assert "valid_contig" in viral_sequences
+    assert "missing_contig" in viral_sequences
+
+    # Passing a full path as sample_prefix directs the output GFF into tmp_path
+    sample_prefix = str(tmp_path / "test_missing_contig")
+
+    with patch("logging.warning") as mock_warn:
+        write_gff(
+            [str(checkv_tsv)],
+            [str(taxonomy_tsv)],
+            sample_prefix,
+            str(assembly_fasta),
+            viral_sequences,
+            cds_annotations,
+            virify_quality,
+            contigs_len_dict,
+        )
+
+    warned_messages = [str(call) for call in mock_warn.call_args_list]
+    assert any(
+        "1 contigs were not found in the assembly and were skipped" in msg
+        for msg in warned_messages
+    )
+
+    output_gff = tmp_path / "test_missing_contig_virify.gff"
+    gff_content = output_gff.read_text()
+    assert "valid_contig" in gff_content
+    assert "missing_contig" not in gff_content

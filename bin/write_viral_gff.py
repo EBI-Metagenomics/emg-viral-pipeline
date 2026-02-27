@@ -148,9 +148,7 @@ def aggregate_annotations(
                     # and prophage predictions can extend beyond the original contig boundaries
                     clean_contig_name = Record.remove_prophage_from_contig(contig)
                     contig_len = contigs_len_dict[clean_contig_name]
-                    does_the_prophage_overrun = (
-                        prophage_end > contig_len
-                    )
+                    does_the_prophage_overrun = prophage_end > contig_len
 
                     if does_the_prophage_overrun:
                         # We truncate as the prophage_end could overrun
@@ -177,7 +175,7 @@ def aggregate_annotations(
                 if best_hit != "No hit":
                     best_hit = best_hit.replace(".faa", "")
                     viphog_annotation = ";".join(
-                        [f"viphog={best_hit}", f'viphog_taxonomy={row["Label"]}']
+                        [f"viphog={best_hit}", f"viphog_taxonomy={row['Label']}"]
                     )
                     # We need to remove all the virify prophage annotations, if any
                     contig_name_clean = Record.remove_prophage_from_contig(contig)
@@ -212,6 +210,7 @@ def write_gff(
     virify_quality,
     contigs_len_dict,
     ena_mapping=None,
+    user_proteins=False,
 ):
     """Generate a GFF3 file from VIRify output files with comprehensive viral sequence annotations.
 
@@ -229,7 +228,8 @@ def write_gff(
     :param ena_mapping: Optional ENA contig mapping for renaming (ERZ accession will be used if provided)
     :param contigs_len_dict: Optional pre-loaded dictionary mapping contig names to lengths.
                             If not provided, will be loaded from assembly_file.
-
+    :param ena_mapping: ENA mapping dict
+    :param user_proteins: Flag used when users provide their "proteins"
     :return: None (writes GFF file to disk)
     """
     if ena_mapping:
@@ -307,12 +307,32 @@ def write_gff(
     # Collect all sequence-region headers
     sequence_regions = []
     used_contigs = set()
+
+    missed_contigs = 0
+
     for contig_name in viral_sequences.keys():
         clean_contig_name = Record.remove_prophage_from_contig(contig_name)
         if clean_contig_name not in used_contigs:
             used_contigs.add(clean_contig_name)
-            contig_length = contigs_len_dict[clean_contig_name]
+            # Users may provide proteins for all the contigs, but VIRify only considers contigs
+            # that are longer than 150K, so when users provide a proteins file (--user_proteins)
+            # we allow mismatches here. Guard applies regardless of user_proteins to avoid
+            # writing None as contig length in the GFF3 sequence-region directive.
+            contig_length = contigs_len_dict.get(clean_contig_name)
+            if contig_length is None:
+                missed_contigs += 1
+                continue
             sequence_regions.append((clean_contig_name, contig_length))
+
+    if missed_contigs > 0:
+        logging.warning(
+            f"{missed_contigs} contigs were not found in the assembly and were skipped"
+        )
+
+    if not sequence_regions:
+        raise ValueError(
+            "All the contigs that came from the annotated viral sequences were discarded."
+        )
 
     # Sort sequence-region headers by contig name
     sequence_regions.sort(key=lambda x: x[0])
@@ -331,7 +351,9 @@ def write_gff(
             element_category = "viral_sequence"
             id_ = f"ID={clean_contig_name}|viral_sequence"
             start = 1
-            end = contigs_len_dict[clean_contig_name]
+            end = contigs_len_dict.get(clean_contig_name)
+            if end is None:
+                continue
             mobile_element_type = viral_seq_type
 
             if "prophage" in viral_seq_type:
@@ -385,9 +407,12 @@ def write_gff(
             region_name = "_".join(cds_id.split("_")[:-1])
             cds_id = cds_id.replace("prophage-0:", "prophage-1:")
 
-            # TODO: review this rule.
-            if end > contigs_len_dict[contig_name]:
-                end = contigs_len_dict[contig_name]
+            contig_len = contigs_len_dict.get(contig_name)
+            if contig_len is None:
+                continue
+
+            if end > contig_len:
+                end = contig_len
 
             quality = (
                 virify_quality[region_name]
@@ -570,6 +595,7 @@ if __name__ == "__main__":
     )
 
     logging.info("Generating the gff output")
+
     write_gff(
         checkv_files,
         taxonomy_files,
@@ -580,4 +606,5 @@ if __name__ == "__main__":
         virify_quality,
         contigs_len_dict,
         ena_mapping=ena_mapping,
+        user_proteins=args.use_proteins,
     )
