@@ -1,0 +1,5 @@
+query	ViPhOG	Abs_Evalue_exp	Taxon
+contig1_1	VPHOG_0001	1e-10	Caudo
+contig2_gene1	VPHOG_0002	1e-15	Herelle
+contig3_1	VPHOG_0003	1e-12	Micro
+contig4_gene2	VPHOG_0004	1e-18	Pod
