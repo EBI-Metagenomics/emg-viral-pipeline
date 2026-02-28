@@ -118,16 +118,15 @@ workflow VIRIFY {
         }
     }
 
-    // ----------- length filtering + rename fasta
-    // out: (meta, renamed_filtered_fasta, map, filtered_original_fasta, contig_number)
+    // ----------- length filtering + rename fasta ------------------ //
     PREPROCESS(assembly_ch)
 
-    mapfile = PREPROCESS.out.preprocessed_data.map { meta, _renamed_fasta, map, _filtered_original, _contig_number -> tuple(meta, map) }
+    mapfile = PREPROCESS.out.mapfile
 
-    filtered_assembly = PREPROCESS.out.preprocessed_data.map { meta, renamed_fasta, _map, _filtered_original, contig_number -> tuple(meta, renamed_fasta, contig_number) }
+    filtered_assembly = PREPROCESS.out.filtered_and_renamed_contigs_fasta
 
     // Rename contigs to names before space for original assembly
-    RESTORE_FILTERED_FASTA(filtered_assembly.map { meta, fasta, _contig_number -> [meta, fasta] }.join(mapfile), "temporary", "short")
+    RESTORE_FILTERED_FASTA(filtered_assembly.map { meta, fasta, _contigs_count -> [meta, fasta] }.join(mapfile), "temporary", "short")
 
     assembly_with_short_contignames = RESTORE_FILTERED_FASTA.out.map { meta, _name, fasta -> [meta, fasta] }
 
@@ -166,7 +165,7 @@ workflow VIRIFY {
         // Remove proteins belonging to contigs that did not pass length filtering
         // and the ones that do not have a Prodigal/Pyrodigal header
         FILTER_PROTEINS_IN_CONTIGS(
-            faa.join(PREPROCESS.out.length_filtered_fasta)
+            faa.join(filtered_assembly.map { meta, fasta, _contigs_count -> [meta, fasta] })
         )
 
         SPLIT_PROTEINS_BY_CATEGORIES(category_fasta.groupTuple().join(FILTER_PROTEINS_IN_CONTIGS.out).transpose())

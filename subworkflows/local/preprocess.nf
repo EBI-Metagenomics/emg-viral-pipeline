@@ -15,12 +15,12 @@ workflow PREPROCESS {
     // filter contigs by length
     LENGTH_FILTERING(assembly)  // out: (meta, filtered.fasta, env)
 
-    filtered_fasta = LENGTH_FILTERING.out.map { meta, fasta, _contigs -> tuple(meta, fasta) }
+    filtered_fasta = LENGTH_FILTERING.out.map { meta, fasta, contigs_count -> tuple(meta, fasta, contigs_count) }
 
     // rename the length-filtered assembly
     RENAME(filtered_fasta)  // out: (meta, renamed.fasta, map)
 
     emit:
-    // tuple val(meta), file("${meta.id}_renamed.fasta"), file("${meta.id}_map.tsv"), file("${meta.id}_filtered.fasta"), env(CONTIGS)
-    preprocessed_data = RENAME.out.join(LENGTH_FILTERING.out, by: 0)
+    mapfile                            = RENAME.out.mapfile
+    filtered_and_renamed_contigs_fasta = RENAME.out.renamed_fasta
 }
