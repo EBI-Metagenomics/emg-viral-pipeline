@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import gzip
 import os
 from pathlib import Path
 
@@ -16,25 +17,35 @@ def _filter_and_rename(iterator, threshold, run_id):
             yield record
 
 
+def _fasta_opener(path: Path) -> tuple:
+    """Return the appropriate file opener and base stem for a FASTA file.
+
+    :param path: Path to a plain or gzipped FASTA file.
+    :return: Tuple of (opener callable, stem without compression/fasta suffixes).
+    """
+    if path.suffix == ".gz":
+        return gzip.open, Path(path.stem).stem
+    return open, path.stem
+
+
 def filter_contigs(contig_file, length, out_dir, run_id):
     """Filter the contigs by length."""
     threshold = length * 1000
-    seq_records = SeqIO.parse(contig_file, "fasta")
 
     if out_dir == ".":
         out_dir = os.getcwd()
 
-    out_name = Path(contig_file).stem + "_filt" + str(int(threshold)) + "bp.fasta"
+    contig_file_path = Path(contig_file)
+    file_opener, stem = _fasta_opener(contig_file_path)
+    out_name = stem + "_filt" + str(int(threshold)) + "bp.fasta"
 
-    final_records = ()
-    if run_id is None:
-        final_records = (
-            record for record in seq_records if len(record.seq) >= threshold
-        )
-    else:
-        final_records = _filter_and_rename(seq_records, threshold, run_id)
-
-    SeqIO.write(final_records, os.path.join(out_dir, out_name), "fasta")
+    with file_opener(contig_file, "rt") as handle:
+        seq_records = SeqIO.parse(handle, "fasta")
+        if run_id is None:
+            final_records = (record for record in seq_records if len(record.seq) >= threshold)
+        else:
+            final_records = _filter_and_rename(seq_records, threshold, run_id)
+        SeqIO.write(final_records, os.path.join(out_dir, out_name), "fasta")
 
 
 if __name__ == "__main__":
