@@ -8,6 +8,7 @@ include { samplesheetToList            } from 'plugin/nf-schema'
 include { RESTORE as RESTORE_CATEGORY_FASTA    } from '../modules/local/restore'
 include { RESTORE as RESTORE_FILTERED_FASTA    } from '../modules/local/restore'
 include { MULTIQC                              } from '../modules/nf-core/multiqc'
+include { FILTER_PROTEINS_IN_CONTIGS           } from '../modules/local/filter_proteins_in_contigs'
 
 /************************** 
 * SUB WORKFLOWS
@@ -116,16 +117,19 @@ workflow VIRIFY {
     }
   }
 
-  // ----------- rename fasta + length filtering
-  // out: (meta, renamed_fasta, map, filtered_fasta, env)
+  // ----------- length filtering + rename fasta
+  // out: (meta, renamed_filtered_fasta, map, filtered_original_fasta, contig_number)
   PREPROCESS(assembly_ch)
-  mapfile = PREPROCESS.out.preprocessed_data.map { meta, _renamed_fasta, map, _filtered_fasta, _contig_number -> tuple(meta, map) }
-  filtered_assembly = PREPROCESS.out.preprocessed_data.map { meta, _renamed_fasta, _map, filtered_fasta, contig_number -> tuple(meta, filtered_fasta, contig_number) }
+
+  mapfile = PREPROCESS.out.preprocessed_data.map { meta, _renamed_fasta, map, _filtered_original, _contig_number -> tuple(meta, map) }
+
+  filtered_assembly = PREPROCESS.out.preprocessed_data.map { meta, renamed_fasta, _map, _filtered_original, contig_number -> tuple(meta, renamed_fasta, contig_number) }
  
   // Rename contigs to names before space for original assembly
   RESTORE_FILTERED_FASTA(filtered_assembly.map{meta, fasta, _contig_number -> [meta, fasta]}.join(mapfile), "temporary", "short")
+
   assembly_with_short_contignames = RESTORE_FILTERED_FASTA.out.map{meta, _name, fasta -> [meta, fasta]}
-  
+
   // ----------- if --onlyannotate - skip DETECT step
   if (params.onlyannotate) {
     // use filtered fasta with short names
@@ -155,7 +159,13 @@ workflow VIRIFY {
 
     faa = input_ch.map { meta, _assembly, proteins -> tuple(meta, proteins) }
 
-    SPLIT_PROTEINS_BY_CATEGORIES(category_fasta.groupTuple().join(faa).transpose())
+    // Remove proteins belonging to contigs that did not pass length filtering
+    // and the ones that do not have a Prodigal/Pyrodigal header
+    FILTER_PROTEINS_IN_CONTIGS(
+        faa.join(PREPROCESS.out.length_filtered_fasta)
+    )
+
+    SPLIT_PROTEINS_BY_CATEGORIES(category_fasta.groupTuple().join(FILTER_PROTEINS_IN_CONTIGS.out).transpose())
 
     proteins_ch = SPLIT_PROTEINS_BY_CATEGORIES.out.splitted_proteins
   }
