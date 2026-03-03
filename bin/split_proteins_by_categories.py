@@ -104,7 +104,11 @@ class SplitProteins:
                 id, prophage_addition = None, None
                 contig_name = fna.id.split('|')[0]   # ex. NODE_3_length_498519_cov_223.607530
                 for i in proteins.keys():
-                    if contig_name in i:
+                    # Use startswith(contig_name + "_") rather than a plain substring
+                    # check ("contig_name in i") to avoid false matches between contigs
+                    # whose names share a numeric prefix, e.g. ERZ23434430_1 must not
+                    # match proteins from ERZ23434430_114 or ERZ23434430_759.
+                    if i.startswith(contig_name + "_"):
                         # if prophage
                         if len(fna.id.split('|')) > 1:  # ex. NODE_3_length_498519_cov_223.607530|prophage-81521:94004 or NODE_3_length_498519_cov_223.607530|phage-circular
                             prophage_addition = fna.id.split('|')[1]  # prophage-81521:94004 or phage-circular
