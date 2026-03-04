@@ -224,6 +224,233 @@ def test_phage_circular_checkv_key_normalization(tmp_path):
     assert "checkv_quality=High-quality" in gff_content
 
 
+def test_no_checkv_match_raises_error(tmp_path):
+    """write_gff raises ValueError when no GFF contig has a CheckV result.
+
+    This defensive bit of code is to prevent silent mismatches
+    where the checkv file contains different contig names to the viral annotation output.
+    """
+    assembly = tmp_path / "assembly.fasta"
+    assembly.write_text(">contig1\n" + "A" * 1000 + "\n")
+
+    CHECKV_HEADER = "\t".join(
+        [
+            "contig_id",
+            "contig_length",
+            "provirus",
+            "proviral_length",
+            "gene_count",
+            "viral_genes",
+            "host_genes",
+            "checkv_quality",
+            "miuvig_quality",
+            "completeness",
+            "completeness_method",
+            "contamination",
+            "kmer_freq",
+            "warnings",
+        ]
+    )
+    ANNOTATION_HEADER = "\t".join(
+        [
+            "Contig",
+            "CDS_ID",
+            "Start",
+            "End",
+            "Direction",
+            "Best_hit",
+            "Abs_Evalue_exp",
+            "Label",
+        ]
+    )
+    TAXONOMY_HEADER = "\t".join(
+        [
+            "contig_ID",
+            "superkingdom",
+            "kingdom",
+            "phylum",
+            "subphylum",
+            "class",
+            "order",
+            "suborder",
+            "family",
+            "subfamily",
+            "genus",
+        ]
+    )
+
+    annotation = tmp_path / "annotation.tsv"
+    annotation.write_text(
+        ANNOTATION_HEADER
+        + "\n"
+        + "\t".join(["contig1", "contig1_1", "1", "100", "1", "No hit", "NA", ""])
+        + "\n"
+    )
+
+    # CheckV file has a completely different contig name — no overlap with viral contigs
+    checkv = tmp_path / "checkv.tsv"
+    checkv.write_text(
+        CHECKV_HEADER
+        + "\n"
+        + "\t".join(
+            [
+                "totally_different_contig",
+                "1000",
+                "No",
+                "NA",
+                "2",
+                "1",
+                "0",
+                "High-quality",
+                "High-quality",
+                "90.0",
+                "HMM-based",
+                "0.0",
+                "1.0",
+                "",
+            ]
+        )
+        + "\n"
+    )
+
+    taxonomy = tmp_path / "taxonomy.tsv"
+    taxonomy.write_text(TAXONOMY_HEADER + "\n")
+
+    contigs_len_dict = get_contig_lengths_per_contig(str(assembly))
+    viral_sequences, cds_annotations, virify_quality = aggregate_annotations(
+        [str(annotation)], contigs_len_dict
+    )
+
+    with pytest.raises(ValueError, match="None of the.*GFF contigs"):
+        write_gff(
+            [str(checkv)],
+            [str(taxonomy)],
+            str(tmp_path / "test_no_checkv"),
+            str(assembly),
+            viral_sequences,
+            cds_annotations,
+            virify_quality,
+            contigs_len_dict,
+        )
+
+
+def test_partial_checkv_results_warns(tmp_path):
+    """write_gff logs a warning when some GFF contigs have no CheckV results.
+
+    Ensures silent NA fallback is surfaced as a visible warning so uses (may)
+    detect partial checkv runs or naming inconsistencies.
+    """
+    assembly = tmp_path / "assembly.fasta"
+    assembly.write_text(">contig1\n" + "A" * 1000 + "\n>contig2\n" + "A" * 500 + "\n")
+
+    CHECKV_HEADER = "\t".join(
+        [
+            "contig_id",
+            "contig_length",
+            "provirus",
+            "proviral_length",
+            "gene_count",
+            "viral_genes",
+            "host_genes",
+            "checkv_quality",
+            "miuvig_quality",
+            "completeness",
+            "completeness_method",
+            "contamination",
+            "kmer_freq",
+            "warnings",
+        ]
+    )
+    ANNOTATION_HEADER = "\t".join(
+        [
+            "Contig",
+            "CDS_ID",
+            "Start",
+            "End",
+            "Direction",
+            "Best_hit",
+            "Abs_Evalue_exp",
+            "Label",
+        ]
+    )
+    TAXONOMY_HEADER = "\t".join(
+        [
+            "contig_ID",
+            "superkingdom",
+            "kingdom",
+            "phylum",
+            "subphylum",
+            "class",
+            "order",
+            "suborder",
+            "family",
+            "subfamily",
+            "genus",
+        ]
+    )
+
+    annotation = tmp_path / "annotation.tsv"
+    annotation.write_text(
+        ANNOTATION_HEADER
+        + "\n"
+        + "\t".join(["contig1", "contig1_1", "1", "100", "1", "No hit", "NA", ""])
+        + "\n"
+        + "\t".join(["contig2", "contig2_1", "1", "100", "1", "No hit", "NA", ""])
+        + "\n"
+    )
+
+    # CheckV only covers contig1; contig2 is absent
+    checkv = tmp_path / "checkv.tsv"
+    checkv.write_text(
+        CHECKV_HEADER
+        + "\n"
+        + "\t".join(
+            [
+                "contig1",
+                "1000",
+                "No",
+                "NA",
+                "2",
+                "1",
+                "0",
+                "High-quality",
+                "High-quality",
+                "90.0",
+                "HMM-based",
+                "0.0",
+                "1.0",
+                "",
+            ]
+        )
+        + "\n"
+    )
+
+    taxonomy = tmp_path / "taxonomy.tsv"
+    taxonomy.write_text(TAXONOMY_HEADER + "\n")
+
+    contigs_len_dict = get_contig_lengths_per_contig(str(assembly))
+    viral_sequences, cds_annotations, virify_quality = aggregate_annotations(
+        [str(annotation)], contigs_len_dict
+    )
+
+    with patch("logging.warning") as mock_warn:
+        write_gff(
+            [str(checkv)],
+            [str(taxonomy)],
+            str(tmp_path / "test_partial_checkv"),
+            str(assembly),
+            viral_sequences,
+            cds_annotations,
+            virify_quality,
+            contigs_len_dict,
+        )
+
+    warned_messages = [str(call) for call in mock_warn.call_args_list]
+    assert any(
+        "1 viral contigs have no CheckV results" in msg for msg in warned_messages
+    ), f"Expected partial checkv warning, got: {warned_messages}"
+
+
 def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
     """Contig present in annotation TSV but absent from the assembly FASTA is skipped.
 
@@ -263,7 +490,7 @@ def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
             cds_annotations,
             virify_quality,
             contigs_len_dict,
-            use_proteins=True
+            use_proteins=True,
         )
 
     warned_messages = [str(call) for call in mock_warn.call_args_list]
@@ -279,7 +506,7 @@ def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
 
     with pytest.raises(ValueError) as _e:
         # When the flag use_proteins is off if a contig id is not found
-        # An exception is thrown, as this is not expected
+        # An exception is thrown, as this is not expected
         write_gff(
             [str(checkv_tsv)],
             [str(taxonomy_tsv)],
@@ -289,6 +516,5 @@ def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
             cds_annotations,
             virify_quality,
             contigs_len_dict,
-            use_proteins=False
+            use_proteins=False,
         )
-

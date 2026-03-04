@@ -44,3 +44,4 @@ __pycache__/
 # singularity images
 *.simg
 .DS_Store
+.claude/

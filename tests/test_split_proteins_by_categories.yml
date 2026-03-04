@@ -13,3 +13,15 @@
   files:
     - path: "test_prophages_split.faa"
       md5sum: 4e2bd9a13bada991693321839e958e40
+
+- name: split proteins prefix ambiguity regression
+  tags:
+    - split_proteins
+  # Regression for substring-check bug: contig ERZ23434430_1 must NOT match proteins
+  # from ERZ23434430_114 (bug 1 - garbled IDs), and contig ERZ23434430_7 must NOT match
+  # ERZ23434430_759_1 (bug 2 - duplicate CDS rows).
+  # Only the 3 correct proteins should appear in the output, each exactly once.
+  command: python -m bin.split_proteins_by_categories -i tests/split_proteins/prefix_ambiguity.fna -p tests/split_proteins/prefix_ambiguity.faa -o prefix_ambiguity_split.faa
+  files:
+    - path: "prefix_ambiguity_split.faa"
+      md5sum: 75bdd8bddc01ad2b0a00c921dcdbdf90

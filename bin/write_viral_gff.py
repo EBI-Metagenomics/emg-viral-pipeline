@@ -316,13 +316,15 @@ def write_gff(
             used_contigs.add(clean_contig_name)
             # Users may provide proteins for all the contigs, but VIRify only considers contigs
             # that are longer than 150K, so when users provide a proteins file (--use_proteins)
-            # we allow mismatches here. 
+            # we allow mismatches here.
             contig_length = contigs_len_dict.get(clean_contig_name)
             if contig_length is None:
                 if use_proteins:
                     missed_contigs += 1
                 else:
-                    raise ValueError(f"Contig {clean_contig_name} not found in the assembly.")
+                    raise ValueError(
+                        f"Contig {clean_contig_name} not found in the assembly."
+                    )
                 continue
             sequence_regions.append((clean_contig_name, contig_length))
 
@@ -338,6 +340,27 @@ def write_gff(
 
     # Sort sequence-region headers by contig name
     sequence_regions.sort(key=lambda x: x[0])
+
+    # Validate that the CheckV summaries have results for the contigs that will appear in the GFF.
+    # checkv_dict keys are already cleaned (remove_prophage_from_contig applied during loading).
+    # sequence_regions contains exactly the contigs that will be written to the GFF.
+    gff_contig_names = {name for name, _ in sequence_regions}
+    contigs_with_checkv = gff_contig_names & checkv_dict.keys()
+    contigs_without_checkv = gff_contig_names - checkv_dict.keys()
+
+    if not contigs_with_checkv:
+        raise ValueError(
+            f"None of the {len(gff_contig_names)} GFF contigs have CheckV results. "
+            "CheckV must be run on all viral contigs before generating the GFF. "
+            "This likely indicates a naming mismatch between the annotation and CheckV files."
+        )
+
+    if contigs_without_checkv:
+        logging.warning(
+            f"{len(contigs_without_checkv)} viral contigs have no CheckV results "
+            "and will use placeholder NA values: "
+            + ", ".join(sorted(contigs_without_checkv))
+        )
 
     # Collect all GFF records (both mobile elements and CDS) before writing
     all_records = []
@@ -378,7 +401,10 @@ def write_gff(
                 f"virify_quality={quality}",
                 "gbkey=mobile_element",
                 f"mobile_element_type={mobile_element_type}",
-                checkv_dict[clean_contig_name],
+                checkv_dict.get(
+                    clean_contig_name,
+                    "checkv_provirus=NA;checkv_quality=NA;checkv_miuvig_quality=NA;checkv_kmer_freq=NA;checkv_viral_genes=NA",
+                ),
             ]
 
             taxonomy = taxonomy_dict.get(contig_name)

@@ -1,12 +1,12 @@
-/* 
- * Predict ORFs and align HMMs to taxonomically annotate each contig. 
- * Apply bit score cutoffs and filters to distinguish informative ViPhOG HMMs 
- * and finally taxonomically annotate contigs, if possible. 
- * 
- * Also runs additional HMM from further databases if defined and can also run a simple BLAST 
- * approach based on IMG/VR. Finally, mashmap can be used for the particular detection of a specific reference virus sequence. 
- * 
- * Then, all results are summarized for reporting and plotting. 
+/*
+ * Predict ORFs and align HMMs to taxonomically annotate each contig.
+ * Apply bit score cutoffs and filters to distinguish informative ViPhOG HMMs
+ * and finally taxonomically annotate contigs, if possible.
+ *
+ * Also runs additional HMM from further databases if defined and can also run a simple BLAST
+ * approach based on IMG/VR. Finally, mashmap can be used for the particular detection of a specific reference virus sequence.
+ *
+ * Then, all results are summarized for reporting and plotting.
  */
 
 /* nf-core modules */
@@ -14,10 +14,10 @@ include { TABIX_BGZIP                 } from '../../modules/nf-core/tabix/bgzip/
 include { TABIX_BGZIPTABIX            } from '../../modules/nf-core/tabix/bgziptabix/main'
 
 /* Local modules */
-include { RATIO_EVALUE                } from '../../modules/local/ratio_evalue' 
-include { ANNOTATION                  } from '../../modules/local/annotation' 
-include { ASSIGN                      } from '../../modules/local/assign' 
-include { BLAST                       } from '../../modules/local/blast' 
+include { RATIO_EVALUE                } from '../../modules/local/ratio_evalue'
+include { ANNOTATION                  } from '../../modules/local/annotation'
+include { ASSIGN                      } from '../../modules/local/assign'
+include { BLAST                       } from '../../modules/local/blast'
 include { BLAST_FILTER                } from '../../modules/local/blast_filter'
 include { MASHMAP                     } from '../../modules/local/mashmap'
 include { CHECKV                      } from '../../modules/local/checkv'
@@ -31,9 +31,10 @@ include { PREDICT_PROTEINS            } from './protein_prediction'
 workflow ANNOTATE {
 
     take:
-    input_fastas  // (meta, type(HC/LC/PP), predicted_contigs, faa[optional], contigs)
+    category_fastas     // (meta, set_name, fasta) or (meta, set_name, fasta, faa) when use_proteins
+    assembly_fasta      // (meta, fasta) — full assembly per sample, used only for GFF output
 
-    // reference databases and aux files // 
+    // reference databases and aux files //
     viphog_db
     ncbi_db
     rvdb_db
@@ -47,17 +48,16 @@ workflow ANNOTATE {
     mashmap_ref_ch
 
     main:
-    
-    // prodigal
-    PREDICT_PROTEINS( input_fastas )
 
-    contigs = PREDICT_PROTEINS.out.contigs
-    proteins = PREDICT_PROTEINS.out.proteins
-    predicted_contigs = PREDICT_PROTEINS.out.predicted_contigs
-    
-    // annotation --> hmmer with chunking 
-    HMMER_PREDICTION(proteins, viphog_db, rvdb_db, pvogs_db, vogdb_db, vpf_db) // out: [meta, type, hmm_modified.tsv]
-    
+    // Extract per-category fasta and proteins (runs prodigal if not use_proteins)
+    PREDICT_PROTEINS( category_fastas )
+
+    category_fasta = PREDICT_PROTEINS.out.category_fasta
+    proteins       = PREDICT_PROTEINS.out.proteins
+
+    // annotation --> hmmer with chunking
+    HMMER_PREDICTION(proteins, viphog_db, rvdb_db, pvogs_db, vogdb_db, vpf_db) // out: [meta, set_name, hmm_modified.tsv]
+
     // calculate hit qual per protein
     RATIO_EVALUE( HMMER_PREDICTION.out.hmm_result, additional_model_data )
 
@@ -72,27 +72,31 @@ workflow ANNOTATE {
 
     // blast IMG/VR for more information
     if (params.blastextend) {
-      BLAST( predicted_contigs, imgvr_db )
+      BLAST( category_fasta, imgvr_db )
       BLAST_FILTER( BLAST.out, imgvr_db )
     }
 
     if ( params.mashmap ) {
-        MASHMAP( predicted_contigs, mashmap_ref_ch )
+        MASHMAP( category_fasta, mashmap_ref_ch )
     }
 
     CHECKV(
-      predicted_contigs,
+      category_fasta,
       checkv_db.first()
     )
-    
-    viphos_annotations = ANNOTATION.out.annotations.map { meta, _type, annotation -> [meta, annotation] }.groupTuple()
-    taxonomy_annotations = ASSIGN.out.map { meta, _type, annotation -> [meta, annotation] }.groupTuple()
-    checkv_results = CHECKV.out.map { meta, _type, quality -> [meta, quality] }.groupTuple()
-    
+
+    // Collapse per-category results to per-sample lists for GFF writing
+    viphos_annotations   = ANNOTATION.out.annotations.map { meta, _type, data -> [meta, data] }.groupTuple()
+    taxonomy_annotations = ASSIGN.out.map { meta, _type, data -> [meta, data] }.groupTuple()
+    checkv_results       = CHECKV.out.map { meta, _type, data -> [meta, data] }.groupTuple()
+
     WRITE_GFF(
-      contigs.join(viphos_annotations).join(taxonomy_annotations).join(checkv_results),
+      assembly_fasta
+        .join(viphos_annotations)
+        .join(taxonomy_annotations)
+        .join(checkv_results)
     )
-    
+
     /**********************************************/
     /* Compressed and indexed GFF (.gzi and .csi) */
     /**********************************************/
@@ -104,10 +108,10 @@ workflow ANNOTATE {
       WRITE_GFF.out.gff
     )
 
-    predicted_contigs_filtered = predicted_contigs.map { meta, set_name, fasta -> [set_name, meta, fasta] }
-    plot_contig_map_filtered = PLOT_CONTIG_MAP.out.map { meta, set_name, dir, table -> [set_name, table] }
-    chromomap_ch = predicted_contigs_filtered.join(plot_contig_map_filtered).map { set_name, assembly_name, fasta, tsv -> [assembly_name, set_name, fasta, tsv]}
-    
+    chromomap_ch = category_fasta
+        .join(PLOT_CONTIG_MAP.out, by: [0, 1])
+        .map { meta, set_name, fasta, _dir, table -> [meta, set_name, fasta, table] }
+
     emit:
     assign_output = ASSIGN.out
     chromomap = chromomap_ch
