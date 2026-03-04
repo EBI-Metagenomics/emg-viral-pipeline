@@ -209,12 +209,28 @@ def contig_tax(
                             under_thres.append((hit_taxon, hit_diff))
                         else:
                             over_thres.append((hit_taxon, prop_hits))
+
                     if len(over_thres) == 0:
-                        best_under = sorted(under_thres, key=lambda x: x[1])[0]
-                        logging.debug(
-                            f"Contig {contig} | rank={rank}: all below threshold, best candidate is '{best_under[0]}'"
-                        )
-                        contig_lineage.append(best_under[0])
+                        # All candidates fall below the threshold. Pick the one
+                        # closest to the threshold (smallest hit_diff). If multiple
+                        # candidates share the same hit_diff the signal is ambiguous
+                        # leave the rank unassigned rather than picking
+                        # a winner based on file-order
+                        sorted_under = sorted(under_thres, key=lambda x: x[1])
+                        best_diff = sorted_under[0][1]
+                        tied_candidates = [t for t in sorted_under if t[1] == best_diff]
+                        if len(tied_candidates) > 1:
+                            logging.debug(
+                                f"Contig {contig} | rank={rank}: {len(tied_candidates)}-way tie among "
+                                f"{[t[0] for t in tied_candidates]}, leaving unassigned"
+                            )
+                            contig_lineage.append("")
+                        else:
+                            best_under = sorted_under[0]
+                            logging.debug(
+                                f"Contig {contig} | rank={rank}: all below threshold, best candidate is '{best_under[0]}'"
+                            )
+                            contig_lineage.append(best_under[0])
                     else:
                         sorted_over_thres = [
                             x
