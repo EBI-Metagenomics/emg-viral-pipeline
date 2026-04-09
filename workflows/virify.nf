@@ -44,10 +44,6 @@ workflow VIRIFY {
     ch_multiqc_logo = params.multiqc_logo ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.fromPath("${projectDir}/assets/mgnify_logo.png")
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
 
-    if (!params.samplesheet && !params.fasta) {
-        error "You must specify either --samplesheet or --fasta as input."
-    }
-
     if (params.samplesheet) {
         groupInputs = { id, assembly, fq1, fq2, proteins ->
             if (fq1 == []) {

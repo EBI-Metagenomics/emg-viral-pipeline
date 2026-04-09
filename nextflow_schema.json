@@ -34,6 +34,23 @@
                     "help_text": "You will need to create a design file with information about the assembly/raw_reads running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a minimum of 2 columns for assembly (ID, fasta) or 3 columns for raw reads (ID, fastq1, fastq2), and a header row.",
                     "fa_icon": "fas fa-file-csv"
                 }
+            },
+            "oneOf": [
+                {
+                    "required": [
+                        "fasta"
+                    ],
+                    "description": "An assembly file must be provided"
+                },
+                {
+                    "required": [
+                        "samplesheet"
+                    ],
+                    "description": "Assembly or raw reads should be provided in samplesheet"
+                }
+            ],
+            "errorMessage": {
+                "oneOf": "You must specify either an assembly file or samplesheet input."
             }
         },
         "options": {
