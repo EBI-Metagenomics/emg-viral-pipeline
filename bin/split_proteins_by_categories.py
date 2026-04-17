@@ -176,6 +176,7 @@ class SplitProteins:
         :param protein_records: Iterable of SeqRecord objects representing proteins.
         :return: Dictionary mapping contig names to lists of associated protein records.
         """
+        self.logger.debug("Mapping proteins to contigs...")
         proteins_by_contig = defaultdict(list)
         for record in protein_records:
             protein_id = record.id
@@ -189,10 +190,13 @@ class SplitProteins:
         :raises ValueError: If input identifiers do not conform to expected formats.
             Also raised if no proteins are written or duplicate protein ids are detected.
         """
+        self.logger.info("Parsing input contigs FASTA file...")
         contig_records = SeqIO.parse(self.input_file, 'fasta')
+        self.logger.info("Parsing input proteins FASTA file...")
         protein_records = SeqIO.parse(self.proteins, 'fasta')
         proteins_by_contig = self._map_proteins_to_contig(protein_records)
 
+        self.logger.info("Filtering and writing matching proteins...")
         already_added_protein_ids = set()
         written_records = 0
         with open(self.output_file, 'w') as out_file:
@@ -211,6 +215,7 @@ class SplitProteins:
                     # TODO: If we want to simulate proper Prodigal naming scheme we need to change proteinID
                     # to new numbers starting with 1. Otherwise we have some skipped numbers in the output fasta
                     if prophage_addition:
+                        self.logger.debug(f"Checking coordinates for protein {protein_id} against prophage info {prophage_addition}")
                         if not self.check_coordinates(protein_info, prophage_addition):
                             continue
                         record.description = f'{contig_name}|{prophage_addition}{protein_info}'
@@ -228,6 +233,7 @@ class SplitProteins:
                 'No proteins matched contigs from input fasta. '
                 'Check contig naming between input fasta and proteins fasta.'
             )
+        self.logger.info(f"Finished writing {written_records} proteins to {self.output_file}")
 
 
 def main():
