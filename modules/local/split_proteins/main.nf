@@ -2,7 +2,9 @@ process SPLIT_PROTEINS {
     tag "${meta.id} ${fasta}"
     label 'process_single'
     
-    container 'quay.io/microbiome-informatics/virify-python3:1.2'
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+                'https://depot.galaxyproject.org/singularity/biopython:1.86' :
+                'quay.io/biocontainers/biopython:1.86' }"
 
     input:
     tuple val(meta), val(confidence_set_name), path(fasta), path(proteins)
