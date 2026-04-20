@@ -229,7 +229,7 @@ class SplitProteins:
                     written_records += 1
 
         if written_records == 0:
-            raise ValueError(
+            self.logger.warning(
                 'No proteins matched contigs from input fasta. '
                 'Check contig naming between input fasta and proteins fasta.'
             )
