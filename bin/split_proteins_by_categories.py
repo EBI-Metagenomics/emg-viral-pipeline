@@ -209,18 +209,20 @@ class SplitProteins:
                 
                 for protein_record in matching_proteins:
                     protein_id = protein_record.id
-                    record = deepcopy(protein_record)
-                    protein_info, protein_number = self._parse_protein_id(record.description, contig_name)
 
                     # TODO: If we want to simulate proper Prodigal naming scheme we need to change proteinID
                     # to new numbers starting with 1. Otherwise we have some skipped numbers in the output fasta
                     if prophage_addition:
                         self.logger.debug(f"Checking coordinates for protein {protein_id} against prophage info {prophage_addition}")
+                        protein_info, protein_number = self._parse_protein_id(protein_record.description, contig_name)
                         if not self.check_coordinates(protein_info, prophage_addition):
                             continue
+                        record = deepcopy(protein_record)
                         record.description = f'{contig_name}|{prophage_addition}{protein_info}'
                         record.id = f'{contig_name}|{prophage_addition}{protein_number}'
-                    
+                    else:
+                        record = protein_record
+
                     if protein_id in already_added_protein_ids:
                         raise ValueError(f"Protein added more than once: {protein_id}")
                     
