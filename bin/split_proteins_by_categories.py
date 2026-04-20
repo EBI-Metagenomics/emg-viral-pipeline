@@ -27,11 +27,11 @@ from Bio.SeqRecord import SeqRecord
 
 
 def parse_args(argv):
-    parser = argparse.ArgumentParser(description="Grep corresponding proteins")
-    parser.add_argument("-i", "--input", dest="input", help="Input fasta file", required=True)
-    parser.add_argument("-p", "--proteins", dest="proteins", help="Input proteins file", required=True)
-    parser.add_argument("-o", "--output", dest="output", help="Output file", required=True)
-    parser.add_argument("-v", "--verbose", dest="verbose", help="Print more logging", required=False,
+    parser = argparse.ArgumentParser(description="Grep proteins corresponding to input subset of contigs and add prophage annotations to protein headers (if present)")
+    parser.add_argument("-i", "--input", dest="input", help="Input fasta file with subset of assembly contigs", required=True)
+    parser.add_argument("-p", "--proteins", dest="proteins", help="Input fasta file with all assembly proteins", required=True)
+    parser.add_argument("-o", "--output", dest="output", help="Output file to write filtered proteins", required=True)
+    parser.add_argument("-v", "--verbose", dest="verbose", help="Enable verbose logging mode", required=False,
                         action='store_true')
     return parser.parse_args(argv)
 
