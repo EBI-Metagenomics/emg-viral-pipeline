@@ -6,6 +6,7 @@ import pytest
 
 from bin.filter_proteins_in_contigs import (
     _PRODIGAL_PATTERN,
+    _PROKKA_PATTERN,
     filter_proteins,
     get_contig_ids,
     protein_belongs_to_contigs,
@@ -33,6 +34,11 @@ _NON_MATCHING_PROTEINS: list[str] = [
 @pytest.fixture
 def contig_ids():
     return get_contig_ids(FIXTURES / "contigs_filtered.fasta")
+
+
+@pytest.fixture
+def prokka_contig_ids():
+    return get_contig_ids(FIXTURES / "contigs_prokka.fasta")
 
 
 @pytest.mark.parametrize(
@@ -97,6 +103,28 @@ def test_prodigal_pattern_no_match(description):
     assert not _PRODIGAL_PATTERN.search(description)
 
 
+@pytest.mark.parametrize(
+    "description",
+    [
+        "MGYG000495417_00001 RNA polymerase sigma factor RpoD",
+        "MGYG000495417_00004 hypothetical protein",
+    ],
+)
+def test_prokka_pattern_matches(description):
+    assert _PROKKA_PATTERN.search(description)
+
+
+@pytest.mark.parametrize(
+    "description",
+    [
+        "MGYG000495417_00005",  # bare ID, no description
+        "NODE_1_1_100_200_+",  # FGS-style
+    ],
+)
+def test_prokka_pattern_no_match(description):
+    assert not _PROKKA_PATTERN.search(description)
+
+
 def test_get_contig_ids(contig_ids):
     ids = get_contig_ids(FIXTURES / "contigs_filtered.fasta")
     assert ids == {
@@ -123,3 +151,13 @@ def test_non_prodigal_proteins_all_removed(contig_ids, tmp_path):
     assert total == 3
     assert written == 0
     assert non_prodigal == 2  # NODE_1 and NODE_3 proteins in FGS format, NODE_2 is missing from contigs_ids
+
+
+def test_prokka_format_proteins_are_accepted(prokka_contig_ids, tmp_path):
+    """Prokka-format proteins with a description are written; bare-ID proteins are rejected."""
+    total, written, non_acceptable = filter_proteins(
+        FIXTURES / "genome.faa", prokka_contig_ids, tmp_path / "filtered_prokka.faa"
+    )
+    assert total == 3
+    assert written == 2  # _00001 and _00004 have descriptions
+    assert non_acceptable == 1  # _00005 has no description

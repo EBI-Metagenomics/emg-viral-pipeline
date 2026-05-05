@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 # <gene_num> # <start> # <stop> # <strand> #
 # e.g. "NODE_1_1 # 2 # 232 # 1 # ID=1_1;partial=00;..."
 _PRODIGAL_PATTERN = re.compile(r"#\s*\d+\s*#\s*\d+\s*#\s*[+-]?1\s*#")
+_PROKKA_PATTERN = re.compile(r"^>?([A-Za-z0-9.-]+(?:_\d+)?)[ \t]+(.+)$")
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -123,7 +124,7 @@ def filter_proteins(
     output_fasta: Path,
 ) -> tuple[int, int, int]:
     """Filter out the proteins that do not belong to the contig_ids, this is done
-    by using the Prodigal/Pyrodigal metadata in the proteins.
+    by using the Prodigal/Pyrodigal/Prokka metadata in the proteins.
 
     :param proteins_fasta: path to the input proteins FASTA
     :type proteins_fasta: Path
@@ -131,25 +132,25 @@ def filter_proteins(
     :type contig_ids: set[str]
     :param output_fasta: path to the output proteins FASTA
     :type output_fasta: Path
-    :return: tuple of (total proteins seen, proteins written, non-prodigal skipped)
+    :return: tuple of (total proteins seen, proteins written, non-acceptable skipped)
     :rtype: tuple[int, int, int]
     """
     total = 0
     written = 0
-    non_prodigal = 0
+    non_acceptable = 0
     with open(output_fasta, "w") as out_fh:
         for record in SeqIO.parse(str(proteins_fasta), "fasta"):
             total += 1
             if not protein_belongs_to_contigs(record.id, contig_ids):
                 logger.debug(f"Skipping {record.id} (protein not in filtered assembly)")
                 continue
-            if not _PRODIGAL_PATTERN.search(record.description):
-                logger.debug(f"Skipping {record.id} (not Prodigal format)")
-                non_prodigal += 1
+            if not _PRODIGAL_PATTERN.search(record.description) and not _PROKKA_PATTERN.search(record.description):
+                logger.debug(f"Skipping {record.id} (not Prodigal and not Prokka format)")
+                non_acceptable += 1
                 continue
             SeqIO.write(record, out_fh, "fasta")
             written += 1
-    return total, written, non_prodigal
+    return total, written, non_acceptable
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -169,22 +170,22 @@ def main(argv: list[str] | None = None) -> None:
 
     logger.info(f"Filtering proteins from {args.proteins}")
 
-    total, written, non_prodigal = filter_proteins(
+    total, written, non_acceptable = filter_proteins(
         args.proteins, contig_ids, args.output
     )
 
     if written == 0:
         raise ValueError("No proteins after the filtering step.")
 
-    removed_contig = total - written - non_prodigal
+    removed_contig = total - written - non_acceptable
 
     logger.info(
         f"Kept {written} / {total} proteins "
-        f"(removed {removed_contig} from filtered-out contigs, {non_prodigal} non-Prodigal format)"
+        f"(removed {removed_contig} from filtered-out contigs, {non_acceptable} unrecognised format)"
     )
-    if non_prodigal:
+    if non_acceptable:
         logger.warning(
-            f"{non_prodigal} proteins were removed because their headers lack Prodigal coordinate metadata"
+            f"{non_acceptable} proteins were removed because their headers are not in Prodigal or Prokka format"
         )
 
 
