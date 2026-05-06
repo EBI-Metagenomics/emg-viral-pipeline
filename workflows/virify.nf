@@ -8,7 +8,6 @@ include { samplesheetToList                 } from 'plugin/nf-schema'
 include { RESTORE as RESTORE_CATEGORY_FASTA } from '../modules/local/restore'
 include { RESTORE as RESTORE_FILTERED_FASTA } from '../modules/local/restore'
 include { MULTIQC                           } from '../modules/nf-core/multiqc'
-include { FILTER_PROTEINS_IN_CONTIGS        } from '../modules/local/filter_proteins_in_contigs'
 
 /************************** 
 * SUB WORKFLOWS
@@ -45,13 +44,14 @@ workflow VIRIFY {
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
 
     if (params.samplesheet) {
-        groupInputs = { id, assembly, fq1, fq2, proteins ->
+        groupInputs = { id, assembly, fq1, fq2, proteins_gff, proteins_faa ->
             if (fq1 == []) {
-                if (params.use_proteins && proteins) {
+                if (params.use_proteins && proteins_gff && proteins_faa) {
                     return tuple(
                         ["id": id],
                         assembly,
-                        proteins,
+                        proteins_gff,
+                        proteins_faa
                     )
                 }
                 else {
@@ -111,7 +111,7 @@ workflow VIRIFY {
     }
     else {
         if (params.use_proteins) {
-            assembly_ch = input_ch.map { meta, assembly, _proteins -> tuple(meta, assembly) }
+            assembly_ch = input_ch.map { meta, assembly, _proteins_gff, _proteins_faa -> tuple(meta, assembly) }
         }
         else {
             assembly_ch = input_ch
@@ -160,15 +160,9 @@ workflow VIRIFY {
     // ----------- split proteins into HC/LC/PP - if provided
     if (params.use_proteins) {
 
-        faa = input_ch.map { meta, _assembly, proteins -> tuple(meta, proteins) }
+        faa = input_ch.map { meta, _assembly, proteins_gff, proteins_faa -> tuple(meta, proteins_gff, proteins_faa) }
 
-        // Remove proteins belonging to contigs that did not pass length filtering
-        // and the ones that do not have a Prodigal/Pyrodigal header
-        FILTER_PROTEINS_IN_CONTIGS(
-            faa.join(assembly_with_short_contignames)
-        )
-
-        SPLIT_PROTEINS(category_fasta.groupTuple().join(FILTER_PROTEINS_IN_CONTIGS.out).transpose())
+        SPLIT_PROTEINS(category_fasta.groupTuple().join(faa).transpose())
 
         proteins_ch = SPLIT_PROTEINS.out
     }

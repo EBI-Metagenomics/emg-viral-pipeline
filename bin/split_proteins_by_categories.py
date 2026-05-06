@@ -29,7 +29,9 @@ from Bio.SeqRecord import SeqRecord
 def parse_args(argv):
     parser = argparse.ArgumentParser(description="Grep proteins corresponding to input subset of contigs and add prophage annotations to protein headers (if present)")
     parser.add_argument("-i", "--input", dest="input", help="Input fasta file with subset of assembly contigs", required=True)
-    parser.add_argument("-p", "--proteins", dest="proteins", help="Input fasta file with all assembly proteins", required=True)
+    parser.add_argument("-p", "--proteins-faa", dest="proteins_faa", help="Input fasta file with all assembly proteins", required=True)
+    parser.add_argument("-g", "--proteins-gff", dest="proteins_gff", help="Input gff file with all assembly proteins",
+                        required=True)
     parser.add_argument("-o", "--output", dest="output", help="Output file to write filtered proteins", required=True)
     parser.add_argument("-v", "--verbose", dest="verbose", help="Enable verbose logging mode", required=False,
                         action='store_true')
@@ -40,18 +42,16 @@ class SplitProteins:
     def __init__(
         self,
         input_file: str,
-        proteins: str,
+        proteins_faa: str,
+        proteins_gff: str,
         output_file: str,
         verbose: bool,
     ):
         self.input_file = input_file
-        self.proteins = proteins
+        self.proteins_faa = proteins_faa
+        self.proteins_gff = proteins_gff
         self.output_file = output_file
         self.verbose = verbose
-        self.protein_id_re = re.compile(
-            r"^(?P<contig_name>.+)_(?P<protein_number>\d+)$"
-        )
-        self.prodigal_coords_re = re.compile(r"_(\d+)\s*#\s*(\d+)\s*#\s*(\d+)\s*#*")
         self.setup_logging()
         self.logger = logging.getLogger(__name__)
 
@@ -62,24 +62,22 @@ class SplitProteins:
             format='%(asctime)s %(levelname)s - %(message)s'
         )
 
-    def check_coordinates(self, prodigal_info: str, prophage_info: str) -> bool:
+    def check_coordinates(self, protein_id: str, start_protein: int, finish_protein: int, prophage_info: str) -> bool:
         """Check whether a protein sufficiently overlaps a prophage interval.
 
         A protein is accepted if either protein or prophage coverage is > 90%.
         Circular prophages are always accepted.
-
-        :param prodigal_info: Prodigal annotation substring containing coordinates.
+        
+        :param protein_id: Protein name for logging
+        :param start_protein: Start coordinate
+        :param finish_protein: Stop coordinate
         :param prophage_info: Prophage descriptor, e.g. prophage-100:200 or phage-circular.
         :return: True if protein should be retained, otherwise False.
         """
-        # get coords for protein
-        match_prodigal = self.prodigal_coords_re.search(prodigal_info)
-        if match_prodigal:
-            start_protein = int(match_prodigal.group(2))
-            finish_protein = int(match_prodigal.group(3))
-            protein_length = finish_protein - start_protein + 1
-        else:
-            raise ValueError(f"Incorrect protein info format: {prodigal_info}")
+        if start_protein is None or finish_protein is None:
+            raise ValueError(f"Incorrect protein info format: {protein_id}")
+
+        protein_length = finish_protein - start_protein + 1
 
         # get coords for prophage
         if 'circular' in prophage_info:
@@ -103,29 +101,14 @@ class SplitProteins:
             protein_cov = intersection / protein_length
             
             if prophage_cov > 0.9 or protein_cov > 0.9:
-                self.logger.debug(f"Protein {prodigal_info[4:20]} more than 90% inside {prophage_info}")
+                self.logger.debug(f"Protein {protein_id} more than 90% inside {prophage_info}")
                 return True
             else:
-                self.logger.debug(f"Protein {prodigal_info[4:20]} intersects {prophage_info}")
+                self.logger.debug(f"Protein {protein_id} intersects {prophage_info}")
                 return False
         else:
-            self.logger.debug(f'---- Protein {prodigal_info[4:20]} is not in {prophage_info}')
+            self.logger.debug(f'---- Protein {protein_id} is not in {prophage_info}')
             return False
-
-    def _get_contig_name_from_protein_id(self, protein_id: str) -> str:
-        """Extract contig id from a protein id using regex matching.
-
-        Examples of expected protein id format:
-        ERZ21830300_185216_2719 -> contig id is ERZ21830300_185216
-        NODE_6_length_273677_cov_7.926969_6 -> contig id is NODE_6_length_273677_cov_7.926969
-
-        :param protein_id: Protein identifier in <contig_id>_<number> format.
-        :return: Contig id component.
-        """
-        match = self.protein_id_re.match(protein_id)
-        if not match:
-            raise ValueError(f"Invalid protein id format: {protein_id}")
-        return match.group('contig_name')
 
     @staticmethod
     def _parse_contig_id(contig_id: str) -> Tuple[str, Optional[str]]:
@@ -166,23 +149,58 @@ class SplitProteins:
         protein_number = protein_info.split(' ')[0]
         return protein_info, protein_number
 
-    def _map_proteins_to_contig(
+    def _parse_attrs(self, attrs_str):
+        """Return (dict, ordered-key-list) from a GFF column-9 string."""
+        attrs, order = {}, []
+        for part in attrs_str.rstrip(";").split(";"):
+            part = part.strip()
+            if "=" in part:
+                k, v = part.split("=", 1)
+                if k not in attrs:
+                    order.append(k)
+                attrs[k] = v
+        return attrs, order
+
+    def _read_gff(
         self,
+        protein_gff: str,
         protein_records: Iterable[SeqRecord],
     ) -> Dict[str, List[SeqRecord]]:
         """
-        Build protein lookup table keyed by contig name.
+        Build protein lookup table keyed by contig name. Build protein lookup for coordinates
         
+        :param protein_gff: GFF input file corresponding to protein fasta sequences
         :param protein_records: Iterable of SeqRecord objects representing proteins.
         :return: Dictionary mapping contig names to lists of associated protein records.
+                 Dictionary mapping protein ID with start and stop coordinates
         """
-        self.logger.debug("Mapping proteins to contigs...")
+        self.logger.debug("Mapping proteins to contigs using GFF...")
+        protein_stats = {}
         proteins_by_contig = defaultdict(list)
+        with open(protein_gff, 'r') as file_in:
+            for line in file_in:
+                if line.startswith('#'):
+                    continue
+                line = line.strip().split('\t')
+                if len(line) == 9:
+                    record = line[2]
+                    if record != 'CDS':
+                        continue
+                    contig = line[0]
+                    start = line[3]
+                    end = line[4]
+                    strand = line[6]
+                    attrs, _ = self._parse_attrs(line[8])
+                    protein_id = attrs.get("ID", "").strip()
+                    protein_stats[protein_id] = {"start": int(start), "end": int(end), "strand": strand, "contig": contig}
+                    
+        self.logger.debug("Mapping protein sequences to contigs using FAA...")
         for record in protein_records:
             protein_id = record.id
-            contig_name = self._get_contig_name_from_protein_id(protein_id)
-            proteins_by_contig[contig_name].append(record)
-        return proteins_by_contig
+            if protein_id in protein_stats:
+                contig_name = protein_stats[protein_id]["contig"]
+                proteins_by_contig[contig_name].append(record)
+        return proteins_by_contig, protein_stats
 
     def grep_proteins(self) -> None:
         """Write proteins that belong to input contigs, with optional prophage filtering.
@@ -193,8 +211,9 @@ class SplitProteins:
         self.logger.info("Parsing input contigs FASTA file...")
         contig_records = SeqIO.parse(self.input_file, 'fasta')
         self.logger.info("Parsing input proteins FASTA file...")
-        protein_records = SeqIO.parse(self.proteins, 'fasta')
-        proteins_by_contig = self._map_proteins_to_contig(protein_records)
+        protein_records = SeqIO.parse(self.proteins_faa, 'fasta')
+        self.logger.info("Parsing input proteins GFF file...")
+        proteins_by_contig, protein_stats = self._read_gff(self.proteins_gff, protein_records)
 
         self.logger.info("Filtering and writing matching proteins...")
         already_added_protein_ids = set()
@@ -215,7 +234,8 @@ class SplitProteins:
                     if prophage_addition:
                         self.logger.debug(f"Checking coordinates for protein {protein_id} against prophage info {prophage_addition}")
                         protein_info, protein_number = self._parse_protein_id(protein_record.description, contig_name)
-                        if not self.check_coordinates(protein_info, prophage_addition):
+                        stats = protein_stats.get(protein_id)
+                        if not self.check_coordinates(protein_id, stats["start"] if stats else None, stats["end"] if stats else None, prophage_addition):
                             continue
                         record = deepcopy(protein_record)
                         record.description = f'{contig_name}|{prophage_addition}{protein_info}'
@@ -242,7 +262,8 @@ def main():
     args = parse_args(sys.argv[1:])
     splitter = SplitProteins(
         input_file=args.input,
-        proteins=args.proteins,
+        proteins_faa=args.proteins_faa,
+        proteins_gff=args.proteins_gff,
         output_file=args.output,
         verbose=args.verbose,
     )
