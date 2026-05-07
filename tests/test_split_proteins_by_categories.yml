@@ -25,3 +25,12 @@
   files:
     - path: "prefix_ambiguity_split.faa"
       md5sum: 75bdd8bddc01ad2b0a00c921dcdbdf90
+      
+- name: split proteins for MAGs (proteins have their own accessions)
+  tags:
+    - split_proteins
+  command: python -m bin.split_proteins_by_categories -i tests/split_proteins/mag_input.fasta -p tests/split_proteins/mag.faa -g tests/split_proteins/mag.gff -o mag_prophage.faa
+  files:
+    - path: "mag_prophage.faa"
+      md5sum: 935476ab14480a6673312f203a8d29f0
+

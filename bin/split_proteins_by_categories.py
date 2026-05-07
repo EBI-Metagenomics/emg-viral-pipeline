@@ -128,26 +128,38 @@ class SplitProteins:
         prophage_addition = contig_id_parts[1] if len(contig_id_parts) > 1 else None
         return contig_name, prophage_addition
 
-    @staticmethod
-    def _parse_protein_id(record_description: str, contig_name: str) -> Tuple[str, str]:
+    def _parse_protein_id(self, record_description: str, contig_name: str, record_id: str) -> Tuple[str, str]:
         """Extract protein metadata suffix and protein number from record description.
 
         Examples of expected description formats:
         ERZ21830300_185216_2719 # 3320783 # 3379543 # -1 # ID=195062_2719;partial=00;start_type=GTG;rbs_motif=None;rbs_spacer=None;gc_cont=0.731
         NODE_6_length_273677_cov_7.926969_6 # 2328 # 3188 # 1 # ID=1_6;partial=00;start_type=ATG;rbs_motif=GGA/GAG/AGG;rbs_spacer=5-10bp;gc_cont=0.237
+        MGYG000495417_00766 hypothetical protein
+        
+        Return:
+        # 3320783 # 3379543 # -1 # ID=195062_2719;partial=00;start_type=GTG;rbs_motif=None;rbs_spacer=None;gc_cont=0.731, 2719
+        # 2328 # 3188 # 1 # ID=1_6;partial=00;start_type=ATG;rbs_motif=GGA/GAG/AGG;rbs_spacer=5-10bp;gc_cont=0.237, _6
+        hypothetical protein, ''
 
         :param record_description: Full FASTA description line.
         :param contig_name: Contig name expected inside description.
+        :param record_id: FASTA ID from protein header.
         :return: Tuple (protein_info_suffix, protein_number_token).
         """
         split_description = record_description.split(contig_name, 1)
         if len(split_description) != 2:
-            raise ValueError(
-                f"Unable to extract protein info for contig '{contig_name}' from record: {record_description}"
+            self.logger.debug(
+                f"Contig '{contig_name}' not found in record description: {record_description}. "
+                f"Will use originl protein name"
             )
-        protein_info = split_description[1]
-        protein_number = protein_info.split(' ')[0]
-        return protein_info, protein_number
+            protein_id = record_id
+            protein_info = record_description.split(record_id)[1].strip()
+            protein_number = ""
+        else:
+            protein_id = contig_name
+            protein_info = ' '.join(split_description[1].split(' ')[1:])
+            protein_number = split_description[1].split(' ')[0]
+        return protein_id, protein_info, protein_number
 
     def _parse_attrs(self, attrs_str):
         """Return (dict, ordered-key-list) from a GFF column-9 string."""
@@ -233,13 +245,17 @@ class SplitProteins:
                     # to new numbers starting with 1. Otherwise we have some skipped numbers in the output fasta
                     if prophage_addition:
                         self.logger.debug(f"Checking coordinates for protein {protein_id} against prophage info {prophage_addition}")
-                        protein_info, protein_number = self._parse_protein_id(protein_record.description, contig_name)
+                        protein_id_short, protein_info, protein_number = self._parse_protein_id(protein_record.description, contig_name, protein_id)
                         stats = protein_stats.get(protein_id)
                         if not self.check_coordinates(protein_id, stats["start"] if stats else None, stats["end"] if stats else None, prophage_addition):
                             continue
+                        print(protein_info)
                         record = deepcopy(protein_record)
-                        record.description = f'{contig_name}|{prophage_addition}{protein_info}'
-                        record.id = f'{contig_name}|{prophage_addition}{protein_number}'
+                        record.description = f'{protein_info}'
+                        if protein_number:
+                            record.id = f'{protein_id_short.split()[0]}|{prophage_addition}{protein_number}'
+                        else:
+                            record.id = f'{protein_id_short.split()[0]}|{prophage_addition}'
                     else:
                         record = protein_record
 
