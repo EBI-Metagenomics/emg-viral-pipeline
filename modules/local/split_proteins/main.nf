@@ -3,8 +3,8 @@ process SPLIT_PROTEINS {
     label 'process_single'
     
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-                'https://depot.galaxyproject.org/singularity/biopython:1.86' :
-                'quay.io/biocontainers/biopython:1.86' }"
+                'https://depot.galaxyproject.org/singularity/biopython:1.84' :
+                'quay.io/biocontainers/biopython:1.84' }"
 
     input:
     tuple val(meta), val(confidence_set_name), path(fasta), path(proteins_gff), path(proteins_faa)
