@@ -2,12 +2,7 @@ process virfinderGetDB {
   label 'process_low'    
   container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'
   
-  if (params.cloudProcess) { 
-    publishDir "${params.databases}/virfinder/", mode: 'copy', pattern: "VF.modEPV_k8.rda" 
-  }
-  else { 
-    storeDir "${params.databases}/virfinder/" 
-  }  
+  publishDir "${params.databases}/virfinder", pattern: "VF.modEPV_k8.rda", mode: params.cloudProcess ? 'copy' : 'symlink'
 
   output:
     path "VF.modEPV_k8.rda"

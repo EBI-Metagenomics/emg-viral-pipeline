@@ -7,7 +7,7 @@ process VIRSORTER2 {
   container 'quay.io/microbiome-informatics/virsorter:2.2.4_1'
 
   input:
-  tuple val(meta), file(fasta), val(number_of_contigs)
+  tuple val(meta), file(fasta)
   path database
 
   output:
@@ -15,7 +15,7 @@ process VIRSORTER2 {
   tuple val(meta), path("*.final-viral-boundary.tsv"), emit: boundary_tsv
   tuple val(meta), path("*.final-viral-combined.fa"),  emit: combined_fa
 
-  when: number_of_contigs.toInteger() > 0
+  when: fasta.size() > 0
 
   script:
   def args = task.ext.args ?: ''

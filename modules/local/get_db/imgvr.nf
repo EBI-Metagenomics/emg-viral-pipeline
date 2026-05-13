@@ -2,12 +2,8 @@ process imgvrGetDB {
   label 'process_low'    
   container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10' 
   
-  if (params.cloudProcess) { 
-    publishDir "${params.databases}/imgvr/", mode: 'copy', pattern: "IMG_VR_2018-07-01_4" 
-  }
-  else { 
-    storeDir "${params.databases}/imgvr/" 
-  }  
+  publishDir "${params.databases}/imgvr", pattern: "IMG_VR_2018-07-01_4", mode: params.cloudProcess ? 'copy' : 'symlink'
+
   output:
     path("IMG_VR_2018-07-01_4", type: 'dir')
 

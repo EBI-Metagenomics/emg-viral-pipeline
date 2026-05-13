@@ -3,12 +3,7 @@ process pvogsGetDB {
   label 'process_low'    
   container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'    
   
-  if (params.cloudProcess) { 
-    publishDir "${params.databases}/", mode: 'copy', pattern: "pvogs" 
-  }
-  else { 
-    storeDir "${params.databases}/" 
-  }  
+  publishDir "${params.databases}", pattern: "pvogs", mode: params.cloudProcess ? 'copy' : 'symlink'
 
   output:
     path("pvogs", type: 'dir')

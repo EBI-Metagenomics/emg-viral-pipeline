@@ -38,12 +38,14 @@ def extract_annotations(protein_file: str, ratio_evalue_file: str) -> list:
         # Skip if protein description doesn't contain expected format
         protein_prop = protein.description.split(" # ")[:-1]
 
-        # Skip proteins that don't have Prodigal format (e.g., frageneScan proteins)
-        if not protein_prop:
-            continue
-
+        # Extract protein info if format is ~prodigal
+        if protein_prop:
+            query_id = protein_prop[0]
+        else:
+            # assume query column is protein_id
+            query_id = protein.id
+        
         # Find matching ViPhOG results
-        query_id = protein_prop[0]
         if query_id in ratio_evalue_df["query"].values:
             filtered_df = ratio_evalue_df[ratio_evalue_df["query"] == query_id]
 

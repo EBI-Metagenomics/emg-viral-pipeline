@@ -126,7 +126,7 @@ workflow VIRIFY {
     filtered_and_renamed_assembly = PREPROCESS.out.filtered_and_renamed_contigs_fasta
 
     // Rename contigs to names before space for original assembly
-    RESTORE_FILTERED_FASTA(filtered_and_renamed_assembly.map { meta, fasta, _contigs_count -> [meta, fasta] }.join(mapfile), "temporary", "short")
+    RESTORE_FILTERED_FASTA(filtered_and_renamed_assembly.join(mapfile), "temporary", "short")
 
     assembly_with_short_contignames = RESTORE_FILTERED_FASTA.out.map { meta, _name, fasta -> [meta, fasta] }
 

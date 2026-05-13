@@ -137,9 +137,20 @@ class SplitProteins:
         MGYG000495417_00766 hypothetical protein
         
         Return:
-        # 3320783 # 3379543 # -1 # ID=195062_2719;partial=00;start_type=GTG;rbs_motif=None;rbs_spacer=None;gc_cont=0.731, 2719
-        # 2328 # 3188 # 1 # ID=1_6;partial=00;start_type=ATG;rbs_motif=GGA/GAG/AGG;rbs_spacer=5-10bp;gc_cont=0.237, _6
-        hypothetical protein, ''
+        protein_id:
+        ERZ21830300_185216
+        NODE_6_length_273677_cov_7.926969
+        MGYG000495417_00766
+        
+        protein_info:
+        # 3320783 # 3379543 # -1 # ID=195062_2719;partial=00;start_type=GTG;rbs_motif=None;rbs_spacer=None;gc_cont=0.731
+        # 2328 # 3188 # 1 # ID=1_6;partial=00;start_type=ATG;rbs_motif=GGA/GAG/AGG;rbs_spacer=5-10bp;gc_cont=0.237
+        hypothetical protein
+        
+        protein_number:
+        _2719
+        _6
+        ""
 
         :param record_description: Full FASTA description line.
         :param contig_name: Contig name expected inside description.
@@ -243,26 +254,10 @@ class SplitProteins:
 
                     # TODO: If we want to simulate proper Prodigal naming scheme we need to change proteinID
                     # to new numbers starting with 1. Otherwise we have some skipped numbers in the output fasta
-                    if prophage_addition:
-                        self.logger.debug(f"Checking coordinates for protein {protein_id} against prophage info {prophage_addition}")
-                        protein_id_short, protein_info, protein_number = self._parse_protein_id(protein_record.description, contig_name, protein_id)
-                        stats = protein_stats.get(protein_id)
-                        if not self.check_coordinates(protein_id, stats["start"] if stats else None, stats["end"] if stats else None, prophage_addition):
-                            continue
-                        print(protein_info)
-                        record = deepcopy(protein_record)
-                        record.description = f'{protein_info}'
-                        if protein_number:
-                            record.id = f'{protein_id_short.split()[0]}|{prophage_addition}{protein_number}'
-                        else:
-                            record.id = f'{protein_id_short.split()[0]}|{prophage_addition}'
-                    else:
-                        record = protein_record
-
                     if protein_id in already_added_protein_ids:
                         raise ValueError(f"Protein added more than once: {protein_id}")
                     
-                    SeqIO.write(record, out_file, "fasta")
+                    SeqIO.write(protein_record, out_file, "fasta")
                     already_added_protein_ids.add(protein_id)
                     written_records += 1
 
