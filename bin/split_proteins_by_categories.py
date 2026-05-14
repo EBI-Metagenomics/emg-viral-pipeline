@@ -246,6 +246,13 @@ class SplitProteins:
                 for protein_record in matching_proteins:
                     protein_id = protein_record.id
 
+                    if prophage_addition is not None:
+                        stats = protein_stats[protein_id]
+                        if not self.check_coordinates(
+                            protein_id, stats["start"], stats["end"], prophage_addition
+                        ):
+                            continue
+
                     # TODO: If we want to simulate proper Prodigal naming scheme we need to change proteinID
                     # to new numbers starting with 1. Otherwise we have some skipped numbers in the output fasta
                     if protein_id in already_added_protein_ids:
