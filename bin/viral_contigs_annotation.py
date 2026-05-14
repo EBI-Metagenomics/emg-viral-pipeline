@@ -10,41 +10,67 @@ from Bio import SeqIO
 import pandas as pd
 
 
-def extract_annotations(protein_file: str, ratio_evalue_file: str) -> list:
+def parse_gff(gff_file: str) -> dict:
+    """Parse a GFF3 file and return CDS metadata keyed by protein ID.
+
+    :param gff_file: Path to GFF3 file containing CDS features with ID attributes
+    :return: Dict mapping protein ID to {contig, start, end, strand}
+    """
+    cds_info = {}
+    with open(gff_file) as fh:
+        for line in fh:
+            if line.startswith('#'):
+                continue
+            cols = line.strip().split('\t')
+            if len(cols) != 9 or cols[2] != 'CDS':
+                continue
+            attrs = {}
+            for part in cols[8].rstrip(';').split(';'):
+                if '=' in part:
+                    k, v = part.split('=', 1)
+                    attrs[k.strip()] = v.strip()
+            protein_id = attrs.get('ID', '').strip()
+            if protein_id:
+                cds_info[protein_id] = {
+                    'contig': cols[0],
+                    'start': cols[3],
+                    'end': cols[4],
+                    'strand': cols[6],
+                }
+    return cds_info
+
+
+def extract_annotations(protein_file: str, ratio_evalue_file: str, gff_data: dict = None) -> list:
     """
     Generate annotation list for viral proteins using ViPhOG database results.
 
     :param protein_file: Path to FASTA file containing predicted viral proteins
     :param ratio_evalue_file: Path to tabular file with ViPhOG hmmscan results
+    :param gff_data: Optional dict from parse_gff(); when provided, CDS coordinates
+                     are taken from the GFF instead of the protein description.
     :return: List of annotation rows, where each row contains:
              [Contig, CDS_ID, Start, End, Direction, Best_hit, Abs_Evalue_exp, Label]
-    :raises: None (returns empty list for invalid/missing files)
-
-    .. note::
-        Only processes proteins with '#' delimiter in description (Prodigal format).
-        Returns empty list if protein file doesn't exist or contains no proteins.
     """
-
     ratio_evalue_df = pd.read_csv(ratio_evalue_file, sep="\t")
 
-    # Parse proteins and build annotation list
     annotation_list = []
 
     for protein in SeqIO.parse(protein_file, "fasta"):
-        # Extract contig ID by removing protein number suffix
-        contig_id = re.split(r"_\d+$", protein.id)[0]
-
-        # Parse protein properties (Prodigal format: "start_end # direction")
-        # Skip if protein description doesn't contain expected format
-        protein_prop = protein.description.split(" # ")[:-1]
-
-        # Extract protein info if format is ~prodigal
-        if protein_prop:
-            query_id = protein_prop[0]
-        else:
-            # assume query column is protein_id
+        if gff_data is not None and protein.id in gff_data:
+            info = gff_data[protein.id]
+            contig_id = info['contig']
+            protein_prop = [protein.id, info['start'], info['end'], info['strand']]
             query_id = protein.id
-        
+        else:
+            # Fallback: extract coordinates from Prodigal-format description
+            contig_id = re.split(r"_\d+$", protein.id)[0]
+            protein_prop = protein.description.split(" # ")[:-1]
+            if protein_prop:
+                query_id = protein_prop[0]
+            else:
+                query_id = protein.id
+                protein_prop = [protein.id, "NA", "NA", "NA"]
+
         # Find matching ViPhOG results
         if query_id in ratio_evalue_df["query"].values:
             filtered_df = ratio_evalue_df[ratio_evalue_df["query"] == query_id]
@@ -66,7 +92,6 @@ def extract_annotations(protein_file: str, ratio_evalue_file: str) -> list:
 
             protein_prop.extend(hit_data)
         else:
-            # No ViPhOG hit found
             protein_prop.extend(["No hit", "NA", ""])
 
         annotation_list.append([contig_id] + protein_prop)
@@ -100,6 +125,15 @@ def main():
         help="Output directory path (default: current working directory)",
         default=".",
     )
+    parser.add_argument(
+        "-g",
+        "--gff",
+        dest="gff_file",
+        help="GFF3 file with CDS features; when provided, coordinates are read from "
+             "the GFF instead of the protein description",
+        required=False,
+        default=None,
+    )
 
     args = parser.parse_args()
 
@@ -121,7 +155,8 @@ def main():
     csv_output = output_dir / f"{output_name}_annotation.tsv"
 
     # Process and save results
-    annotations = extract_annotations(str(prot_path), str(ratio_path))
+    gff_data = parse_gff(args.gff_file) if args.gff_file else None
+    annotations = extract_annotations(str(prot_path), str(ratio_path), gff_data)
 
     dataframe = pd.DataFrame(
         annotations,

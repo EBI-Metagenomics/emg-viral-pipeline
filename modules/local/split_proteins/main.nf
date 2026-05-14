@@ -10,8 +10,9 @@ process SPLIT_PROTEINS {
     tuple val(meta), val(confidence_set_name), path(fasta), path(proteins_gff), path(proteins_faa)
     
     output:
-    tuple val(meta), val(confidence_set_name), path(fasta), path("*_split.faa")
-    
+    tuple val(meta), val(confidence_set_name), path(fasta), path("${confidence_set_name}_split.faa"), emit: proteins
+    tuple val(meta), val(confidence_set_name), path("${confidence_set_name}_split.gff"),               emit: gff
+
     script:
     def fasta_file = fasta.name.endsWith('.gz') ? fasta.baseName : fasta.name
     def proteins_file_faa = proteins_faa.name.endsWith('.gz') ? proteins_faa.baseName : proteins_faa.name
@@ -26,7 +27,12 @@ process SPLIT_PROTEINS {
     if [[ ${proteins_gff} == *.gz ]]; then
         gunzip -c ${proteins_gff} > ${proteins_file_gff}
     fi
-    
-    split_proteins_by_categories.py -i ${fasta_file} -o ${confidence_set_name}_split.faa -p ${proteins_file_faa} -g ${proteins_file_gff}
+
+    split_proteins_by_categories.py \\
+        -i ${fasta_file} \\
+        -o ${confidence_set_name}_split.faa \\
+        -p ${proteins_file_faa} \\
+        -g ${proteins_file_gff} \\
+        --output-gff ${confidence_set_name}_split.gff
     """
 }

@@ -33,6 +33,7 @@ def parse_args(argv):
     parser.add_argument("-g", "--proteins-gff", dest="proteins_gff", help="Input gff file with all assembly proteins",
                         required=True)
     parser.add_argument("-o", "--output", dest="output", help="Output file to write filtered proteins", required=True)
+    parser.add_argument("--output-gff", dest="output_gff", help="Output GFF3 file with contig regions and CDS records", required=False, default=None)
     parser.add_argument("-v", "--verbose", dest="verbose", help="Enable verbose logging mode", required=False,
                         action='store_true')
     return parser.parse_args(argv)
@@ -46,12 +47,14 @@ class SplitProteins:
         proteins_gff: str,
         output_file: str,
         verbose: bool,
+        output_gff: Optional[str] = None,
     ):
         self.input_file = input_file
         self.proteins_faa = proteins_faa
         self.proteins_gff = proteins_gff
         self.output_file = output_file
         self.verbose = verbose
+        self.output_gff = output_gff
         self.setup_logging()
         self.logger = logging.getLogger(__name__)
 
@@ -128,50 +131,6 @@ class SplitProteins:
         prophage_addition = contig_id_parts[1] if len(contig_id_parts) > 1 else None
         return contig_name, prophage_addition
 
-    def _parse_protein_id(self, record_description: str, contig_name: str, record_id: str) -> Tuple[str, str]:
-        """Extract protein metadata suffix and protein number from record description.
-
-        Examples of expected description formats:
-        ERZ21830300_185216_2719 # 3320783 # 3379543 # -1 # ID=195062_2719;partial=00;start_type=GTG;rbs_motif=None;rbs_spacer=None;gc_cont=0.731
-        NODE_6_length_273677_cov_7.926969_6 # 2328 # 3188 # 1 # ID=1_6;partial=00;start_type=ATG;rbs_motif=GGA/GAG/AGG;rbs_spacer=5-10bp;gc_cont=0.237
-        MGYG000495417_00766 hypothetical protein
-        
-        Return:
-        protein_id:
-        ERZ21830300_185216
-        NODE_6_length_273677_cov_7.926969
-        MGYG000495417_00766
-        
-        protein_info:
-        # 3320783 # 3379543 # -1 # ID=195062_2719;partial=00;start_type=GTG;rbs_motif=None;rbs_spacer=None;gc_cont=0.731
-        # 2328 # 3188 # 1 # ID=1_6;partial=00;start_type=ATG;rbs_motif=GGA/GAG/AGG;rbs_spacer=5-10bp;gc_cont=0.237
-        hypothetical protein
-        
-        protein_number:
-        _2719
-        _6
-        ""
-
-        :param record_description: Full FASTA description line.
-        :param contig_name: Contig name expected inside description.
-        :param record_id: FASTA ID from protein header.
-        :return: Tuple (protein_info_suffix, protein_number_token).
-        """
-        split_description = record_description.split(contig_name, 1)
-        if len(split_description) != 2:
-            self.logger.debug(
-                f"Contig '{contig_name}' not found in record description: {record_description}. "
-                f"Will use originl protein name"
-            )
-            protein_id = record_id
-            protein_info = record_description.split(record_id)[1].strip()
-            protein_number = ""
-        else:
-            protein_id = contig_name
-            protein_info = ' '.join(split_description[1].split(' ')[1:])
-            protein_number = split_description[1].split(' ')[0]
-        return protein_id, protein_info, protein_number
-
     def _parse_attrs(self, attrs_str):
         """Return (dict, ordered-key-list) from a GFF column-9 string."""
         attrs, order = {}, []
@@ -215,7 +174,7 @@ class SplitProteins:
                     strand = line[6]
                     attrs, _ = self._parse_attrs(line[8])
                     protein_id = attrs.get("ID", "").strip()
-                    protein_stats[protein_id] = {"start": int(start), "end": int(end), "strand": strand, "contig": contig}
+                    protein_stats[protein_id] = {"start": int(start), "end": int(end), "strand": strand, "contig": contig, "gff_line": line}
                     
         self.logger.debug("Mapping protein sequences to contigs using FAA...")
         for record in protein_records:
@@ -225,6 +184,31 @@ class SplitProteins:
                 proteins_by_contig[contig_name].append(record)
         return proteins_by_contig, protein_stats
 
+    def _write_gff(self, gff_by_contig: Dict[str, List[List[str]]], contig_lengths: Dict[str, int]) -> None:
+        """Write a GFF3 file with sequence-region headers, region records, and CDS records.
+
+        :param gff_by_contig: Mapping of contig name to list of GFF column lists for CDS features.
+        :param contig_lengths: Mapping of contig name to sequence length.
+        """
+        with open(self.output_gff, 'w') as gff_out:
+            print("##gff-version 3", file=gff_out)
+
+            sorted_contigs = sorted(gff_by_contig.keys())
+
+            for contig in sorted_contigs:
+                length = contig_lengths.get(contig)
+                if length:
+                    print(f"##sequence-region {contig} 1 {length}", file=gff_out)
+
+            for contig in sorted_contigs:
+                length = contig_lengths.get(contig)
+                if length:
+                    print(f"{contig}\t.\tregion\t1\t{length}\t.\t.\t.\tID={contig}", file=gff_out)
+                for gff_cols in sorted(gff_by_contig[contig], key=lambda x: int(x[3])):
+                    print("\t".join(gff_cols), file=gff_out)
+
+        self.logger.info(f"Finished writing GFF to {self.output_gff}")
+
     def grep_proteins(self) -> None:
         """Write proteins that belong to input contigs, with optional prophage filtering.
 
@@ -232,7 +216,12 @@ class SplitProteins:
             Also raised if no proteins are written or duplicate protein ids are detected.
         """
         self.logger.info("Parsing input contigs FASTA file...")
-        contig_records = SeqIO.parse(self.input_file, 'fasta')
+        contig_records = list(SeqIO.parse(self.input_file, 'fasta'))
+        contig_lengths = {}
+        for record in contig_records:
+            base_name, _ = self._parse_contig_id(record.id)
+            contig_lengths[base_name] = len(record.seq)
+
         self.logger.info("Parsing input proteins FASTA file...")
         protein_records = SeqIO.parse(self.proteins_faa, 'fasta')
         self.logger.info("Parsing input proteins GFF file...")
@@ -241,6 +230,8 @@ class SplitProteins:
         self.logger.info("Filtering and writing matching proteins...")
         already_added_protein_ids = set()
         written_records = 0
+        gff_by_contig: Dict[str, List[List[str]]] = defaultdict(list)
+
         with open(self.output_file, 'w') as out_file:
             for contig_record in contig_records:
                 contig_name, prophage_addition = self._parse_contig_id(contig_record.id)
@@ -248,7 +239,7 @@ class SplitProteins:
                 matching_proteins = proteins_by_contig.get(contig_name, [])
                 if not matching_proteins:
                     self.logger.info(f'No proteins found for {contig_name}')
-                
+
                 for protein_record in matching_proteins:
                     protein_id = protein_record.id
 
@@ -256,10 +247,16 @@ class SplitProteins:
                     # to new numbers starting with 1. Otherwise we have some skipped numbers in the output fasta
                     if protein_id in already_added_protein_ids:
                         raise ValueError(f"Protein added more than once: {protein_id}")
-                    
+
                     SeqIO.write(protein_record, out_file, "fasta")
                     already_added_protein_ids.add(protein_id)
                     written_records += 1
+
+                    if self.output_gff:
+                        gff_by_contig[contig_name].append(protein_stats[protein_id]["gff_line"])
+
+        if self.output_gff and gff_by_contig:
+            self._write_gff(gff_by_contig, contig_lengths)
 
         if written_records == 0:
             self.logger.warning(
@@ -277,6 +274,7 @@ def main():
         proteins_gff=args.proteins_gff,
         output_file=args.output,
         verbose=args.verbose,
+        output_gff=args.output_gff,
     )
     splitter.grep_proteins()
 
