@@ -56,6 +56,24 @@ def open_fasta_file(filename):
     return f
 
 
+def read_category_gff_contigs(gff_files):
+    """Return a set of all seqids found in region records across per-category GFF files.
+
+    :param gff_files: List of GFF3 files produced by split_proteins or prodigal.
+    :return: Set of full contig IDs (may include |prophage-START:END suffixes).
+    """
+    contig_ids = set()
+    for gff_file in gff_files:
+        with open(gff_file) as fh:
+            for line in fh:
+                if line.startswith('#'):
+                    continue
+                cols = line.strip().split('\t')
+                if len(cols) >= 3 and cols[2] == 'region':
+                    contig_ids.add(cols[0])
+    return contig_ids
+
+
 def aggregate_annotations(
     virify_annotation_files, contigs_len_dict, use_proteins=False
 ):
@@ -553,6 +571,15 @@ if __name__ == "__main__":
         help="Add this argument if pipeline used already predicted proteins as input",
         action="store_true",
     )
+    parser.add_argument(
+        "-g",
+        "--gff",
+        dest="gff_files",
+        help="Per-category GFF3 files from split_proteins or prodigal (used to include "
+             "viral contigs that have no annotated proteins)",
+        nargs="*",
+        default=[],
+    )
 
     args = parser.parse_args()
 
@@ -617,6 +644,28 @@ if __name__ == "__main__":
     viral_sequences, cds_annotations, virify_quality = aggregate_annotations(
         virify_files, contigs_len_dict, args.use_proteins
     )
+
+    # Supplement viral_sequences with any contigs present in the per-category GFF files
+    # but absent from the annotation TSVs (e.g. contigs with zero proteins).
+    if args.gff_files:
+        gff_contig_ids = read_category_gff_contigs(args.gff_files)
+        for contig_id in gff_contig_ids:
+            if contig_id not in viral_sequences:
+                (
+                    prophage_start,
+                    prophage_end,
+                    circular,
+                ) = Record.get_prophage_metadata_from_contig(contig_id)
+                if circular:
+                    viral_sequence_type = "phage_circular"
+                elif prophage_start is not None and prophage_end is not None:
+                    viral_sequence_type = f"prophage-{prophage_start}:{prophage_end}"
+                else:
+                    viral_sequence_type = "phage_linear"
+                viral_sequences[contig_id] = {viral_sequence_type}
+                logging.debug(
+                    f"Added contig from GFF with no annotation TSV entry: {contig_id}"
+                )
 
     logging.info("Generating the gff output")
 

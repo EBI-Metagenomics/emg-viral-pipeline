@@ -187,8 +187,8 @@ class SplitProteins:
     def _write_gff(self, gff_by_contig: Dict[str, List[List[str]]], contig_lengths: Dict[str, int]) -> None:
         """Write a GFF3 file with sequence-region headers, region records, and CDS records.
 
-        :param gff_by_contig: Mapping of contig name to list of GFF column lists for CDS features.
-        :param contig_lengths: Mapping of contig name to sequence length.
+        :param gff_by_contig: Mapping of full contig ID (with optional prophage suffix) to list of GFF column lists.
+        :param contig_lengths: Mapping of full contig ID to sequence length.
         """
         with open(self.output_gff, 'w') as gff_out:
             print("##gff-version 3", file=gff_out)
@@ -205,7 +205,10 @@ class SplitProteins:
                 if length:
                     print(f"{contig}\t.\tregion\t1\t{length}\t.\t.\t.\tID={contig}", file=gff_out)
                 for gff_cols in sorted(gff_by_contig[contig], key=lambda x: int(x[3])):
-                    print("\t".join(gff_cols), file=gff_out)
+                    # Replace the original seqid (cols[0]) with the full contig ID so that
+                    # prophage suffixes (e.g. |prophage-100:200) are preserved downstream.
+                    updated_cols = [contig] + gff_cols[1:]
+                    print("\t".join(updated_cols), file=gff_out)
 
         self.logger.info(f"Finished writing GFF to {self.output_gff}")
 
@@ -219,8 +222,8 @@ class SplitProteins:
         contig_records = list(SeqIO.parse(self.input_file, 'fasta'))
         contig_lengths = {}
         for record in contig_records:
-            base_name, _ = self._parse_contig_id(record.id)
-            contig_lengths[base_name] = len(record.seq)
+            # Key by full ID so prophage suffixes appear in the output GFF seqid.
+            contig_lengths[record.id] = len(record.seq)
 
         self.logger.info("Parsing input proteins FASTA file...")
         protein_records = SeqIO.parse(self.proteins_faa, 'fasta')
@@ -253,7 +256,9 @@ class SplitProteins:
                     written_records += 1
 
                     if self.output_gff:
-                        gff_by_contig[contig_name].append(protein_stats[protein_id]["gff_line"])
+                        # Key by full contig ID (may include |prophage-START:END suffix)
+                        # so the seqid in the output GFF carries prophage info.
+                        gff_by_contig[contig_record.id].append(protein_stats[protein_id]["gff_line"])
 
         if self.output_gff and gff_by_contig:
             self._write_gff(gff_by_contig, contig_lengths)

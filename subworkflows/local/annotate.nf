@@ -90,12 +90,14 @@ workflow ANNOTATE {
     viphos_annotations   = ANNOTATION.out.annotations.map { meta, _type, data -> [meta, data] }.groupTuple()
     taxonomy_annotations = ASSIGN.out.map { meta, _type, data -> [meta, data] }.groupTuple()
     checkv_results       = CHECKV.out.map { meta, _type, data -> [meta, data] }.groupTuple()
+    category_gffs        = proteins_gff.map { meta, _type, gff -> [meta, gff] }.groupTuple()
 
     WRITE_GFF(
       assembly_fasta
         .join(viphos_annotations)
         .join(taxonomy_annotations)
         .join(checkv_results)
+        .join(category_gffs)
     )
 
     /**********************************************/
