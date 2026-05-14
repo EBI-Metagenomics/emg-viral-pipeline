@@ -10,13 +10,13 @@ process ANNOTATION {
     container 'quay.io/microbiome-informatics/virify-python3:1.1'
 
     input:
-    tuple val(meta), val(set_name), path(tab), path(faa)
+    tuple val(meta), val(set_name), path(tab), path(faa), path(gff)
 
     output:
     tuple val(meta), val(set_name), path("*_annotation.tsv"), emit: annotations
 
     script:
     """
-    viral_contigs_annotation.py -o . -p ${faa} -t ${tab}
+    viral_contigs_annotation.py -o . -p ${faa} -t ${tab} -g ${gff}
     """
 }

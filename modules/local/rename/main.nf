@@ -8,11 +8,11 @@ process RENAME {
     container 'quay.io/microbiome-informatics/virify-python3:1.2'
 
     input:
-    tuple val(meta), path(fasta), val(contigs_count)
+    tuple val(meta), path(fasta)
 
     output:
-    tuple val(meta), path("${meta.id}_renamed.fasta"), val(contigs_count), emit: renamed_fasta
-    tuple val(meta), path("${meta.id}_map.tsv"),                           emit: mapfile
+    tuple val(meta), path("${meta.id}_renamed.fasta"), emit: renamed_fasta
+    tuple val(meta), path("${meta.id}_map.tsv"),        emit: mapfile
 
     script:
     """

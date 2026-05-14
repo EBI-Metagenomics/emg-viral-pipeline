@@ -7,14 +7,14 @@ process VIRFINDER {
   container 'quay.io/microbiome-informatics/virfinder:1.1__eb8032e'
 
   input:
-  tuple val(meta), path(fasta), val(contig_number)
+  tuple val(meta), path(fasta)
   path model
 
   output:
   tuple val(meta), path("${meta.id}.txt")
 
   when:
-  contig_number.toInteger() > 0
+  fasta.size() > 0
 
   script:
   """

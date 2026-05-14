@@ -7,11 +7,12 @@ process PRODIGAL {
       tuple val(meta), val(confidence_set_name), path(fasta) 
     
     output:
-      tuple val(meta), val(confidence_set_name), path("*.faa")
-    
+      tuple val(meta), val(confidence_set_name), path("${confidence_set_name}_prodigal.faa"), emit: proteins
+      tuple val(meta), val(confidence_set_name), path("${confidence_set_name}_prodigal.gff"), emit: gff
+
     script:
     """
-    prodigal -p "meta" -a ${confidence_set_name}_prodigal.faa -i ${fasta}
+    prodigal -p "meta" -a ${confidence_set_name}_prodigal.faa -f gff -o ${confidence_set_name}_prodigal.gff -i ${fasta}
     """
 }
 

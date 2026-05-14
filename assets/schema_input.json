@@ -29,14 +29,22 @@
                 "pattern": "^\\S+\\.f(ast)?q\\.gz$",
                 "errorMessage": "FastQ file for reads 2 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
             },
-            "proteins": {
+            "proteins_gff": {
                 "type": "string",
-                "pattern": "^\\S+\\.(f(ast)?a|faa)(\\.gz)?$",
-                "errorMessage": "Proteins file in FASTA format",
-                "minLength": 3
+                "pattern": "^\\S+\\.(gff)(\\.gz)?$",
+                "errorMessage": "The file with proteins detected for the assembly needs to be a gff3 file (optionally compressed with .gz)"
+            },
+            "proteins_faa": {
+                "type": "string",
+                "pattern": "^\\S+\\.(faa|fasta)(\\.gz)?$",
+                "errorMessage": "The file with proteins detected for the assembly in fasta format (optionally compressed with .gz)"
             }
         },
         "required": ["id"],
+        "dependentRequired": {
+            "proteins_gff": ["proteins_faa"],
+            "proteins_faa": ["proteins_gff"]
+        },
         "oneOf": [
           {
             "required": ["assembly"],

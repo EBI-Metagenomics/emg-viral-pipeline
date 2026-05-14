@@ -2,12 +2,7 @@ process checkVGetDB {
     label 'process_low'    
     container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'
     
-    if (params.cloudProcess) { 
-        publishDir "${params.databases}/checkv", mode: 'copy' 
-    }
-    else { 
-        storeDir "${params.databases}/checkv" 
-    }
+    publishDir "${params.databases}/checkv", mode: params.cloudProcess ? 'copy' : 'symlink'
       
     output:
         path("checkv-db-v*", type: 'dir')

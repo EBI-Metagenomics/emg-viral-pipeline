@@ -54,6 +54,7 @@ workflow ANNOTATE {
 
     category_fasta = PREDICT_PROTEINS.out.category_fasta
     proteins       = PREDICT_PROTEINS.out.proteins
+    proteins_gff   = PREDICT_PROTEINS.out.proteins_gff
 
     // annotation --> hmmer with chunking
     HMMER_PREDICTION(proteins, viphog_db, rvdb_db, pvogs_db, vogdb_db, vpf_db) // out: [meta, set_name, hmm_modified.tsv]
@@ -62,7 +63,7 @@ workflow ANNOTATE {
     RATIO_EVALUE( HMMER_PREDICTION.out.hmm_result, additional_model_data )
 
     // annotate contigs based on ViPhOGs
-    ANNOTATION( RATIO_EVALUE.out.join(proteins, by:[0,1]) )
+    ANNOTATION( RATIO_EVALUE.out.join(proteins, by:[0,1]).join(proteins_gff, by:[0,1]) )
 
     // plot visuals --> PDFs
     PLOT_CONTIG_MAP( ANNOTATION.out.annotations )
@@ -89,12 +90,14 @@ workflow ANNOTATE {
     viphos_annotations   = ANNOTATION.out.annotations.map { meta, _type, data -> [meta, data] }.groupTuple()
     taxonomy_annotations = ASSIGN.out.map { meta, _type, data -> [meta, data] }.groupTuple()
     checkv_results       = CHECKV.out.map { meta, _type, data -> [meta, data] }.groupTuple()
+    category_gffs        = proteins_gff.map { meta, _type, gff -> [meta, gff] }.groupTuple()
 
     WRITE_GFF(
       assembly_fasta
         .join(viphos_annotations)
         .join(taxonomy_annotations)
         .join(checkv_results)
+        .join(category_gffs)
     )
 
     /**********************************************/

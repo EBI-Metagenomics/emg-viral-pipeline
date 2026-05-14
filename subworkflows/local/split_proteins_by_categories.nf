@@ -12,5 +12,6 @@ workflow SPLIT_PROTEINS_BY_CATEGORIES {
     SPLIT_PROTEINS(input)
 
     emit:
-    splitted_proteins = SPLIT_PROTEINS.out
+    splitted_proteins = SPLIT_PROTEINS.out.proteins
+    splitted_gff      = SPLIT_PROTEINS.out.gff
 }

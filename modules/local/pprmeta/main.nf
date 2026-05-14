@@ -4,14 +4,14 @@ process PPRMETA {
   container 'quay.io/microbiome-informatics/pprmeta:1.1'
 
   input:
-  tuple val(meta), path(fasta), val(contig_number)
+  tuple val(meta), path(fasta)
   path pprmeta_git
 
   output:
   tuple val(meta), path("${meta.id}_pprmeta.csv")
 
   when:
-  contig_number.toInteger() > 0
+  fasta.size() > 0
 
   script:
   """

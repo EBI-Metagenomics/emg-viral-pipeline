@@ -28,7 +28,7 @@ workflow ASSEMBLE_ILLUMINA {
  
         // assembly
         SPADES(
-          FASTP.out.reads.map { meta, reads -> [meta, reads, [], []] }, 
+          FASTP.out.reads.map { meta, reads_files -> [meta, reads_files, [], []] }, 
           [], 
           []
         )

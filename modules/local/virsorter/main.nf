@@ -42,14 +42,14 @@ process VIRSORTER {
   container 'quay.io/microbiome-informatics/virsorter:1.0.6_edfeb8c5e72'
 
   input:
-  tuple val(meta), path(fasta), val(contig_number)
+  tuple val(meta), path(fasta)
   path database
 
   output:
   tuple val(meta), path("*")
 
   when:
-  contig_number.toInteger() > 0
+  fasta.size() > 0
 
   script:
   if (params.virome) {
