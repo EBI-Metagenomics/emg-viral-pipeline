@@ -194,6 +194,7 @@ def aggregate_annotations(
                             end,
                             direction,
                             viphog_annotation,
+                            contig,
                         ]
                     )
 
@@ -431,8 +432,7 @@ def write_gff(
     # Collect CDS records
     for contig_name, contig_cds in cds_annotations.items():
         for cds_data in contig_cds:
-            cds_id, start, end, direction, viphog_annotation = cds_data
-            region_name = "_".join(cds_id.split("_")[:-1])
+            cds_id, start, end, direction, viphog_annotation, original_contig = cds_data
             cds_id = cds_id.replace("prophage-0:", "prophage-1:")
 
             contig_len = contigs_len_dict.get(contig_name)
@@ -442,11 +442,7 @@ def write_gff(
             if end > contig_len:
                 end = contig_len
 
-            quality = (
-                virify_quality[region_name]
-                if region_name in virify_quality
-                else "unknown"
-            )
+            quality = virify_quality.get(original_contig, "unknown")
             cds_attributes = [
                 f"ID={cds_id}",
                 f"virify_quality={quality}",
