@@ -1,25 +1,148 @@
 #!/usr/bin/env python3
 
-import logging
-import argparse
-import sys
-import gzip
-import csv
+from __future__ import annotations
 
-from parse_viral_pred import Record
+import argparse
+import csv
+import gzip
+import logging
+import sys
+from typing import IO
 
 from Bio import SeqIO
 
+from parse_viral_pred import Record
+from split_proteins_by_categories import parse_attrs
+
 logging.basicConfig(level=logging.INFO)
 
+SCORE = "."
 
-def get_ena_contig_mapping(ena_contig_file):
+
+def parse_args() -> argparse.Namespace:
+    """Parse and return command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Generate a GFF3 file from VIRify output files"
+    )
+    parser.add_argument(
+        "-a",
+        "--assembly",
+        dest="assembly_file",
+        help="Original assembly FASTA file",
+        required=True,
+    )
+    parser.add_argument(
+        "-v",
+        "--virify-files",
+        dest="virify_files",
+        help="List of VIRify annotation summary TSV files",
+        nargs="+",
+        required=True,
+    )
+    parser.add_argument(
+        "-c",
+        "--checkv-files",
+        dest="checkv_files",
+        help="List of CheckV summary TSV files",
+        required=True,
+        nargs="+",
+    )
+    parser.add_argument(
+        "-t",
+        "--taxonomy-files",
+        dest="taxonomy_files",
+        help="List of VIRify taxonomic annotation TSV files",
+        required=True,
+        nargs="+",
+    )
+    parser.add_argument(
+        "-s",
+        "--sample-id",
+        dest="sample_id",
+        help="Sample ID used as the output filename prefix. Ignored with --rename-contigs.",
+        required=True,
+    )
+    parser.add_argument(
+        "--rename-contigs",
+        help="Rename contigs from ERR to ERZ accessions",
+        required=False,
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
+        "--ena-contigs",
+        dest="ena_contigs",
+        help="Path to ENA contig FASTA file required when --rename-contigs is set",
+        required=False,
+    )
+    parser.add_argument(
+        "--use-proteins",
+        dest="use_proteins",
+        help="Set when the pipeline used externally predicted proteins as input",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-g",
+        "--gff",
+        dest="gff_files",
+        help=(
+            "Per-category GFF3 files from split_proteins or prodigal. "
+            "Used to include viral contigs that have no annotated proteins."
+        ),
+        nargs="*",
+        default=[],
+    )
+    return parser.parse_args()
+
+
+def evaluate_inputs(
+    args: argparse.Namespace,
+) -> tuple[str, list[str], list[str], list[str], dict[str, str] | None]:
+    """Validate inputs and resolve the optional ENA contig mapping.
+
+    :param args: Parsed command-line arguments.
+    :return: Tuple of (assembly_file, virify_files, checkv_files, taxonomy_files, ena_mapping).
+             ena_mapping is None when --rename-contigs is not set.
+    """
+    if args.rename_contigs and not args.ena_contigs:
+        logging.error(
+            "Contig renaming selected but no contig file provided. "
+            "Provide path to ENA contig file with --ena-contigs"
+        )
+
+    assembly_file: str = args.assembly_file
+    virify_files: list[str] = args.virify_files
+    checkv_files: list[str] = args.checkv_files
+    taxonomy_files: list[str] = args.taxonomy_files
+
+    logging.info(f"found assembly file: {assembly_file}")
+    logging.info(f"found virify files: {virify_files}")
+    logging.info(f"found checkV files: {checkv_files}")
+    logging.info(f"found taxonomy files: {taxonomy_files}")
+
+    if not assembly_file:
+        logging.info("No contigs in assembly file.. exiting")
+        sys.exit(0)
+
+    if args.rename_contigs:
+        logging.warning(
+            "Provided sample ID is ignored with --rename-contigs option. "
+            "ENA ERZ accession will be used"
+        )
+        ena_mapping: dict[str, str] | None = get_ena_contig_mapping(args.ena_contigs)
+    else:
+        ena_mapping = None
+
+    return assembly_file, virify_files, checkv_files, taxonomy_files, ena_mapping
+
+
+def get_ena_contig_mapping(ena_contig_file: str) -> dict[str, str]:
     """Create a mapping between contig names and ENA accession numbers.
 
-    :param ena_contig_file: Path to ENA contig file in FASTA format
-    :return: Dictionary mapping contig names to ENA accessions
+    :param ena_contig_file: Path to gzipped ENA contig FASTA file.
+    :return: Dictionary mapping original contig names to ENA accessions.
     """
-    ena_mapping = {}
+    ena_mapping: dict[str, str] = {}
     with gzip.open(ena_contig_file, "rt") as ena_contigs:
         for record in SeqIO.parse(ena_contigs, "fasta"):
             ena_name = record.id
@@ -28,270 +151,234 @@ def get_ena_contig_mapping(ena_contig_file):
     return ena_mapping
 
 
-def get_contig_lengths_per_contig(assembly_file):
+def get_contig_lengths_per_contig(assembly_file: str) -> dict[str, int]:
     """Build a dictionary mapping contig names to their lengths.
 
-    :param assembly_file: Path to assembly file in FASTA format
-    :return: Dictionary with contig names as keys and lengths as values
+    :param assembly_file: Path to assembly FASTA file (plain or gzipped).
+    :return: Dictionary with contig names as keys and sequence lengths as values.
     """
-    contigs_len_dict = {}
+    contigs_len_dict: dict[str, int] = {}
     with open_fasta_file(assembly_file) as handle:
         for record in SeqIO.parse(handle, "fasta"):
-            contig_id = str(record.id)
-            seq_len = len(str(record.seq))
-            contigs_len_dict[contig_id] = seq_len
+            contigs_len_dict[str(record.id)] = len(str(record.seq))
     return contigs_len_dict
 
 
-def open_fasta_file(filename):
-    """Open a FASTA file, handling both gzipped and uncompressed files.
+def open_fasta_file(filename: str) -> IO[str]:
+    """Open a FASTA file, handling both gzipped and plain text formats.
 
-    :param filename: Path to FASTA file (can be .gz or regular file)
-    :return: File handle for reading the FASTA file
+    :param filename: Path to FASTA file (.gz or uncompressed).
+    :return: Text-mode file handle.
     """
     if filename.endswith(".gz"):
-        f = gzip.open(filename, "rt")
-    else:
-        f = open(filename, "rt")
-    return f
+        return gzip.open(filename, "rt")
+    return open(filename, "rt")
 
 
-def read_category_gff_contigs(gff_files):
-    """Return a set of all seqids found in region records across per-category GFF files.
+def define_viral_sequence_type(contig: str, contig_len: int) -> tuple[str, bool]:
+    """Determine the viral sequence type string and whether prophage coordinates overrun.
 
-    :param gff_files: List of GFF3 files produced by split_proteins or prodigal.
-    :return: Set of full contig IDs (may include |prophage-START:END suffixes).
+    For prophage contigs (ID contains |prophage-START:END), the type encodes the
+    genomic interval.  If the prophage end exceeds the contig length (a VirSorter2
+    artefact for circular genomes), the end is clamped to the contig length.
+
+    :param contig: Full contig ID, optionally containing |prophage-START:END or |phage-circular.
+    :param contig_len: Length of the base contig (without prophage suffix).
+    :return: Tuple of (viral_sequence_type, prophage_overrun) where viral_sequence_type is one of
+             "phage_linear", "phage_circular", or "prophage-START:END", and prophage_overrun
+             indicates whether the end coordinate was clamped.
     """
-    contig_ids = set()
-    for gff_file in gff_files:
-        with open(gff_file) as fh:
-            for line in fh:
-                if line.startswith('#'):
-                    continue
-                cols = line.strip().split('\t')
-                if len(cols) >= 3 and cols[2] == 'region':
-                    contig_ids.add(cols[0])
-    return contig_ids
+    viral_sequence_type = "phage_linear"
+    prophage_start, prophage_end, circular = Record.get_prophage_metadata_from_contig(contig)
+
+    if circular:
+        viral_sequence_type = "phage_circular"
+
+    prophage_overrun = False
+    if prophage_start is not None and prophage_end is not None:
+        if prophage_end > contig_len:
+            viral_sequence_type = f"prophage-{prophage_start}:{contig_len}"
+            prophage_overrun = True
+        else:
+            viral_sequence_type = f"prophage-{prophage_start}:{prophage_end}"
+
+    return viral_sequence_type, prophage_overrun
 
 
-def aggregate_annotations(
-    virify_annotation_files, contigs_len_dict, use_proteins=False
-):
-    """Aggregate all the virify annotations into a single data structure for
-    easier handling when writing the GFF file.
+def redefine_coords(
+    prophage_start: int | None,
+    prophage_end: int | None,
+    start: int,
+    end: int,
+    use_proteins: bool,
+) -> tuple[int, int]:
+    """Adjust CDS coordinates to be relative to the full contig when needed.
 
-    Handling of VS2's circular genome processing where contigs are extended by duplication (see https://github.com/jiarong/VirSorter2/issues/243)
-    - If prophage_end > contig_length, prophage_end is truncated to contig_length
-    - Original prophage_start is preserved, only prophage_end is truncated if needed
+    When the pipeline predicted proteins itself (prodigal mode), CDS coordinates in
+    the annotation TSV are relative to the prophage region and must be shifted by
+    prophage_start to become absolute.  When the user supplied proteins, coordinates
+    are already absolute and are returned unchanged.
 
-    :param virify_annotation_files: The virify 08-final/*.annotations tsv files
-    :param contigs_len_dict: Dictionary mapping contig names to their lengths for prophage coordinate validation.
-                             If provided, prophage end coordinates exceeding contig length will be truncated
-                             to handle VS2 circular genome artifacts where extended contigs can lead to
-                             prophage predictions that exceed the original contig boundaries.
-    :param use_proteins: Boolean flag indicating if the pipeline used already predicted proteins as input
-    :return: 3 values - viral_sequences dict, cds_annotations dict, and virify_quality dict
+    :param prophage_start: Prophage region start on the full contig, or None.
+    :param prophage_end: Prophage region end on the full contig, or None.
+    :param start: CDS start coordinate from the annotation TSV.
+    :param end: CDS end coordinate from the annotation TSV.
+    :param use_proteins: True when user-supplied proteins were used (coordinates already absolute).
+    :return: Tuple of (adjusted_start, adjusted_end).
     """
-    # structure of the viral_sequences
-    # {
-    #   contig_name: [
-    #       "phage_circular" or "prophage" or "phage_linear",
-    #       ...
-    #   ]
-    # }
-    viral_sequences = {}
+    if prophage_start is not None and prophage_end is not None and not use_proteins:
+        start = start + prophage_start
+        end = end + prophage_start
+    return start, end
 
-    # structure of the cds_annotations
-    # {
-    #   contig_name: [
-    #       cds_id,
-    #       start,
-    #       end,
-    #       direction,
-    #       viphog_annotation,
-    #   ]
-    # }
+
+def build_cds_data(contig, contig_len, start, end, direction, cds_id, use_proteins):
+    
+    viral_sequence_type, does_the_prophage_overrun = define_viral_sequence_type(
+        contig, contig_len
+    )
+
+    prophage_start, prophage_end, _ = Record.get_prophage_metadata_from_contig(contig)
+    if prophage_start is not None and prophage_end is not None:
+        start, end = redefine_coords(prophage_start, prophage_end, start, end, use_proteins)
+
+    direction = direction.replace("-1", "-").replace("1", "+")
+    
+    if does_the_prophage_overrun:
+        cds_id = cds_id.replace(
+            f"prophage-{prophage_start}:{prophage_end}",
+            f"prophage-{prophage_start}:{contig_len}",
+        )
+        
+    return viral_sequence_type, start, end, direction, cds_id
+    
+
+def get_annotation_results(
+    virify_annotation_files: list[str],
+    contigs_len_dict: dict[str, int],
+    use_proteins: bool = False,
+) -> tuple[dict[str, set[str]], dict[str, list]]:
+    """Aggregate VIRify annotation TSVs into structures ready for GFF writing.
+
+    Handles the VirSorter2 circular-genome artefact where contigs are extended by
+    duplication: if prophage_end exceeds the contig length, prophage_end is clamped
+    to the contig length and the CDS ID is updated accordingly.
+
+    :param virify_annotation_files: Paths to *_annotation.tsv files produced by viral_contigs_annotation.py.
+    :param contigs_len_dict: Mapping of base contig name to sequence length.
+    :param use_proteins: True when user-supplied proteins were used; CDS coordinates are
+                         then already absolute and are not shifted.
+    :return: Tuple of (viral_sequences, cds_annotations) where:
+             - viral_sequences maps full contig ID to a set of viral sequence type strings
+               ("phage_linear", "phage_circular", or "prophage-START:END").
+             - cds_annotations maps clean contig name to a list of
+               [cds_id, start, end, direction, viphog_annotation, original_contig] entries.
+    """
     cds_annotations = {}
-    virify_quality = {}
 
     for virify_summary in virify_annotation_files:
-        quality = "unknown"
-        if "taxonomy" in virify_summary:
-            continue
-        if "high_confidence_viral" in virify_summary:
-            quality = "HC"
-        elif "low_confidence" in virify_summary:
-            quality = "LC"
-        elif "prophages" in virify_summary:
-            quality = "PP"
-
         with open(virify_summary, "r") as table_handle:
             csv_reader = csv.DictReader(table_handle, delimiter="\t")
             for row in csv_reader:
                 contig = row["Contig"]
+                cds_id = row["CDS_ID"]
                 start = int(row["Start"])
-                # FIXME: validate this
-                # Correct the index for GFF
-                # start -= 1
                 end = int(row["End"])
                 direction = row["Direction"]
-                viral_sequence_type = "phage_linear"
-                (
-                    prophage_start,
-                    prophage_end,
-                    circular,
-                ) = Record.get_prophage_metadata_from_contig(contig)
-
-                if circular:
-                    viral_sequence_type = "phage_circular"
-
-                does_the_prophage_overrun = False
-
-                if prophage_start is not None and prophage_end is not None:
-                    if use_proteins:
-                        # If pipeline used already predicted proteins as input
-                        # they were predicted on whole contigs
-                        # that means no need to change coordinates
-                        start = start
-                        end = end
-                    else:
-                        # Fixing CDS coordinates to the context of the whole contig
-                        # Current coordinates corresponds to the prophage region:
-                        # contig_1|prophage-132033:161324	contig_1|prophage-132033:161324_1	2	256	1	No hit	NA
-                        start = start + prophage_start
-                        end = end + prophage_start
-
-                    # Fix for circular prophages: truncate end coordinate if it exceeds contig length
-                    # This handles the VS2 artifact where circular genomes are extended
-                    # and prophage predictions can extend beyond the original contig boundaries
-                    clean_contig_name = Record.remove_prophage_from_contig(contig)
-                    contig_len = contigs_len_dict[clean_contig_name]
-                    does_the_prophage_overrun = prophage_end > contig_len
-
-                    if does_the_prophage_overrun:
-                        # We truncate as the prophage_end could overrun
-                        viral_sequence_type = f"prophage-{prophage_start}:{contigs_len_dict[clean_contig_name]}"
-                    else:
-                        viral_sequence_type = (
-                            f"prophage-{prophage_start}:{prophage_end}"
-                        )
-
-                # save HC, LC, PP
-                virify_quality.setdefault(contig, quality)
-                # We use the contig name without any extra annotations
-                # This also collapses multiples prophages annotations
-                # per contig, if any.
-                viral_sequences.setdefault(contig, set()).add(viral_sequence_type)
-
+                
+                clean_contig_name = Record.remove_prophage_from_contig(contig)
+                contig_len = contigs_len_dict[clean_contig_name]
+                viral_sequence_type, start, end, direction, cds_id = build_cds_data(contig, contig_len, start, end, direction, cds_id, use_proteins)
+                
                 best_hit = row["Best_hit"]
-                cds_id = row["CDS_ID"]
-                direction = direction.replace("-1", "-").replace("1", "+")
-
-                # viphog hits #
+                
                 viphog_annotation = ""
-                ## The best hit contains the ViPhOGXXX.faa that matches
                 if best_hit != "No hit":
                     best_hit = best_hit.replace(".faa", "")
                     viphog_annotation = ";".join(
                         [f"viphog={best_hit}", f"viphog_taxonomy={row['Label']}"]
                     )
-                    # We need to remove all the virify prophage annotations, if any
-                    contig_name_clean = Record.remove_prophage_from_contig(contig)
-
-                    if does_the_prophage_overrun:
-                        # We need to adjust the end here too
-                        cds_id = cds_id.replace(
-                            f"prophage-{prophage_start}:{prophage_end}",
-                            f"prophage-{prophage_start}:{contig_len}",
-                        )
-
-                    cds_annotations.setdefault(contig_name_clean, []).append(
-                        [
-                            cds_id,
-                            start,
-                            end,
-                            direction,
-                            viphog_annotation,
-                            contig,
-                        ]
-                    )
-
-    return viral_sequences, cds_annotations, virify_quality
+                cds_annotations.setdefault(contig, {})
+                cds_annotations[contig][cds_id] = viphog_annotation
+    return cds_annotations
 
 
-def write_gff(
-    checkv_files,
-    taxonomy_files,
-    sample_prefix,
-    assembly_file,
-    viral_sequences,
-    cds_annotations,
-    virify_quality,
-    contigs_len_dict,
-    ena_mapping=None,
-    use_proteins=False,
-):
-    """Generate a GFF3 file from VIRify output files with comprehensive viral sequence annotations.
+def get_checkv_results(
+    checkv_files: list[str],
+    sequence_regions: list[tuple[str, int]],
+) -> dict[str, str]:
+    """Parse CheckV summary files and validate coverage against expected contigs.
 
-    This function creates a GFF3 file containing viral sequence predictions, prophage regions,
-    and CDS annotations with ViPhOG information. It handles the VS2 circular genome artifact
-    by truncating prophage coordinates that exceed contig boundaries.
+    Raises if none of the GFF contigs have CheckV results, which indicates a
+    naming mismatch.  Contigs without CheckV results receive NA placeholder values.
 
-    :param checkv_files: List of CheckV summary files containing quality metrics
-    :param taxonomy_files: List of taxonomic annotation files
-    :param sample_prefix: Prefix for output GFF filename
-    :param assembly_file: Assembly FASTA file (used for contig lengths if contigs_len_dict not provided)
-    :param viral_sequences: Dictionary of viral sequence annotations from aggregate_annotations()
-    :param cds_annotations: Dictionary of CDS annotations from aggregate_annotations()
-    :param virify_quality: Dictionary of quality annotations from aggregate_annotations()
-    :param ena_mapping: Optional ENA contig mapping for renaming (ERZ accession will be used if provided)
-    :param contigs_len_dict: Optional pre-loaded dictionary mapping contig names to lengths.
-                            If not provided, will be loaded from assembly_file.
-    :param ena_mapping: ENA mapping dict
-    :param use_proteins: Flag used when users provide their "proteins"
-    :return: None (writes GFF file to disk)
+    :param checkv_files: Paths to CheckV quality_summary.tsv files.
+    :param sequence_regions: List of (contig_name, length) pairs that will appear in the GFF.
+    :return: Dictionary mapping clean contig name to a semicolon-joined CheckV attribute string.
     """
-    if ena_mapping:
-        ena_assembly_accession = list(ena_mapping.values())[0].split(".")[0]
-        output_filename = f"{ena_assembly_accession}_virify.gff"
-    else:
-        output_filename = f"{sample_prefix}_virify.gff"
-
-    # Auxiliary dictionaries to collect some more contig related data
-    checkv_dict, taxonomy_dict = {}, {}
-
-    # Getting the checkv evaluation of each contig
+    checkv_dict: dict[str, str] = {}
     for checkv_file in checkv_files:
         with open(checkv_file, "r") as file_handle:
             csv_reader = csv.DictReader(file_handle, delimiter="\t")
             for row in csv_reader:
                 contig_id = row["contig_id"]
-                checkv_type = row["provirus"]
-                checkv_quality = row["checkv_quality"]
-                miuvig_quality = row["miuvig_quality"]
-                kmer_freq = row["kmer_freq"]
-                viral_genes = row["viral_genes"]
                 checkv_info = ";".join(
                     [
-                        f"checkv_provirus={checkv_type}",
-                        f"checkv_quality={checkv_quality}",
-                        f"checkv_miuvig_quality={miuvig_quality}",
-                        f"checkv_kmer_freq={kmer_freq}",
-                        f"checkv_viral_genes={viral_genes}",
+                        f"checkv_provirus={row['provirus']}",
+                        f"checkv_quality={row['checkv_quality']}",
+                        f"checkv_miuvig_quality={row['miuvig_quality']}",
+                        f"checkv_kmer_freq={row['kmer_freq']}",
+                        f"checkv_viral_genes={row['viral_genes']}",
                     ]
                 )
                 checkv_dict[Record.remove_prophage_from_contig(contig_id)] = checkv_info
 
-    # Recovering taxonomic information and integrating the lineage
-    # as Uroviricota;Caudoviricetes,Caudovirales;
-    taxonomy_dict = {}
+    gff_contig_names = {name for name, _ in sequence_regions}
+    contigs_with_checkv = gff_contig_names & checkv_dict.keys()
+    contigs_without_checkv = gff_contig_names - checkv_dict.keys()
 
-    def empty_if_number(string):
-        try:
-            float(string)
-            return ""
-        except ValueError:
-            return string
+    if not contigs_with_checkv:
+        raise ValueError(
+            f"None of the {len(gff_contig_names)} GFF contigs have CheckV results. "
+            "CheckV must be run on all viral contigs before generating the GFF. "
+            "This likely indicates a naming mismatch between the annotation and CheckV files."
+        )
+
+    if contigs_without_checkv:
+        logging.warning(
+            f"{len(contigs_without_checkv)} viral contigs have no CheckV results "
+            "and will use placeholder NA values: "
+            + ", ".join(sorted(contigs_without_checkv))
+        )
+
+    return checkv_dict
+
+
+def empty_if_number(string: str) -> str:
+    """Return an empty string if the value parses as a float, otherwise return the original string.
+
+    Used to filter numeric-only taxonomy levels that represent missing data.
+
+    :param string: Taxonomy rank value from the assignment table.
+    :return: Empty string for numeric values, original string otherwise.
+    """
+    try:
+        float(string)
+        return ""
+    except ValueError:
+        return string
+
+
+def get_taxonomy_results(taxonomy_files: list[str]) -> dict[str, str]:
+    """Parse taxonomy assignment files into a per-contig lineage string.
+
+    Lineage levels are joined with %3B (GFF3-encoded semicolon).  Contigs for
+    which all levels are empty or numeric receive the string "unclassified".
+
+    :param taxonomy_files: Paths to *_taxonomy.tsv files produced by contig_taxonomic_assign.py.
+    :return: Dictionary mapping contig ID to a %3B-delimited lineage string.
+    """
+    taxonomy_dict: dict[str, str] = {}
 
     for taxonomy_file in taxonomy_files:
         with open(taxonomy_file, "r") as file_handle:
@@ -313,39 +400,121 @@ def write_gff(
                 if all(level == "" for level in lineage):
                     taxonomy_string = "unclassified"
                 else:
-                    # %3B is ';', it's part of the GFF3 - col 9 encoding
+                    # %3B is the GFF3-encoded semicolon
                     # https://github.com/The-Sequence-Ontology/Specifications/blob/master/gff3.md
-                    taxonomy_string = "%3B".join(
-                        [line for line in lineage if line != ""]
-                    )
+                    taxonomy_string = "%3B".join(level for level in lineage if level)
                 taxonomy_dict[contig] = taxonomy_string
 
-    # Constants
-    SCORE = "."
+    return taxonomy_dict
 
-    # Collect all sequence-region headers
-    sequence_regions = []
-    used_contigs = set()
 
+def get_proteins_from_gff(
+    gff_files: list[str],
+    contigs_len_dict: dict[str, int],
+    cds_best_hits,
+    use_proteins
+) -> dict[str, set[str]]:
+    """Supplement viral_sequences with contigs from per-category GFF files that have no proteins.
+
+    Some viral contigs may produce no annotated proteins (no ViPhOG HMM hits) and
+    therefore appear in the per-category GFF but not in any annotation TSV.  This
+    function adds those contigs to viral_sequences so they still appear in the final GFF.
+
+    :param viral_sequences: Mapping of full contig ID to set of viral sequence type strings,
+                            populated from the annotation TSVs.
+    :param gff_files: Per-category GFF3 files produced by split_proteins or prodigal.
+    :param contigs_len_dict: Mapping of base contig name to sequence length.
+    :return: Updated viral_sequences including any previously missing contigs.
+    """
+    viral_sequences = {}
+    cds_annotations = {}
+    # parse all proteins
+    contigs_proteins = {}
+    for gff_file in gff_files:
+        with open(gff_file) as fh:
+            for line in fh:
+                if line.startswith("#"):
+                    continue
+                cols = line.strip().split("\t")
+                if len(cols) == 9:
+                    record = cols[2]
+                    if record != 'CDS':
+                        continue
+                    contig_id = cols[0]
+                    contigs_proteins.setdefault(contig_id, [])
+                    contigs_proteins[contig_id].append(line)
+                    
+    for contig_id in contigs_proteins:
+        # Add contig into processing list
+        # TODO: maybe required to change does_the_prophage_overrun to new coords of prophage
+        clean_contig_name = Record.remove_prophage_from_contig(contig_id)
+        viral_sequence_type, _ = define_viral_sequence_type(
+            contig_id, contigs_len_dict[clean_contig_name]
+        )
+        viral_sequences[contig_id] = {viral_sequence_type}
+        logging.info(f"Added contig from GFF {contig_id}")
+        annotation_exists = False
+        for protein_record in contigs_proteins[contig_id]:
+            protein_record_cols = protein_record.strip().split('\t')
+            attrs, _ = parse_attrs(protein_record_cols[8])
+            cds_id = attrs.get("ID", "").strip()
+            start = int(protein_record_cols[3])
+            end = int(protein_record_cols[4])
+            genecaller = protein_record_cols[1]
+            direction = protein_record_cols[6]
+
+            clean_contig_name = Record.remove_prophage_from_contig(contig_id)
+            contig_len = contigs_len_dict[clean_contig_name]
+            viral_sequence_type, start, end, direction, cds_id = build_cds_data(contig_id, contig_len, start, end,
+                                                                            direction, cds_id, use_proteins)
+            # Add proteins into CDS dictionary
+            annotation = ""
+            if contig_id in cds_best_hits.keys() and cds_id in cds_best_hits[contig_id].keys():
+                annotation = cds_best_hits[contig_id][cds_id]
+                annotation_exists = True
+            cds_annotations.setdefault(clean_contig_name, []).append(
+                [cds_id, start, end, direction, annotation, contig_id, genecaller]
+            )
+        logging.info(f"Viphogs annotation{' does not' if not annotation_exists else ''} exist for contig {contig_id}")
+    return viral_sequences, cds_annotations
+
+
+def get_sequence_regions(
+    viral_sequences: dict[str, set[str]],
+    contigs_len_dict: dict[str, int],
+    use_proteins: bool,
+) -> list[tuple[str, int]]:
+    """Build a sorted list of (contig_name, length) pairs for GFF ##sequence-region headers.
+
+    Each unique base contig name is represented once.  When use_proteins is True,
+    contigs missing from the assembly are skipped with a warning rather than raising
+    an error, because users may supply proteins for contigs that were filtered out
+    by the length threshold.
+
+    :param viral_sequences: Mapping of full contig ID to viral sequence types.
+    :param contigs_len_dict: Mapping of base contig name to sequence length.
+    :param use_proteins: If True, missing contigs produce a warning rather than an error.
+    :return: List of (clean_contig_name, length) tuples sorted by contig name.
+    :raises ValueError: If no sequence regions could be collected, or if a contig is
+                        missing from the assembly and use_proteins is False.
+    """
+    sequence_regions: list[tuple[str, int]] = []
+    used_contigs: set[str] = set()
     missed_contigs = 0
 
-    for contig_name in viral_sequences.keys():
+    for contig_name in viral_sequences:
         clean_contig_name = Record.remove_prophage_from_contig(contig_name)
-        if clean_contig_name not in used_contigs:
-            used_contigs.add(clean_contig_name)
-            # Users may provide proteins for all the contigs, but VIRify only considers contigs
-            # that are longer than 150K, so when users provide a proteins file (--use_proteins)
-            # we allow mismatches here.
-            contig_length = contigs_len_dict.get(clean_contig_name)
-            if contig_length is None:
-                if use_proteins:
-                    missed_contigs += 1
-                else:
-                    raise ValueError(
-                        f"Contig {clean_contig_name} not found in the assembly."
-                    )
-                continue
-            sequence_regions.append((clean_contig_name, contig_length))
+        if clean_contig_name in used_contigs:
+            continue
+        used_contigs.add(clean_contig_name)
+        contig_length = contigs_len_dict.get(clean_contig_name)
+        if contig_length is None:
+            if use_proteins:
+                missed_contigs += 1
+            else:
+                raise ValueError(f"Contig {clean_contig_name} not found in the assembly.")
+            continue
+        sequence_regions.append((clean_contig_name, contig_length))
 
     if missed_contigs > 0:
         logging.warning(
@@ -357,39 +526,78 @@ def write_gff(
             "All the contigs that came from the annotated viral sequences were discarded."
         )
 
-    # Sort sequence-region headers by contig name
     sequence_regions.sort(key=lambda x: x[0])
+    return sequence_regions
 
-    # Validate that the CheckV summaries have results for the contigs that will appear in the GFF.
-    # checkv_dict keys are already cleaned (remove_prophage_from_contig applied during loading).
-    # sequence_regions contains exactly the contigs that will be written to the GFF.
-    gff_contig_names = {name for name, _ in sequence_regions}
-    contigs_with_checkv = gff_contig_names & checkv_dict.keys()
-    contigs_without_checkv = gff_contig_names - checkv_dict.keys()
 
-    if not contigs_with_checkv:
-        raise ValueError(
-            f"None of the {len(gff_contig_names)} GFF contigs have CheckV results. "
-            "CheckV must be run on all viral contigs before generating the GFF. "
-            "This likely indicates a naming mismatch between the annotation and CheckV files."
-        )
+def define_virify_quality(virify_annotation_files: list[str]) -> dict[str, str]:
+    """Derive a quality label (HC / LC / PP) for each contig from the annotation file it appears in.
 
-    if contigs_without_checkv:
-        logging.warning(
-            f"{len(contigs_without_checkv)} viral contigs have no CheckV results "
-            "and will use placeholder NA values: "
-            + ", ".join(sorted(contigs_without_checkv))
-        )
+    The label is inferred from the filename: files containing "high_confidence_viral"
+    map to "HC", "low_confidence" to "LC", and "prophages" to "PP".  If a contig
+    appears in multiple files the first assignment is kept (setdefault semantics).
 
-    # Collect all GFF records (both mobile elements and CDS) before writing
-    all_records = []
+    :param virify_annotation_files: Paths to *_annotation.tsv files produced by viral_contigs_annotation.py.
+    :return: Dictionary mapping full contig ID to quality label string.
+    """
+    virify_quality: dict[str, str] = {}
 
-    # Collect mobile genetic elements (viral sequences)
+    for virify_summary in virify_annotation_files:
+        quality = "unknown"
+        if "high_confidence_viral" in virify_summary:
+            quality = "HC"
+        elif "low_confidence" in virify_summary:
+            quality = "LC"
+        elif "prophages" in virify_summary:
+            quality = "PP"
+
+        with open(virify_summary, "r") as table_handle:
+            csv_reader = csv.DictReader(table_handle, delimiter="\t")
+            for row in csv_reader:
+                virify_quality.setdefault(row["contig_id"], quality)
+
+    return virify_quality
+
+
+def write_gff(
+    checkv_dict: dict[str, str],
+    taxonomy_dict: dict[str, str],
+    sample_prefix: str,
+    viral_sequences: dict[str, set[str]],
+    cds_annotations: dict[str, list],
+    virify_quality: dict[str, str],
+    contigs_len_dict: dict[str, int],
+    sequence_regions: list[tuple[str, int]],
+    ena_mapping: dict[str, str] | None = None,
+) -> None:
+    """Write the final VIRify GFF3 file.
+
+    Produces one mobile_element (viral_sequence or prophage) feature per contig/prophage
+    region and one CDS feature per annotated protein.  All records are sorted by contig
+    name then start position before writing.
+
+    :param checkv_dict: Mapping of clean contig name to CheckV attribute string.
+    :param taxonomy_dict: Mapping of full contig ID to %3B-delimited lineage string.
+    :param sample_prefix: Output filename prefix (ignored when ena_mapping is provided).
+    :param viral_sequences: Mapping of full contig ID to set of viral sequence type strings.
+    :param cds_annotations: Mapping of clean contig name to list of CDS data entries.
+    :param virify_quality: Mapping of full contig ID to quality label (HC/LC/PP/unknown).
+    :param contigs_len_dict: Mapping of base contig name to sequence length.
+    :param sequence_regions: Sorted list of (contig_name, length) for ##sequence-region headers.
+    :param ena_mapping: Optional mapping of contig names to ENA ERZ accessions; when provided
+                        the output filename uses the ERZ accession prefix.
+    """
+    if ena_mapping:
+        ena_assembly_accession = list(ena_mapping.values())[0].split(".")[0]
+        output_filename = f"{ena_assembly_accession}_virify.gff"
+    else:
+        output_filename = f"{sample_prefix}_virify.gff"
+
+    all_records: list[tuple[str, int, str]] = []
+
     for contig_name, viral_sequence_types in viral_sequences.items():
         clean_contig_name = Record.remove_prophage_from_contig(contig_name)
-        quality = (
-            virify_quality[contig_name] if contig_name in virify_quality else "unknown"
-        )
+        quality = virify_quality.get(contig_name, "unknown")
 
         for viral_seq_type in viral_sequence_types:
             element_category = "viral_sequence"
@@ -402,16 +610,12 @@ def write_gff(
 
             if "prophage" in viral_seq_type:
                 id_ = f"ID={clean_contig_name}|{viral_seq_type}"
-                # Prophages include the start and the end in the string
-                # encoding: prophage:{prophage_start}-{prophage_end}
                 start_str, end_str = viral_seq_type.split("prophage-")[1].split(":")
                 start = int(start_str)
                 end = int(end_str)
-
                 if start == 0:
                     start = 1
                     id_ = id_.replace("prophage-0:", "prophage-1:")
-
                 element_category = "prophage"
                 mobile_element_type = "prophage"
 
@@ -422,7 +626,8 @@ def write_gff(
                 f"mobile_element_type={mobile_element_type}",
                 checkv_dict.get(
                     clean_contig_name,
-                    "checkv_provirus=NA;checkv_quality=NA;checkv_miuvig_quality=NA;checkv_kmer_freq=NA;checkv_viral_genes=NA",
+                    "checkv_provirus=NA;checkv_quality=NA;checkv_miuvig_quality=NA"
+                    ";checkv_kmer_freq=NA;checkv_viral_genes=NA",
                 ),
             ]
 
@@ -430,33 +635,29 @@ def write_gff(
             if taxonomy:
                 mobile_element_attributes.append(f"taxonomy={taxonomy}")
 
-            mobile_elements_line = [
-                clean_contig_name,
-                "VIRify",
-                element_category,
-                str(start),
-                str(end),
-                SCORE,
-                ".",
-                ".",
-                ";".join(mobile_element_attributes),
-            ]
-
-            # Store as tuple: (contig_name, start_position, line_as_string)
-            all_records.append(
-                (clean_contig_name, start, "\t".join(mobile_elements_line))
+            mobile_elements_line = "\t".join(
+                [
+                    clean_contig_name,
+                    "VIRify",
+                    element_category,
+                    str(start),
+                    str(end),
+                    SCORE,
+                    ".",
+                    ".",
+                    ";".join(mobile_element_attributes),
+                ]
             )
+            all_records.append((clean_contig_name, start, mobile_elements_line))
 
-    # Collect CDS records
     for contig_name, contig_cds in cds_annotations.items():
         for cds_data in contig_cds:
-            cds_id, start, end, direction, viphog_annotation, original_contig = cds_data
+            cds_id, start, end, direction, viphog_annotation, original_contig, genecaller = cds_data
             cds_id = cds_id.replace("prophage-0:", "prophage-1:")
 
             contig_len = contigs_len_dict.get(contig_name)
             if contig_len is None:
                 continue
-
             if end > contig_len:
                 end = contig_len
 
@@ -465,219 +666,66 @@ def write_gff(
                 f"ID={cds_id}",
                 f"virify_quality={quality}",
                 "gbkey=CDS",
-                viphog_annotation,
             ]
-            cds_line = [
-                contig_name,
-                "Prodigal",
-                "CDS",
-                str(start),
-                str(end),
-                SCORE,
-                direction,
-                "0",  # phase
-                ";".join(cds_attributes),
-            ]
+            if viphog_annotation:
+                cds_attributes.append(viphog_annotation)
 
-            # Store as tuple: (contig_name, start_position, line_as_string)
-            all_records.append((contig_name, start, "\t".join(cds_line)))
+            cds_line = "\t".join(
+                [
+                    contig_name,
+                    genecaller,
+                    "CDS",
+                    str(start),
+                    str(end),
+                    SCORE,
+                    direction,
+                    "0",
+                    ";".join(cds_attributes),
+                ]
+            )
+            all_records.append((contig_name, start, cds_line))
 
-    # Sort all records by contig name (lexicographically) then by start position (numerically)
     all_records.sort(key=lambda x: (x[0], x[1]))
 
-    # Write the GFF file with sorted content
     with open(output_filename, "w") as gff:
         print("##gff-version 3", file=gff)
-
-        # Write sorted sequence-region headers
         for contig_name, contig_length in sequence_regions:
             print(
-                "\t".join(
-                    [
-                        "##sequence-region",
-                        contig_name,
-                        "1",
-                        str(contig_length),
-                    ]
-                ),
+                f"##sequence-region\t{contig_name}\t1\t{contig_length}",
                 file=gff,
             )
-
-        # Write all sorted records
-        for contig_name, start_pos, record_line in all_records:
+        for _contig, _start, record_line in all_records:
             print(record_line, file=gff)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Generate GFF and corresponding from VIRify output files"
-    )
-    parser.add_argument(
-        "-a",
-        "--assembly",
-        dest="assembly_file",
-        help="Original assembly fasta file",
-        required=True,
-    )
+    args = parse_args()
 
-    parser.add_argument(
-        "-v",
-        "--virify-files",
-        dest="virify_files",
-        help="List of virify annotation summary files",
-        nargs="+",
-        required=True,
-    )
-    parser.add_argument(
-        "-c",
-        "--checkv-files",
-        dest="checkv_files",
-        help="list of checkv summary files",
-        required=True,
-        nargs="+",
-    )
-    parser.add_argument(
-        "-t",
-        "--taxonomy-files",
-        dest="taxonomy_files",
-        help="list of virify taxonomic annotation summary files",
-        required=True,
-        nargs="+",
-    )
-    parser.add_argument(
-        "-s",
-        "--sample-id",
-        dest="sample_id",
-        help="sample_id to prefix output file name."
-        "Ignored with --rename-contigs option",
-        required=True,
-    )
-    parser.add_argument(
-        "--rename-contigs",
-        help="True if contigs needs renaming from ERR to ERZ",
-        required=False,
-        action="store_true",
-        default=False,
-    )
-    parser.add_argument(
-        "--ena-contigs",
-        dest="ena_contigs",
-        help="Path to ENA contig file if renaming needed",
-        required=False,
-    )
-    parser.add_argument(
-        "--use-proteins",
-        dest="use_proteins",
-        help="Add this argument if pipeline used already predicted proteins as input",
-        action="store_true",
-    )
-    parser.add_argument(
-        "-g",
-        "--gff",
-        dest="gff_files",
-        help="Per-category GFF3 files from split_proteins or prodigal (used to include "
-             "viral contigs that have no annotated proteins)",
-        nargs="*",
-        default=[],
-    )
-
-    args = parser.parse_args()
-
-    if args.rename_contigs and not args.ena_contigs:
-        logging.error(
-            (
-                "Contig renaming selected but no contig file provided."
-                "Provide path to ENA contig file with --ena-contigs"
-            )
-        )
-
-    assembly_file = args.assembly_file
-    virify_files = args.virify_files
-    checkv_files = args.checkv_files
-    taxonomy_files = args.taxonomy_files
-
-    logging.info(f"found assembly file: {assembly_file}")
-    logging.info(f"found virify files: {virify_files}")
-    logging.info(f"found checkV files: {checkv_files}")
-    logging.info(f"found taxonomy files: {taxonomy_files}")
-
-    # sanity check: only keep any confidence level that is present in all three folders
-    for confidence in ["high", "low", "prophage"]:
-        vf_exists = any(confidence in x for x in virify_files)
-        cf_exists = any(confidence in x for x in checkv_files)
-        tf_exists = any(confidence in x for x in taxonomy_files)
-
-        if not vf_exists or not cf_exists or not tf_exists:
-            for file_list in [virify_files, checkv_files, taxonomy_files]:
-                for f in file_list:
-                    if confidence in f:
-                        file_list.remove(f)
-
-    logging.info(f"Filtered virify files: {virify_files}")
-    logging.info(f"Filtered checkV files: {checkv_files}")
-    logging.info(f"Filtered taxonomy files: {taxonomy_files}")
-
-    if not len(virify_files):
-        logging.info("No viral predictions found.. exiting")
-        sys.exit(0)
-
-    if not len(assembly_file):
-        logging.info("No contigs in assembly file.. exiting")
-        sys.exit(0)
-
-    if args.rename_contigs:
-        logging.warning(
-            (
-                "Provided sample ID is ignored with --rename-contigs option."
-                " ENA ERZ accession will be used"
-            )
-        )
-        ena_mapping = get_ena_contig_mapping(args.ena_contigs)
-    else:
-        ena_mapping = None
+    assembly_file, virify_files, checkv_files, taxonomy_files, ena_mapping = evaluate_inputs(args)
 
     logging.info("Collecting annotation data")
-
-    # Load contig lengths once for prophage coordinate validation
     contigs_len_dict = get_contig_lengths_per_contig(assembly_file)
-
-    viral_sequences, cds_annotations, virify_quality = aggregate_annotations(
-        virify_files, contigs_len_dict, args.use_proteins
-    )
-
-    # Supplement viral_sequences with any contigs present in the per-category GFF files
-    # but absent from the annotation TSVs (e.g. contigs with zero proteins).
-    if args.gff_files:
-        gff_contig_ids = read_category_gff_contigs(args.gff_files)
-        for contig_id in gff_contig_ids:
-            if contig_id not in viral_sequences:
-                (
-                    prophage_start,
-                    prophage_end,
-                    circular,
-                ) = Record.get_prophage_metadata_from_contig(contig_id)
-                if circular:
-                    viral_sequence_type = "phage_circular"
-                elif prophage_start is not None and prophage_end is not None:
-                    viral_sequence_type = f"prophage-{prophage_start}:{prophage_end}"
-                else:
-                    viral_sequence_type = "phage_linear"
-                viral_sequences[contig_id] = {viral_sequence_type}
-                logging.debug(
-                    f"Added contig from GFF with no annotation TSV entry: {contig_id}"
-                )
+    # define virify HC/LC/PP quality
+    virify_quality = define_virify_quality(checkv_files)
+    # get viphogs annotation for proteins
+    cds_best_hits = get_annotation_results(virify_files, contigs_len_dict, args.use_proteins)
+    
+    # get proteins from GFF and add viphogs annotation where it exists
+    viral_sequences, cds_annotations = get_proteins_from_gff(args.gff_files, contigs_len_dict, cds_best_hits, args.use_proteins)
+    
+    sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict, args.use_proteins)
+    checkv_dict = get_checkv_results(checkv_files, sequence_regions)
+    taxonomy_dict = get_taxonomy_results(taxonomy_files)
 
     logging.info("Generating the gff output")
-
     write_gff(
-        checkv_files,
-        taxonomy_files,
+        checkv_dict,
+        taxonomy_dict,
         args.sample_id,
-        args.assembly_file,
         viral_sequences,
         cds_annotations,
         virify_quality,
         contigs_len_dict,
+        sequence_regions,
         ena_mapping=ena_mapping,
-        use_proteins=args.use_proteins,
     )

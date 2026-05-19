@@ -13,20 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import annotations
 
-import sys
 import argparse
-import re
 import logging
+import sys
 from collections import defaultdict
-from copy import deepcopy
-from typing import Dict, Iterable, List, Optional, Tuple
+from collections.abc import Iterable
 
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 
 
-def parse_args(argv):
+def parse_args(argv: list[str]) -> argparse.Namespace:
+    """Parse and return command-line arguments."""
     parser = argparse.ArgumentParser(description="Grep proteins corresponding to input subset of contigs and add prophage annotations to protein headers (if present)")
     parser.add_argument("-i", "--input", dest="input", help="Input fasta file with subset of assembly contigs", required=True)
     parser.add_argument("-p", "--proteins-faa", dest="proteins_faa", help="Input fasta file with all assembly proteins", required=True)
@@ -39,6 +39,23 @@ def parse_args(argv):
     return parser.parse_args(argv)
 
 
+def parse_attrs(attrs_str: str) -> tuple[dict[str, str], list[str]]:
+    """Parse a GFF3 column-9 attributes string into a dict and an ordered key list.
+
+    :param attrs_str: Semicolon-separated key=value attribute string from GFF column 9.
+    :return: Tuple of (attrs dict, list of keys in original order).
+    """
+    attrs, order = {}, []
+    for part in attrs_str.rstrip(";").split(";"):
+        part = part.strip()
+        if "=" in part:
+            k, v = part.split("=", 1)
+            if k not in attrs:
+                order.append(k)
+            attrs[k] = v
+    return attrs, order
+
+
 class SplitProteins:
     def __init__(
         self,
@@ -47,8 +64,17 @@ class SplitProteins:
         proteins_gff: str,
         output_file: str,
         verbose: bool,
-        output_gff: Optional[str] = None,
-    ):
+        output_gff: str | None = None,
+    ) -> None:
+        """Initialise the SplitProteins instance.
+
+        :param input_file: Path to FASTA file with the subset of assembly contigs to filter by.
+        :param proteins_faa: Path to FASTA file with all assembly proteins.
+        :param proteins_gff: Path to GFF3 file with CDS features for all assembly proteins.
+        :param output_file: Path for the filtered proteins FASTA output.
+        :param verbose: Enable DEBUG-level logging when True.
+        :param output_gff: Optional path for the per-category GFF3 output.
+        """
         self.input_file = input_file
         self.proteins_faa = proteins_faa
         self.proteins_gff = proteins_gff
@@ -70,7 +96,7 @@ class SplitProteins:
 
         A protein is accepted if either protein or prophage coverage is > 90%.
         Circular prophages are always accepted.
-        
+
         :param protein_id: Protein name for logging
         :param start_protein: Start coordinate
         :param finish_protein: Stop coordinate
@@ -102,7 +128,7 @@ class SplitProteins:
         if intersection:
             prophage_cov = intersection / prophage_length
             protein_cov = intersection / protein_length
-            
+
             if prophage_cov > 0.9 or protein_cov > 0.9:
                 self.logger.debug(f"Protein {protein_id} more than 90% inside {prophage_info}")
                 return True
@@ -114,47 +140,35 @@ class SplitProteins:
             return False
 
     @staticmethod
-    def _parse_contig_id(contig_id: str) -> Tuple[str, Optional[str]]:
+    def _parse_contig_id(contig_id: str) -> tuple[str, str | None]:
         """
         Split full contig id into base contig name and optional prophage suffix.
-        
+
         Examples of expected contig id formats:
         NODE_3_length_498519_cov_223.607530
         ERZ21830300_185216_2719|prophage-100:200
         NODE_3_length_498519_cov_223.607530|phage-circular
 
         :param contig_id: Full contig identifier, potentially containing prophage info.
-        :return: Tuple (contig_name, prophage_addition) where prophage_addition is None if not present.     
+        :return: Tuple (contig_name, prophage_addition) where prophage_addition is None if not present.
         """
         contig_name = contig_id.split('|')[0]
         contig_id_parts = contig_id.split('|', 1)
         prophage_addition = contig_id_parts[1] if len(contig_id_parts) > 1 else None
         return contig_name, prophage_addition
 
-    def _parse_attrs(self, attrs_str):
-        """Return (dict, ordered-key-list) from a GFF column-9 string."""
-        attrs, order = {}, []
-        for part in attrs_str.rstrip(";").split(";"):
-            part = part.strip()
-            if "=" in part:
-                k, v = part.split("=", 1)
-                if k not in attrs:
-                    order.append(k)
-                attrs[k] = v
-        return attrs, order
-
     def _read_gff(
         self,
         protein_gff: str,
         protein_records: Iterable[SeqRecord],
-    ) -> Dict[str, List[SeqRecord]]:
-        """
-        Build protein lookup table keyed by contig name. Build protein lookup for coordinates
-        
-        :param protein_gff: GFF input file corresponding to protein fasta sequences
-        :param protein_records: Iterable of SeqRecord objects representing proteins.
-        :return: Dictionary mapping contig names to lists of associated protein records.
-                 Dictionary mapping protein ID with start and stop coordinates
+    ) -> tuple[dict[str, list[SeqRecord]], dict[str, dict]]:
+        """Build protein lookup tables from a GFF file and the corresponding protein records.
+
+        :param protein_gff: Path to GFF3 file with CDS features for all assembly proteins.
+        :param protein_records: Iterable of SeqRecord objects from the proteins FAA file.
+        :return: Tuple of (proteins_by_contig, protein_stats) where:
+                 - proteins_by_contig maps base contig name to list of SeqRecords.
+                 - protein_stats maps protein ID to a dict with keys start, end, strand, contig, gff_line.
         """
         self.logger.debug("Mapping proteins to contigs using GFF...")
         protein_stats = {}
@@ -172,10 +186,10 @@ class SplitProteins:
                     start = line[3]
                     end = line[4]
                     strand = line[6]
-                    attrs, _ = self._parse_attrs(line[8])
+                    attrs, _ = parse_attrs(line[8])
                     protein_id = attrs.get("ID", "").strip()
                     protein_stats[protein_id] = {"start": int(start), "end": int(end), "strand": strand, "contig": contig, "gff_line": line}
-                    
+
         self.logger.debug("Mapping protein sequences to contigs using FAA...")
         for record in protein_records:
             protein_id = record.id
@@ -184,7 +198,7 @@ class SplitProteins:
                 proteins_by_contig[contig_name].append(record)
         return proteins_by_contig, protein_stats
 
-    def _write_gff(self, gff_by_contig: Dict[str, List[List[str]]], contig_lengths: Dict[str, int]) -> None:
+    def _write_gff(self, gff_by_contig: dict[str, list[list[str]]], contig_lengths: dict[str, int]) -> None:
         """Write a GFF3 file with sequence-region headers, region records, and CDS records.
 
         :param gff_by_contig: Mapping of full contig ID (with optional prophage suffix) to list of GFF column lists.
@@ -233,7 +247,7 @@ class SplitProteins:
         self.logger.info("Filtering and writing matching proteins...")
         already_added_protein_ids = set()
         written_records = 0
-        gff_by_contig: Dict[str, List[List[str]]] = defaultdict(list)
+        gff_by_contig: dict[str, list[list[str]]] = defaultdict(list)
 
         with open(self.output_file, 'w') as out_file:
             for contig_record in contig_records:
@@ -278,7 +292,8 @@ class SplitProteins:
         self.logger.info(f"Finished writing {written_records} proteins to {self.output_file}")
 
 
-def main():
+def main() -> None:
+    """Entry point: parse arguments and run SplitProteins."""
     args = parse_args(sys.argv[1:])
     splitter = SplitProteins(
         input_file=args.input,
