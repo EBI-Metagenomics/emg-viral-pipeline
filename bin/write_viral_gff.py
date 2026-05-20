@@ -287,8 +287,9 @@ def get_annotation_results(
                 direction = row["Direction"]
                 
                 clean_contig_name = Record.remove_prophage_from_contig(contig)
-                contig_len = contigs_len_dict[clean_contig_name]
-                viral_sequence_type, start, end, direction, cds_id = build_cds_data(contig, contig_len, start, end, direction, cds_id, use_proteins)
+                contig_len = contigs_len_dict.get(clean_contig_name)
+                if contig_len is not None:
+                    viral_sequence_type, start, end, direction, cds_id = build_cds_data(contig, contig_len, start, end, direction, cds_id, use_proteins)
                 
                 best_hit = row["Best_hit"]
                 
@@ -317,20 +318,25 @@ def get_checkv_results(
     :return: Dictionary mapping clean contig name to a semicolon-joined CheckV attribute string.
     """
     checkv_dict: dict[str, str] = {}
+    not_determined = set()
     for checkv_file in checkv_files:
         with open(checkv_file, "r") as file_handle:
             csv_reader = csv.DictReader(file_handle, delimiter="\t")
             for row in csv_reader:
                 contig_id = row["contig_id"]
-                checkv_info = ";".join(
-                    [
-                        f"checkv_provirus={row['provirus']}",
-                        f"checkv_quality={row['checkv_quality']}",
-                        f"checkv_miuvig_quality={row['miuvig_quality']}",
-                        f"checkv_kmer_freq={row['kmer_freq']}",
-                        f"checkv_viral_genes={row['viral_genes']}",
-                    ]
-                )
+                if int(row['viral_genes']) == 0 and row['checkv_quality'] == "Not-determined":
+                    not_determined.add(contig_id)
+                    checkv_info = "no_viral_genes"
+                else:
+                    checkv_info = ";".join(
+                        [
+                            f"checkv_provirus={row['provirus']}",
+                            f"checkv_quality={row['checkv_quality']}",
+                            f"checkv_miuvig_quality={row['miuvig_quality']}",
+                            f"checkv_kmer_freq={row['kmer_freq']}",
+                            f"checkv_viral_genes={row['viral_genes']}",
+                        ]
+                    )
                 checkv_dict[Record.remove_prophage_from_contig(contig_id)] = checkv_info
 
     gff_contig_names = {name for name, _ in sequence_regions}
@@ -349,6 +355,12 @@ def get_checkv_results(
             f"{len(contigs_without_checkv)} viral contigs have no CheckV results "
             "and will use placeholder NA values: "
             + ", ".join(sorted(contigs_without_checkv))
+        )
+    
+    if not_determined:
+        logging.warning(
+            f"{len(list(not_determined))} viral contigs have no viral genes detected by CheckV. "
+            f"These contigs would be skipped in GFF: {','.join(list(not_determined))}"
         )
 
     return checkv_dict
@@ -448,8 +460,9 @@ def get_proteins_from_gff(
         # Add contig into processing list
         # TODO: maybe required to change does_the_prophage_overrun to new coords of prophage
         clean_contig_name = Record.remove_prophage_from_contig(contig_id)
+        contig_len = contigs_len_dict.get(clean_contig_name, 0)
         viral_sequence_type, _ = define_viral_sequence_type(
-            contig_id, contigs_len_dict[clean_contig_name]
+            contig_id, contig_len
         )
         viral_sequences[contig_id] = {viral_sequence_type}
         logging.info(f"Added contig from GFF {contig_id}")
@@ -463,8 +476,6 @@ def get_proteins_from_gff(
             genecaller = protein_record_cols[1]
             direction = protein_record_cols[6]
 
-            clean_contig_name = Record.remove_prophage_from_contig(contig_id)
-            contig_len = contigs_len_dict[clean_contig_name]
             viral_sequence_type, start, end, direction, cds_id = build_cds_data(contig_id, contig_len, start, end,
                                                                             direction, cds_id, use_proteins)
             # Add proteins into CDS dictionary
@@ -594,7 +605,8 @@ def write_gff(
         output_filename = f"{sample_prefix}_virify.gff"
 
     all_records: list[tuple[str, int, str]] = []
-
+    skipped_contigs = set()
+    
     for contig_name, viral_sequence_types in viral_sequences.items():
         clean_contig_name = Record.remove_prophage_from_contig(contig_name)
         quality = virify_quality.get(contig_name, "unknown")
@@ -619,6 +631,10 @@ def write_gff(
                 element_category = "prophage"
                 mobile_element_type = "prophage"
 
+            if checkv_dict.get(clean_contig_name) and checkv_dict.get(clean_contig_name) == "no_viral_genes":
+                skipped_contigs.add(clean_contig_name)
+                continue
+            
             mobile_element_attributes = [
                 id_,
                 f"virify_quality={quality}",
@@ -634,7 +650,9 @@ def write_gff(
             taxonomy = taxonomy_dict.get(contig_name)
             if taxonomy:
                 mobile_element_attributes.append(f"taxonomy={taxonomy}")
-
+            else:
+                mobile_element_attributes.append(f"taxonomy=unclassified")
+                
             mobile_elements_line = "\t".join(
                 [
                     clean_contig_name,
@@ -651,6 +669,8 @@ def write_gff(
             all_records.append((clean_contig_name, start, mobile_elements_line))
 
     for contig_name, contig_cds in cds_annotations.items():
+        if contig_name in list(skipped_contigs):
+            continue
         for cds_data in contig_cds:
             cds_id, start, end, direction, viphog_annotation, original_contig, genecaller = cds_data
             cds_id = cds_id.replace("prophage-0:", "prophage-1:")
@@ -690,6 +710,8 @@ def write_gff(
     with open(output_filename, "w") as gff:
         print("##gff-version 3", file=gff)
         for contig_name, contig_length in sequence_regions:
+            if contig_name in list(skipped_contigs):
+                continue
             print(
                 f"##sequence-region\t{contig_name}\t1\t{contig_length}",
                 file=gff,

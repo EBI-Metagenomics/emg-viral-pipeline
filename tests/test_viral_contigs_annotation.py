@@ -99,7 +99,7 @@ class TestExtractAnnotations:
         assert df.iloc[1]["Label"] == "Herelle"
 
     def test_no_hit_proteins_included(self):
-        gff_data = parse_gff(fixture("test_mixed.gff"))
+        gff_data = parse_gff(fixture("test.gff"))
         annotations = extract_annotations(fixture("test_ratio_evalue_mixed.tsv"), gff_data)
         df = self._to_df(annotations)
 

@@ -1,0 +1,49 @@
+##gff-version 3
+##sequence-region	ERZ27225067_985	1	19942
+##sequence-region	ERZ27225067_9983	1	5004
+##sequence-region	ERZ27225067_9989	1	5002
+ERZ27225067_985	VIRify	viral_sequence	1	19942	.	.	.	ID=ERZ27225067_985|viral_sequence;virify_quality=LC;gbkey=mobile_element;mobile_element_type=phage_linear;checkv_provirus=No;checkv_quality=Low-quality;checkv_miuvig_quality=Genome-fragment;checkv_kmer_freq=1.0;checkv_viral_genes=20;taxonomy=Viruses%3BBamfordvirae%3BNucleocytoviricota%3BMegaviricetes%3BAlgavirales%3BPhycodnaviridae%3BPrasinovirus
+ERZ27225067_985	Prodigal_v2.6.3	CDS	26	481	.	-	0	ID=1_1;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	678	842	.	-	0	ID=1_2;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	893	1255	.	+	0	ID=1_3;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	1267	1449	.	+	0	ID=1_4;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	1532	2797	.	-	0	ID=1_5;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	2902	3243	.	+	0	ID=1_6;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	3272	5326	.	+	0	ID=1_7;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	5350	7443	.	+	0	ID=1_8;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	7454	7828	.	+	0	ID=1_9;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	7800	8180	.	-	0	ID=1_10;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	8180	8803	.	-	0	ID=1_11;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	8864	9658	.	+	0	ID=1_12;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	9603	10583	.	-	0	ID=1_13;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	10610	11254	.	-	0	ID=1_14;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	11271	12014	.	-	0	ID=1_15;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	12027	12965	.	-	0	ID=1_16;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	13013	13537	.	-	0	ID=1_17;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	13581	14744	.	+	0	ID=1_18;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	14741	15328	.	-	0	ID=1_19;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	15413	16102	.	+	0	ID=1_20;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	16127	17494	.	+	0	ID=1_21;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	17505	17789	.	+	0	ID=1_22;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	17786	17995	.	-	0	ID=1_23;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	18028	18750	.	+	0	ID=1_24;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	18679	19029	.	-	0	ID=1_25;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	19066	19803	.	-	0	ID=1_26;virify_quality=LC;gbkey=CDS
+ERZ27225067_985	Prodigal_v2.6.3	CDS	19830	19940	.	-	0	ID=1_27;virify_quality=LC;gbkey=CDS
+ERZ27225067_9983	VIRify	viral_sequence	1	5004	.	.	.	ID=ERZ27225067_9983|viral_sequence;virify_quality=HC;gbkey=mobile_element;mobile_element_type=phage_linear;checkv_provirus=No;checkv_quality=Low-quality;checkv_miuvig_quality=Genome-fragment;checkv_kmer_freq=1.01;checkv_viral_genes=4;taxonomy=unclassified
+ERZ27225067_9983	Prodigal_v2.6.3	CDS	1	1656	.	+	0	ID=1_1;virify_quality=HC;gbkey=CDS
+ERZ27225067_9983	Prodigal_v2.6.3	CDS	1708	1914	.	+	0	ID=1_2;virify_quality=HC;gbkey=CDS
+ERZ27225067_9983	Prodigal_v2.6.3	CDS	1880	2263	.	+	0	ID=1_3;virify_quality=HC;gbkey=CDS
+ERZ27225067_9983	Prodigal_v2.6.3	CDS	2266	2607	.	+	0	ID=1_4;virify_quality=HC;gbkey=CDS
+ERZ27225067_9983	Prodigal_v2.6.3	CDS	2641	3192	.	+	0	ID=1_5;virify_quality=HC;gbkey=CDS
+ERZ27225067_9983	Prodigal_v2.6.3	CDS	3217	3612	.	+	0	ID=1_6;virify_quality=HC;gbkey=CDS
+ERZ27225067_9983	Prodigal_v2.6.3	CDS	3572	3730	.	+	0	ID=1_7;virify_quality=HC;gbkey=CDS
+ERZ27225067_9983	Prodigal_v2.6.3	CDS	3733	5001	.	+	0	ID=1_8;virify_quality=HC;gbkey=CDS
+ERZ27225067_9989	VIRify	viral_sequence	1	5002	.	.	.	ID=ERZ27225067_9989|viral_sequence;virify_quality=LC;gbkey=mobile_element;mobile_element_type=phage_linear;checkv_provirus=Yes;checkv_quality=Low-quality;checkv_miuvig_quality=Genome-fragment;checkv_kmer_freq=1.0;checkv_viral_genes=2;taxonomy=Viruses%3BBamfordvirae%3BNucleocytoviricota%3BMegaviricetes%3BImitervirales%3BMimiviridae%3BKlosneuvirinae
+ERZ27225067_9989	Prodigal_v2.6.3	CDS	3	578	.	-	0	ID=3_1;virify_quality=LC;gbkey=CDS
+ERZ27225067_9989	Prodigal_v2.6.3	CDS	678	1208	.	+	0	ID=3_2;virify_quality=LC;gbkey=CDS
+ERZ27225067_9989	Prodigal_v2.6.3	CDS	1205	1534	.	-	0	ID=3_3;virify_quality=LC;gbkey=CDS
+ERZ27225067_9989	Prodigal_v2.6.3	CDS	1538	2026	.	-	0	ID=3_4;virify_quality=LC;gbkey=CDS
+ERZ27225067_9989	Prodigal_v2.6.3	CDS	2076	3191	.	+	0	ID=3_5;virify_quality=LC;gbkey=CDS
+ERZ27225067_9989	Prodigal_v2.6.3	CDS	3205	3702	.	+	0	ID=3_6;virify_quality=LC;gbkey=CDS
+ERZ27225067_9989	Prodigal_v2.6.3	CDS	3719	5002	.	+	0	ID=3_7;virify_quality=LC;gbkey=CDS

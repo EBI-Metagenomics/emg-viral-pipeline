@@ -1,5 +1,0 @@
-##gff-version 3
-contig1	Prodigal	CDS	1	100	.	+	0	ID=contig1_1
-contig1	Prodigal	CDS	101	200	.	-	0	ID=contig1_2
-contig2	Prodigal	CDS	1	50	.	+	0	ID=contig2_1
-contig2	Prodigal	CDS	51	150	.	-	0	ID=contig2_2
