@@ -1,4 +1,4 @@
 query	ViPhOG	Abs_Evalue_exp	Taxon
-1	VPHOG_0001	1e-10	Caudo
-2	VPHOG_0002	1e-15	Herelle
-3	VPHOG_0003	1e-12	Micro
+contig1_1	VPHOG_0001	1e-10	Caudo
+contig2_1	VPHOG_0002	1e-15	Herelle
+NODE_1_length_1000_cov_5_1	VPHOG_0003	1e-12	Micro
