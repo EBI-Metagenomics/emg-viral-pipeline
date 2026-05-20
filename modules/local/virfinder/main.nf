@@ -11,7 +11,7 @@ process VIRFINDER {
   path model
 
   output:
-  tuple val(meta), path("${meta.id}.txt")
+  tuple val(meta), path("${meta.id}.txt"), emit: result_tsv
 
   when:
   fasta.size() > 0
