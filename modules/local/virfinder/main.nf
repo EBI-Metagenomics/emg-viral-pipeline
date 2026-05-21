@@ -11,7 +11,7 @@ process VIRFINDER {
   path model
 
   output:
-  tuple val(meta), path("${meta.id}.txt"), emit: result_tsv
+  tuple val(meta), path("${meta.id}.${fasta.baseName}.txt"), emit: result_tsv
 
   when:
   fasta.size() > 0
@@ -19,6 +19,6 @@ process VIRFINDER {
   script:
   """
   run_virfinder.Rscript ${model} ${fasta} .
-  awk '{print \$1"\\t"\$2"\\t"\$3"\\t"\$4}' ${meta.id}*.tsv > ${meta.id}.txt
+  awk '{print \$1"\\t"\$2"\\t"\$3"\\t"\$4}' ${meta.id}*.tsv > ${meta.id}.${fasta.baseName}.txt
   """
 }
