@@ -2,6 +2,7 @@
 
 import argparse
 import operator
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -30,12 +31,12 @@ def parse_gff(gff_file: str) -> dict:
             if protein_id:
                 seqid = cols[0]
                 if '|prophage-' in seqid:
-                    # Real prophage GFFs use a shortened ID (e.g. "1_5"); normalise
-                    # it to "<clean_contig>_<protein_number>" (e.g. "contig1_5") so
-                    # it is consistent with non-prophage IDs and lookup works below.
-                    clean_seqid = seqid.split('|prophage-')[0]
-                    protein_suffix = protein_id.rsplit('_', 1)[-1]
-                    protein_id = f"{clean_seqid}_{protein_suffix}"
+                    # Prodigal can use <contigNumber_proteinNumber> like 1_1 
+                    # and do not apply _proteinNumber to real contig name
+                    if re.fullmatch(r"\d+_\d+", protein_id):
+                        # if GFF ID has pattern <contigNumber_proteinNumber>
+                        protein_suffix = protein_id.rsplit('_', 1)[-1]
+                        protein_id = f"{seqid}_{protein_suffix}"
                 cds_info[protein_id] = {
                     'contig': seqid,
                     'start': cols[3],
@@ -62,14 +63,7 @@ def extract_annotations(ratio_evalue_file: str, gff_data: dict) -> list:
         contig_id = info['contig']
         protein_prop = [protein_id, info['start'], info['end'], info['strand']]
 
-        # For prophage proteins the ratio file query key is "<full_seqid>_<number>"
-        # (e.g. "contig1|prophage-1000:2000_5"), but protein_id was normalised to
-        # "contig1_5" by parse_gff, so reconstruct the original lookup key.
-        if '|prophage-' in contig_id:
-            protein_suffix = protein_id.rsplit('_', 1)[-1]
-            ratio_lookup_key = f"{contig_id}_{protein_suffix}"
-        else:
-            ratio_lookup_key = protein_id
+        ratio_lookup_key = protein_id
 
         if ratio_lookup_key in ratio_evalue_df["query"].values:
             filtered_df = ratio_evalue_df[ratio_evalue_df["query"] == ratio_lookup_key]

@@ -66,8 +66,9 @@ class TestParseGff:
     def test_prophage_seqid_preserved(self):
         gff_data = parse_gff(fixture("prophage.gff"))
 
-        assert gff_data["contig1_5"]["contig"] == "contig1|prophage-1000:2000"
-        assert gff_data["contig1_6"]["contig"] == "contig1|prophage-1000:2000"
+        assert gff_data["contig1|prophage-1000:2000_5"]["contig"] == "contig1|prophage-1000:2000"
+        assert gff_data["contig1|prophage-1000:2000_6"]["contig"] == "contig1|prophage-1000:2000"
+        assert gff_data["MGYG000495417_00791"]["contig"] == "contig3|prophage-2:220"
 
 
 class TestExtractAnnotations:
@@ -140,11 +141,13 @@ class TestExtractAnnotations:
         annotations = extract_annotations(fixture("prophage_ratio.tsv"), gff_data)
         df = self._to_df(annotations)
 
-        assert len(df) == 4
+        assert len(df) == 6
         contig1_rows = df[df["Contig"] == "contig1|prophage-1000:2000"]
         contig2_rows = df[df["Contig"] == "contig2|prophage-1:2000"]
+        contig3_rows = df[df["Contig"] == "contig3|prophage-2:220"]
         assert len(contig1_rows) == 2
         assert len(contig2_rows) == 2
+        assert len(contig3_rows) == 2
         assert all(contig1_rows["Best_hit"] != "No hit")
         assert all(contig2_rows["Best_hit"] != "No hit")
 

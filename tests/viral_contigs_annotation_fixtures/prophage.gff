@@ -3,3 +3,5 @@ contig1|prophage-1000:2000	Prodigal	CDS	1000	1100	.	+	0	ID=1_5
 contig1|prophage-1000:2000	Prodigal	CDS	1200	1400	.	-	0	ID=1_6
 contig2|prophage-1:2000	Prodigal	CDS	1	1100	.	+	0	ID=2_1
 contig2|prophage-1:2000	Prodigal	CDS	1160	1900	.	-	0	ID=2_2
+contig3|prophage-2:220	Prodigal:300	CDS	2	150	.	+	0	ID=MGYG000495417_00791
+contig3|prophage-2:220	Prodigal:300	CDS	160	250	.	+	0	ID=MGYG000495417_00792
