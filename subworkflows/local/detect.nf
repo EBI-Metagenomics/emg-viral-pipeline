@@ -22,9 +22,9 @@ workflow DETECT {
   pprmeta_git
 
   main:
-  // chunk fasta by 500Mb
+  // chunk fasta by default by 500Mb
   chunked_ch = renamed_assembly.flatMap { meta, fasta ->
-     def chunks = fasta.splitFasta(file: true, size: 200.MB)
+     def chunks = fasta.splitFasta(file: true, size: ${params.chunk_fasta_size})
      chunks.collect { chunk ->
         return tuple(meta, chunk)
      }
@@ -71,14 +71,13 @@ workflow DETECT {
   }
 
   VIRFINDER(chunked_ch, virfinder_db)
-  VIRFINDER.out.result_tsv.groupTuple(by: 0).view()
+
   CSVTK_CONCAT (
      VIRFINDER.out.result_tsv.groupTuple(by: 0),
      'tsv',
      'tsv'
   )
   virfinder_output = CSVTK_CONCAT.out.csv
-  virfinder_output.view()
 
   PPRMETA(renamed_assembly, pprmeta_git)
 
