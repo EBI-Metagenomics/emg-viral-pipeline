@@ -1,4 +1,5 @@
-include { PRODIGAL } from '../../modules/local/prodigal'
+include { PRODIGAL        } from '../../modules/local/prodigal'
+include { RENAME_PRODIGAL } from '../../modules/local/rename_prodigal'
 
 workflow PREDICT_PROTEINS {
     take:
@@ -19,9 +20,17 @@ workflow PREDICT_PROTEINS {
         category_fasta = input_fastas
 
         // ORF detection --> prodigal
-        PRODIGAL(input_fastas)
+        PRODIGAL (
+            input_fastas
+        )
         proteins     = PRODIGAL.out.proteins
-        proteins_gff = PRODIGAL.out.gff
+        gff = PRODIGAL.out.gff
+        
+        RENAME_PRODIGAL (
+             proteins.join(gff, by: [0, 1])
+        )
+        proteins_gff = RENAME_PRODIGAL.out.gff
+        
     }
 
     emit:
