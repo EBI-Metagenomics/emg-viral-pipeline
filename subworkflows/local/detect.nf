@@ -11,7 +11,7 @@ include { CONCATENATE_FILES as CONCATENATE_FILES_SCORE               } from '../
 include { CONCATENATE_FILES as CONCATENATE_FILES_BOUNDARY            } from '../../modules/local/utils'
 include { CONCATENATE_FILES as CONCATENATE_FILES_FA                  } from '../../modules/local/utils'
 
-include { CSVTK_CONCAT                                               } from '../../modules/mf-core/csvtk/concat'
+include { CSVTK_CONCAT                                               } from '../../modules/nf-core/csvtk/concat'
 
 
 workflow DETECT {
