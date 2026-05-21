@@ -11,6 +11,9 @@ include { CONCATENATE_FILES as CONCATENATE_FILES_SCORE               } from '../
 include { CONCATENATE_FILES as CONCATENATE_FILES_BOUNDARY            } from '../../modules/local/utils'
 include { CONCATENATE_FILES as CONCATENATE_FILES_FA                  } from '../../modules/local/utils'
 
+include { CSVTK_CONCAT                                               } from '../../modules/mf-core/csvtk/concat'
+
+
 workflow DETECT {
   take:
   renamed_assembly
@@ -68,18 +71,14 @@ workflow DETECT {
   }
 
   VIRFINDER(chunked_ch, virfinder_db)
-  
-  virfinder_output = VIRFINDER.out.result_tsv
-        .groupTuple(by: 0)  // Group by meta (index 0)
-        .map { meta, tsv_files ->
-            // Concatenate TSV files within each group
-            def merged_file = tsv_files.collectFile(
-                name: "merged_virfinder_${meta.id}.tsv",
-                keepHeader: true,
-                skip: 1
-            )
-            [meta, merged_file]  // Return same meta with concatenated file
-        }
+  VIRFINDER.out.result_tsv.groupTuple(by: 0).view()
+  CSVTK_CONCAT (
+     VIRFINDER.out.result_tsv.groupTuple(by: 0),
+     'tsv',
+     'tsv'
+  )
+  virfinder_output = CSVTK_CONCAT.out.csv
+  virfinder_output.view()
 
   PPRMETA(renamed_assembly, pprmeta_git)
 
