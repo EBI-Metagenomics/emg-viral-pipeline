@@ -222,10 +222,10 @@
                     "default": 25,
                     "description": "select the x taxa with highest count for sankey plot, try and error and use '-resume' to change plot"
                 },
-                "chunk": {
-                    "type": "integer",
-                    "default": 10,
-                    "description": "WIP: chunk FASTA files into smaller pieces for parallel calculation"
+                "chunk_fasta_size": {
+                    "type": "string",
+                    "default": "500.MB",
+                    "description": "Chunk FASTA files into smaller pieces for parallel calculation"
                 },
                 "length": {
                     "type": "number",

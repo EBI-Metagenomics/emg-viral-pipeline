@@ -11,6 +11,9 @@ include { CONCATENATE_FILES as CONCATENATE_FILES_SCORE               } from '../
 include { CONCATENATE_FILES as CONCATENATE_FILES_BOUNDARY            } from '../../modules/local/utils'
 include { CONCATENATE_FILES as CONCATENATE_FILES_FA                  } from '../../modules/local/utils'
 
+include { CSVTK_CONCAT                                               } from '../../modules/nf-core/csvtk/concat'
+
+
 workflow DETECT {
   take:
   renamed_assembly
@@ -19,7 +22,14 @@ workflow DETECT {
   pprmeta_git
 
   main:
-
+  // chunk fasta by default by 500Mb
+  chunked_ch = renamed_assembly.flatMap { meta, fasta ->
+     def chunks = fasta.splitFasta(file: true, size: ${params.chunk_fasta_size})
+     chunks.collect { chunk ->
+        return tuple(meta, chunk)
+     }
+  }
+  
   // virus detection --> VirSorter/VirSorter2, VirFinder and PPR-Meta
 
   virsorter_output = Channel.empty()
@@ -32,13 +42,6 @@ workflow DETECT {
   }
   else {
 
-    // chunk fasta by 500Mb
-    chunked_ch = renamed_assembly.flatMap { meta, fasta ->
-      def chunks = fasta.splitFasta(file: true, size: 500.MB)
-      chunks.collect { chunk ->
-        return tuple(meta, chunk)
-      }
-    }
     VIRSORTER2(chunked_ch, virsorter_db)
 
     CONCATENATE_FILES_SCORE(
@@ -67,12 +70,19 @@ workflow DETECT {
       }
   }
 
-  VIRFINDER(renamed_assembly, virfinder_db)
+  VIRFINDER(chunked_ch, virfinder_db)
+
+  CSVTK_CONCAT (
+     VIRFINDER.out.result_tsv.groupTuple(by: 0),
+     'tsv',
+     'tsv'
+  )
+  virfinder_output = CSVTK_CONCAT.out.csv
 
   PPRMETA(renamed_assembly, pprmeta_git)
 
   // parsing predictions
-  PARSE(renamed_assembly.join(VIRFINDER.out).join(virsorter_output).join(PPRMETA.out))
+  PARSE(renamed_assembly.join(virfinder_output).join(virsorter_output).join(PPRMETA.out))
 
   emit:
   detect_output = PARSE.out.map { meta, fasta, _vs_meta, _log -> tuple(meta, fasta) }
