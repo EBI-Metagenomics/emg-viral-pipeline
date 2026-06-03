@@ -63,7 +63,7 @@ workflow ANNOTATE {
     RATIO_EVALUE( HMMER_PREDICTION.out.hmm_result, additional_model_data )
 
     // annotate contigs based on ViPhOGs
-    ANNOTATION( RATIO_EVALUE.out.join(proteins_gff, by:[0,1]) )
+    ANNOTATION( RATIO_EVALUE.out.informative_hits_tsv.join(proteins_gff, by:[0,1]) )
 
     // plot visuals --> PDFs
     PLOT_CONTIG_MAP( ANNOTATION.out.annotations )

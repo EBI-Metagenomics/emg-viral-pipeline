@@ -17,7 +17,7 @@ process RATIO_EVALUE {
     path model_metadata
 
     output:
-    tuple val(meta), val(set_name), path("${set_name}_modified_informative.tsv"), optional: true
+    tuple val(meta), val(set_name), path("${set_name}_modified_informative.tsv"), emit: informative_hits_tsv
 
     script:
     """

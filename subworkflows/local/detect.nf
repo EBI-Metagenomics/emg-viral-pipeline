@@ -24,7 +24,7 @@ workflow DETECT {
   main:
   // chunk fasta by default by 500Mb
   chunked_ch = renamed_assembly.flatMap { meta, fasta ->
-     def chunks = fasta.splitFasta(file: true, size: ${params.chunk_fasta_size})
+     def chunks = fasta.splitFasta(file: true, size: params.chunk_fasta_size)
      chunks.collect { chunk ->
         return tuple(meta, chunk)
      }

@@ -55,9 +55,12 @@ def extract_annotations(ratio_evalue_file: str, gff_data: dict) -> list:
     :return: List of annotation rows, where each row contains:
              [Contig, CDS_ID, Start, End, Direction, Best_hit, Abs_Evalue_exp, Label]
     """
-    ratio_evalue_df = pd.read_csv(ratio_evalue_file, sep="\t")
-
     annotation_list = []
+    
+    if Path(ratio_evalue_file).stat().st_size == 0:
+        return annotation_list
+    
+    ratio_evalue_df = pd.read_csv(ratio_evalue_file, sep="\t")
 
     for protein_id, info in gff_data.items():
         contig_id = info['contig']
