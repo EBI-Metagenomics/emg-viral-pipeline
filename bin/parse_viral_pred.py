@@ -284,6 +284,11 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
             
             if "partial" in record.id:
                 record.id = clean_name
+                # In VirSorter2 records inherit "circular" label from the contig, which is incorrect for partial sequences 
+                # as they are extracted from the contig and might not be circular themselves.
+                # https://github.com/jiarong/VirSorter2/issues/251
+                # We rewrite "circular" to linear for partial sequences to avoid misinterpretation of the results.
+                circular = False
                 # add the prophage position within the contig
                 prophages.setdefault(clean_name, []).append(
                     Record(record, "prophage", circular, prange)
