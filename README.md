@@ -411,7 +411,7 @@ Here, we also list databases used and automatically downloaded by the pipeline *
 ### Virus prediction QC
 
 * **CheckV**
-    * `wget https://portal.nersc.gov/CheckV/checkv-db-v1.0.tar.gz`
+    * `wget https://portal.nersc.gov/CheckV/checkv-db-v1.5.tar.gz`
     * [Publication](https://www.nature.com/articles/s41587-020-00774-7)
 
 ### Taxonomy annotation
