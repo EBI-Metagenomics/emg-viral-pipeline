@@ -1,7 +1,7 @@
 process virsorter2GetDB {
   label 'virsorter2'    
   
-  publishDir "${params.databases}/virsorter2", pattern: "virsorter2-data", mode: params.cloudProcess ? 'copy' : 'symlink'
+  publishDir "${params.virsorter2}", pattern: "virsorter2-data", mode: params.cloudProcess ? 'copy' : 'symlink'
 
   output:
     path("virsorter2-data/db", type: 'dir')

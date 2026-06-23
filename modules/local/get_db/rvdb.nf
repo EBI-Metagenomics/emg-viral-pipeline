@@ -2,7 +2,7 @@ process rvdbGetDB {
   label 'process_low'    
   container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'    
   
-  publishDir "${params.databases}", pattern: "rvdb", mode: params.cloudProcess ? 'copy' : 'symlink'
+  publishDir "${params.rvdb}", mode: params.cloudProcess ? 'copy' : 'symlink'
 
   output:
     path("rvdb", type: 'dir')

@@ -2,7 +2,7 @@ process viphogGetDB {
   label 'process_low'    
   container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'   
   
-  publishDir "${params.databases}/", pattern: "vpHMM_database_${params.viphog_version}", mode: params.cloudProcess ? 'copy' : 'symlink'
+  publishDir "${params.viphog}/", pattern: "vpHMM_database_${params.viphog_version}", mode: params.cloudProcess ? 'copy' : 'symlink'
 
   output:
     path("vpHMM_database_${params.viphog_version}", type: 'dir')

@@ -2,7 +2,7 @@ process vpfGetDB {
   label 'process_low'    
   container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'
   
-  publishDir "${params.databases}", pattern: "vpf", mode: params.cloudProcess ? 'copy' : 'symlink'
+  publishDir "${params.vpf}", mode: params.cloudProcess ? 'copy' : 'symlink'
 
   output:
     path("vpf", type: 'dir')

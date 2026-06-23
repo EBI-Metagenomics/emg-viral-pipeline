@@ -2,7 +2,7 @@ process virsorterGetDB {
   label 'process_low'    
   container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'
   
-  publishDir "${params.databases}/virsorter", pattern: "virsorter-data", mode: params.cloudProcess ? 'copy' : 'symlink'
+  publishDir "${params.virsorter}", pattern: "virsorter-data", mode: params.cloudProcess ? 'copy' : 'symlink'
   
   output:
     path("virsorter-data", type: 'dir')
