@@ -11,6 +11,10 @@ include { CONCATENATE_FILES as CONCATENATE_FILES_SCORE               } from '../
 include { CONCATENATE_FILES as CONCATENATE_FILES_BOUNDARY            } from '../../modules/local/utils'
 include { CONCATENATE_FILES as CONCATENATE_FILES_FA                  } from '../../modules/local/utils'
 
+include { CSVTK_CONCAT as CSVTK_CONCAT_VIRFINDER                     } from '../../modules/nf-core/csvtk/concat'
+include { CSVTK_CONCAT as CSVTK_CONCAT_PPRMETA                       } from '../../modules/nf-core/csvtk/concat'
+
+
 workflow DETECT {
   take:
   renamed_assembly_and_contigs_count
@@ -19,6 +23,13 @@ workflow DETECT {
   pprmeta_git
 
   main:
+  // chunk fasta by 500Mb
+  chunked_ch = renamed_assembly_and_contigs_count.flatMap { meta, fasta, contigs_count ->
+     def chunks = fasta.splitFasta(file: true, size: 500.MB)
+     chunks.collect { chunk ->
+        return tuple(meta, chunk, contigs_count)
+     }
+  }
 
   // virus detection --> VirSorter/VirSorter2, VirFinder and PPR-Meta
 
@@ -32,13 +43,6 @@ workflow DETECT {
   }
   else {
 
-    // chunk fasta by 500Mb
-    chunked_ch = renamed_assembly_and_contigs_count.flatMap { meta, fasta, contigs_count ->
-      def chunks = fasta.splitFasta(file: true, size: 500.MB)
-      chunks.collect { chunk ->
-        return tuple(meta, chunk, contigs_count)
-      }
-    }
     VIRSORTER2(chunked_ch, virsorter_db)
 
     CONCATENATE_FILES_SCORE(
@@ -67,12 +71,26 @@ workflow DETECT {
       }
   }
 
-  VIRFINDER(renamed_assembly_and_contigs_count, virfinder_db)
+  VIRFINDER(chunked_ch, virfinder_db)
 
-  PPRMETA(renamed_assembly_and_contigs_count, pprmeta_git)
+  CSVTK_CONCAT_VIRFINDER (
+     VIRFINDER.out.result_tsv.groupTuple(),
+     'tsv',
+     'tsv'
+  )
+  virfinder_output = CSVTK_CONCAT_VIRFINDER.out.csv
+
+  PPRMETA(chunked_ch, pprmeta_git)
+
+  CSVTK_CONCAT_PPRMETA (
+     PPRMETA.out.result_csv.groupTuple(),
+     'csv',
+     'csv'
+  )
+  pprmeta_output = CSVTK_CONCAT_PPRMETA.out.csv
 
   // parsing predictions
-  PARSE(renamed_assembly_and_contigs_count.join(VIRFINDER.out).join(virsorter_output).join(PPRMETA.out))
+  PARSE(renamed_assembly_and_contigs_count.join(virfinder_output).join(virsorter_output).join(pprmeta_output))
 
   emit:
   detect_output = PARSE.out.map { meta, fasta, _vs_meta, _log -> tuple(meta, fasta) }
