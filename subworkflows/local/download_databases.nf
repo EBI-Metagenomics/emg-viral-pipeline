@@ -66,8 +66,8 @@ workflow download_virfinder_db {
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
       db_preload = file("${params.virfinder}/VF.modEPV_k8.rda")
-      if (db_preload.exists()) { db = db_preload; print("yes"); db.view() }
-      else  { virfinderGetDB(); print("no"); db = virfinderGetDB.out } 
+      if (db_preload.exists()) { db = db_preload }
+      else  { virfinderGetDB(); db = virfinderGetDB.out }
     }
   emit: db
 }
@@ -255,7 +255,8 @@ workflow DOWNLOAD_DATABASES {
   
     if (params.checkv) { checkv_db = file(params.checkv)} 
     else {download_checkv_db(); checkv_db = download_checkv_db.out }
-    
+
+
     emit:
     pprmeta_git
     virsorter_db
