@@ -8,7 +8,7 @@ It is written for local use and cloud use.*/
 
 include { checkVGetDB     } from '../../modules/local/get_db/checkv'
 include { virfinderGetDB  } from '../../modules/local/get_db/virfinder'
-include { pprmetaGet      } from '../../modules/local/pprmeta'
+include { pprmetaGet      } from '../../modules/local/get_db/pprmeta'
 include { metaGetDB       } from '../../modules/local/get_db/meta'
 include { virsorterGetDB  } from '../../modules/local/get_db/virsorter'
 include { virsorter2GetDB } from '../../modules/local/get_db/virsorter2'
@@ -26,7 +26,7 @@ workflow download_pprmeta {
     if (!params.cloudProcess) { pprmetaGet(); git = pprmetaGet.out }
     // cloud storage via preload.exists()
     if (params.cloudProcess) {
-      preload = file("${params.databases}/pprmeta")
+      preload = file("${params.pprmeta}")
       if (preload.exists()) { git = preload }
       else  { pprmetaGet(); git = pprmetaGet.out } 
     }
@@ -39,7 +39,7 @@ workflow download_model_meta {
     if (!params.cloudProcess) { metaGetDB(); db = metaGetDB.out }
     // cloud storage via preload.exists()
     if (params.cloudProcess) {
-      preload = file("${params.databases}/models/additional_data_vpHMMs_${params.meta_version}.tsv")
+      preload = file("${params.meta}/additional_data_vpHMMs_${params.meta_version}.tsv")
       if (preload.exists()) { db = preload }
       else  { metaGetDB(); db = metaGetDB.out } 
     }
@@ -52,11 +52,11 @@ workflow download_virsorter_db {
     if (!params.cloudProcess) { virsorterGetDB(); db = virsorterGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.databases}/virsorter/virsorter-data")
+      db_preload = file("${params.virsorter}/virsorter-data")
       if (db_preload.exists()) { db = db_preload }
       else  { virsorterGetDB(); db = virsorterGetDB.out } 
     }
-  emit: db    
+  emit: db
 }
 
 workflow download_virfinder_db {
@@ -65,9 +65,9 @@ workflow download_virfinder_db {
     if (!params.cloudProcess) { virfinderGetDB(); db = virfinderGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.databases}/virfinder/VF.modEPV_k8.rda")
+      db_preload = file("${params.virfinder}/VF.modEPV_k8.rda")
       if (db_preload.exists()) { db = db_preload }
-      else  { virfinderGetDB(); db = virfinderGetDB.out } 
+      else  { virfinderGetDB(); db = virfinderGetDB.out }
     }
   emit: db
 }
@@ -78,11 +78,11 @@ workflow download_viphog_db {
     if (!params.cloudProcess) { viphogGetDB(); db = viphogGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.databases}/vpHMM_database_${params.viphog_version}")
+      db_preload = file("${params.viphog}/vpHMM_database_${params.viphog_version}")
       if (db_preload.exists()) { db = db_preload }
       else  { viphogGetDB(); db = viphogGetDB.out } 
     }
-  emit: db    
+  emit: db
 }
 
 workflow download_ncbi_db {
@@ -91,7 +91,7 @@ workflow download_ncbi_db {
     if (!params.cloudProcess) { ncbiGetDB(); db = ncbiGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.databases}/ncbi/ete3_ncbi_tax.sqlite")
+      db_preload = file("${params.ncbi}/ete3_ncbi_tax.sqlite")
       if (db_preload.exists()) { db = db_preload }
       else  { ncbiGetDB(); db = ncbiGetDB.out } 
     }
@@ -105,7 +105,7 @@ workflow download_rvdb_db {
       if (!params.cloudProcess) { rvdbGetDB(); db = rvdbGetDB.out }
       // cloud storage via db_preload.exists()
       if (params.cloudProcess) {
-        db_preload = file("${params.databases}/rvdb")
+        db_preload = file("${params.rvdb}")
         if (db_preload.exists()) { db = db_preload }
         else  { rvdbGetDB(); db = rvdbGetDB.out } 
       }
@@ -122,7 +122,7 @@ workflow download_pvogs_db {
       if (!params.cloudProcess) { pvogsGetDB(); db = pvogsGetDB.out }
       // cloud storage via db_preload.exists()
       if (params.cloudProcess) {
-        db_preload = file("${params.databases}/pvogs")
+        db_preload = file("${params.pvogs}")
         if (db_preload.exists()) { db = db_preload }
         else  { pvogsGetDB(); db = pvogsGetDB.out } 
       }
@@ -139,7 +139,7 @@ workflow download_vogdb_db {
       if (!params.cloudProcess) { vogdbGetDB(); db = vogdbGetDB.out }
       // cloud storage via db_preload.exists()
       if (params.cloudProcess) {
-        db_preload = file("${params.databases}/vogdb")
+        db_preload = file("${params.vogdb}")
         if (db_preload.exists()) { db = db_preload }
         else  { vogdbGetDB(); db = vogdbGetDB.out } 
       }
@@ -156,7 +156,7 @@ workflow download_vpf_db {
       if (!params.cloudProcess) { vpfGetDB(); db = vpfGetDB.out }
       // cloud storage via db_preload.exists()
       if (params.cloudProcess) {
-        db_preload = file("${params.databases}/vpf")
+        db_preload = file("${params.vpf}")
         if (db_preload.exists()) { db = db_preload }
         else  { vpfGetDB(); db = vpfGetDB.out } 
       }
@@ -173,7 +173,7 @@ workflow download_imgvr_db {
       if (!params.cloudProcess) { imgvrGetDB(); db = imgvrGetDB.out }
       // cloud storage via db_preload.exists()
       if (params.cloudProcess) {
-        db_preload = file("${params.databases}/imgvr/IMG_VR_2018-07-01_4")
+        db_preload = file("${params.imgvr}/IMG_VR_2018-07-01_4")
         if (db_preload.exists()) { db = db_preload }
         else  { imgvrGetDB(); db = imgvrGetDB.out } 
       }
@@ -189,7 +189,7 @@ workflow download_checkv_db {
     if (!params.cloudProcess) { checkVGetDB(); db = checkVGetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.databases}/checkv", type: 'dir')
+      db_preload = file("${params.checkv}", type: 'dir')
       if (db_preload.exists()) { db = db_preload }
       else  { checkVGetDB(); db = checkVGetDB.out } 
     }
@@ -203,7 +203,7 @@ workflow download_virsorter2_db {
     if (!params.cloudProcess) { virsorter2GetDB(); db = virsorter2GetDB.out }
     // cloud storage via db_preload.exists()
     if (params.cloudProcess) {
-      db_preload = file("${params.databases}/virsorter2/virsorter2-data")
+      db_preload = file("${params.virsorter2}/virsorter2-data")
       if (db_preload.exists()) { db = db_preload }
       else  { virsorter2GetDB(); db = virsorter2GetDB.out } 
     }
@@ -255,7 +255,8 @@ workflow DOWNLOAD_DATABASES {
   
     if (params.checkv) { checkv_db = file(params.checkv)} 
     else {download_checkv_db(); checkv_db = download_checkv_db.out }
-    
+
+
     emit:
     pprmeta_git
     virsorter_db
