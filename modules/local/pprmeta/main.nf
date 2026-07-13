@@ -8,7 +8,7 @@ process PPRMETA {
   path pprmeta_git
 
   output:
-  tuple val(meta), path("${meta.id}_pprmeta.csv")
+  tuple val(meta), path("${meta.id}.${fasta.baseName}_pprmeta.csv"), emit: result_csv
 
   when:
   fasta.countFasta() > 0
@@ -19,7 +19,7 @@ process PPRMETA {
   mkdir -p \$(pwd)/mcr_cache_root
 
   [ -d "pprmeta" ] && cp pprmeta/* .
-  ./PPR_Meta ${fasta} ${meta.id}_pprmeta.csv
+  ./PPR_Meta ${fasta} ${meta.id}.${fasta.baseName}_pprmeta.csv
   """
 }
 

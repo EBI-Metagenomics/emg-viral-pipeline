@@ -11,7 +11,8 @@ include { CONCATENATE_FILES as CONCATENATE_FILES_SCORE               } from '../
 include { CONCATENATE_FILES as CONCATENATE_FILES_BOUNDARY            } from '../../modules/local/utils'
 include { CONCATENATE_FILES as CONCATENATE_FILES_FA                  } from '../../modules/local/utils'
 
-include { CSVTK_CONCAT                                               } from '../../modules/nf-core/csvtk/concat'
+include { CSVTK_CONCAT as CSVTK_CONCAT_VIRFINDER                     } from '../../modules/nf-core/csvtk/concat'
+include { CSVTK_CONCAT as CSVTK_CONCAT_PPRMETA                       } from '../../modules/nf-core/csvtk/concat'
 
 
 workflow DETECT {
@@ -22,6 +23,7 @@ workflow DETECT {
   pprmeta_git
 
   main:
+  
   // chunk fasta by default by 500Mb
   chunked_ch = renamed_assembly.flatMap { meta, fasta ->
      def chunks = fasta.splitFasta(file: true, size: params.chunk_fasta_size)
@@ -72,17 +74,24 @@ workflow DETECT {
 
   VIRFINDER(chunked_ch, virfinder_db)
 
-  CSVTK_CONCAT(
-     VIRFINDER.out.result_tsv.groupTuple(by: 0),
+  CSVTK_CONCAT_VIRFINDER (
+     VIRFINDER.out.result_tsv.groupTuple(),
      'tsv',
      'tsv'
   )
-  virfinder_output = CSVTK_CONCAT.out.csv
+  virfinder_output = CSVTK_CONCAT_VIRFINDER.out.csv
 
-  PPRMETA(renamed_assembly, pprmeta_git)
+  PPRMETA(chunked_ch, pprmeta_git)
+
+  CSVTK_CONCAT_PPRMETA (
+     PPRMETA.out.result_csv.groupTuple(),
+     'csv',
+     'csv'
+  )
+  pprmeta_output = CSVTK_CONCAT_PPRMETA.out.csv
 
   // parsing predictions
-  PARSE(renamed_assembly.join(virfinder_output).join(virsorter_output).join(PPRMETA.out))
+  PARSE(renamed_assembly_and_contigs_count.join(virfinder_output).join(virsorter_output).join(pprmeta_output))
 
   emit:
   detect_output = PARSE.out.map { meta, fasta, _vs_meta, _log -> tuple(meta, fasta) }

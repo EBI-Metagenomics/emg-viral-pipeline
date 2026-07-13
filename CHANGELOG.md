@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.2] - [2026-06-09]
+
+### Added
+
+- Performance improvements: chunking of input fasta for VirFinder and PPRMeta to use parallelisation ([#176](https://github.com/EBI-Metagenomics/emg-viral-pipeline/pull/176))
+- Optimisation of SPLIT_PROTEINS module ([#171](https://github.com/EBI-Metagenomics/emg-viral-pipeline/pull/171))
+
+### Fixed
+
+- Set circularity of prophages detected by VirSorter2 to `linear` ([#176](https://github.com/EBI-Metagenomics/emg-viral-pipeline/pull/176))
+
 ## [3.3.1] - [2026-04-09]
 
 ### Fixed
