@@ -7,6 +7,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from constants import PRODIGAL_RENAMED_ID_REGEXP
+from utils import parse_attrs
+
 
 def parse_gff(gff_file: str) -> dict:
     """Parse a GFF3 file and return CDS metadata keyed by protein ID.
@@ -22,21 +25,17 @@ def parse_gff(gff_file: str) -> dict:
             cols = line.strip().split('\t')
             if len(cols) != 9 or cols[2] != 'CDS':
                 continue
-            attrs = {}
-            for part in cols[8].rstrip(';').split(';'):
-                if '=' in part:
-                    k, v = part.split('=', 1)
-                    attrs[k.strip()] = v.strip()
+            attrs, _ = parse_attrs(cols[8])
             protein_id = attrs.get('ID', '').strip()
             if protein_id:
                 seqid = cols[0]
                 if '|prophage-' in seqid:
                     # Prodigal can use <contigNumber_proteinNumber> like 1_1 
                     # and do not apply _proteinNumber to real contig name
-                    if re.fullmatch(r"\d+_\d+", protein_id):
+                    if re.fullmatch(PRODIGAL_RENAMED_ID_REGEXP, protein_id):
                         # if GFF ID has pattern <contigNumber_proteinNumber>
                         protein_suffix = protein_id.rsplit('_', 1)[-1]
-                        protein_id = f"{seqid}_{protein_suffix}"
+                        protein_id = f"{seqid}_{protein_suffix}"                  
                 cds_info[protein_id] = {
                     'contig': seqid,
                     'start': cols[3],

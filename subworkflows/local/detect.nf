@@ -72,7 +72,7 @@ workflow DETECT {
 
   VIRFINDER(chunked_ch, virfinder_db)
 
-  CSVTK_CONCAT (
+  CSVTK_CONCAT(
      VIRFINDER.out.result_tsv.groupTuple(by: 0),
      'tsv',
      'tsv'

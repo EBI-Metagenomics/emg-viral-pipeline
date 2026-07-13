@@ -49,7 +49,7 @@ process VIRSORTER {
   tuple val(meta), path("*")
 
   when:
-  fasta.size() > 0
+  fasta.countFasta() > 0
 
   script:
   if (params.virome) {

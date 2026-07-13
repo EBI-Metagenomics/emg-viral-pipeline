@@ -18,6 +18,9 @@ import logging
 import sys
 import re
 
+from constants import PRODIGAL_RENAMED_ID_REGEXP
+from utils import parse_attrs
+
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
@@ -50,23 +53,6 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def parse_attrs(attrs_str: str) -> tuple[dict[str, str], list[str]]:
-    """Parse a GFF3 column-9 attributes string into a dict and an ordered key list.
-
-    :param attrs_str: Semicolon-separated key=value attribute string from GFF column 9.
-    :return: Tuple of (attrs dict, list of keys in original order).
-    """
-    attrs, order = {}, []
-    for part in attrs_str.rstrip(";").split(";"):
-        part = part.strip()
-        if "=" in part:
-            k, v = part.split("=", 1)
-            if k not in attrs:
-                order.append(k)
-            attrs[k] = v
-    return attrs, order
-
-
 def read_faa(proteins: str) -> set[str]:
     protein_names = set()
     with open(proteins, "r") as file_in:
@@ -79,12 +65,25 @@ def read_faa(proteins: str) -> set[str]:
 
 
 def rename_proteins_in_gff(gff: str, protein_names: set[str], output: str) -> None:
+    """
+    Function renames ID in prodigal gff from digit_digit to protein name in prodigal header in faa file
+    Example, 
+    gff: ID=1_1;partial=00;start_type=ATG...
+    faa: >MGYG000495417_3|prophage-23410:59937_1 # 1 # 498 # -1 # ID=1_1;partial=00
+    output gff: ID=MGYG000495417_3|prophage-23410:59937_1;partial=00;start_type=ATG ...
+    :param gff: prodigal gff
+    :param protein_names: list of unique protein headers from prodigal faa 
+    :param output: output corrected gff
+    :return: -
+    """
     with open(gff, "r") as file_in, open(output, "w") as file_out:
         for line in file_in:
             if line.startswith("#"):
                 file_out.write(line)
                 continue
             fields = line.strip().split("\t")
+            if len(fields) > 9:
+                raise ValueError(f"Incorrect number of records in gff {fields}")
             if len(fields) != 9:
                 file_out.write("\t".join(fields) + "\n")
                 continue
@@ -98,8 +97,9 @@ def rename_proteins_in_gff(gff: str, protein_names: set[str], output: str) -> No
                 logging.warning("No ID in: %s", "\t".join(fields))
                 file_out.write("\t".join(fields) + "\n")
                 continue
-            if not re.fullmatch(r"\d+_\d+", protein_id):
-                # ID is already in long format or unrecognised pattern; pass through
+            if not re.fullmatch(PRODIGAL_RENAMED_ID_REGEXP, protein_id):
+                # prodigal renames IDs in gff attributes to shorter format like 1_1
+                # if ID is already in long format or unrecognised pattern; pass through
                 file_out.write("\t".join(fields) + "\n")
                 continue
             protein_suffix = protein_id.rsplit("_", 1)[-1]

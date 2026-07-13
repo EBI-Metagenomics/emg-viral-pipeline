@@ -35,7 +35,7 @@ process PARSE {
   output:
   tuple val(meta), path("*.fna"), path('virsorter_metadata.tsv'), path("${meta.id}_virus_predictions.stats"), optional: true
 
-  when: fasta.size() > 0
+  when: fasta.countFasta() > 0
 
   script:
   if (!params.use_virsorter_v1) {

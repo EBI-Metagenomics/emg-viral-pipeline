@@ -164,9 +164,7 @@ workflow VIRIFY {
 
         SPLIT_PROTEINS(category_fasta.groupTuple().join(faa).transpose())
 
-        proteins_ch = SPLIT_PROTEINS.out.proteins
-            .join(SPLIT_PROTEINS.out.gff, by: [0, 1])
-            .map { meta, type, fasta, faa, gff -> tuple(meta, type, fasta, faa, gff) }
+        proteins_ch = SPLIT_PROTEINS.out.fasta_proteins_gff
     }
 
     // ----------- ANNOTATE

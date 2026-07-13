@@ -31,7 +31,7 @@ include { PREDICT_PROTEINS            } from './protein_prediction'
 workflow ANNOTATE {
 
     take:
-    category_fastas     // (meta, set_name, fasta) or (meta, set_name, fasta, faa) when use_proteins
+    category_fastas     // (meta, set_name, fasta) or (meta, set_name, fasta, faa, gff) when use_proteins
     assembly_fasta      // (meta, fasta) — full assembly per sample, used only for GFF output
 
     // reference databases and aux files //
@@ -53,11 +53,11 @@ workflow ANNOTATE {
     PREDICT_PROTEINS( category_fastas )
 
     category_fasta = PREDICT_PROTEINS.out.category_fasta
-    proteins       = PREDICT_PROTEINS.out.proteins
+    proteins_fasta = PREDICT_PROTEINS.out.proteins
     proteins_gff   = PREDICT_PROTEINS.out.proteins_gff
 
     // annotation --> hmmer with chunking
-    HMMER_PREDICTION(proteins, viphog_db, rvdb_db, pvogs_db, vogdb_db, vpf_db) // out: [meta, set_name, hmm_modified.tsv]
+    HMMER_PREDICTION(proteins_fasta, viphog_db, rvdb_db, pvogs_db, vogdb_db, vpf_db) // out: [meta, set_name, hmm_modified.tsv]
 
     // calculate hit qual per protein
     RATIO_EVALUE( HMMER_PREDICTION.out.hmm_result, additional_model_data )

@@ -11,7 +11,7 @@ process PPRMETA {
   tuple val(meta), path("${meta.id}_pprmeta.csv")
 
   when:
-  fasta.size() > 0
+  fasta.countFasta() > 0
 
   script:
   """

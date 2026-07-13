@@ -10,8 +10,7 @@ process SPLIT_PROTEINS {
     tuple val(meta), val(confidence_set_name), path(fasta), path(proteins_gff), path(proteins_faa)
     
     output:
-    tuple val(meta), val(confidence_set_name), path(fasta), path("${confidence_set_name}_split.faa"), emit: proteins
-    tuple val(meta), val(confidence_set_name), path("${confidence_set_name}_split.gff"),               emit: gff
+    tuple val(meta), val(confidence_set_name), path(fasta), path("${confidence_set_name}_split.faa"), path("${confidence_set_name}_split.gff") emit: fasta_proteins_gff
 
     script:
     def fasta_file = fasta.name.endsWith('.gz') ? fasta.baseName : fasta.name

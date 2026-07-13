@@ -15,7 +15,7 @@ process VIRSORTER2 {
   tuple val(meta), path("*.final-viral-boundary.tsv"), emit: boundary_tsv
   tuple val(meta), path("*.final-viral-combined.fa"),  emit: combined_fa
 
-  when: fasta.size() > 0
+  when: fasta.countFasta() > 0
 
   script:
   def args = task.ext.args ?: ''

@@ -24,6 +24,8 @@ from collections.abc import Iterable
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
 
+from constants import PROTEIN_COVERAGE_CUTOFF, PROPHAGE_COVERAGE_CUTOFF
+from utils import parse_attrs
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
     """Parse and return command-line arguments."""
@@ -37,23 +39,6 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("-v", "--verbose", dest="verbose", help="Enable verbose logging mode", required=False,
                         action='store_true')
     return parser.parse_args(argv)
-
-
-def parse_attrs(attrs_str: str) -> tuple[dict[str, str], list[str]]:
-    """Parse a GFF3 column-9 attributes string into a dict and an ordered key list.
-
-    :param attrs_str: Semicolon-separated key=value attribute string from GFF column 9.
-    :return: Tuple of (attrs dict, list of keys in original order).
-    """
-    attrs, order = {}, []
-    for part in attrs_str.rstrip(";").split(";"):
-        part = part.strip()
-        if "=" in part:
-            k, v = part.split("=", 1)
-            if k not in attrs:
-                order.append(k)
-            attrs[k] = v
-    return attrs, order
 
 
 class SplitProteins:
@@ -129,11 +114,11 @@ class SplitProteins:
             prophage_cov = intersection / prophage_length
             protein_cov = intersection / protein_length
 
-            if prophage_cov > 0.9 or protein_cov > 0.9:
+            if prophage_cov > PROPHAGE_COVERAGE_CUTOFF or protein_cov > PROTEIN_COVERAGE_CUTOFF:
                 self.logger.debug(f"Protein {protein_id} more than 90% inside {prophage_info}")
                 return True
             else:
-                self.logger.debug(f"Protein {protein_id} intersects {prophage_info}")
+                self.logger.debug(f"Protein partially intersects {protein_id} ({prophage_info}), not part of prophage: {protein_cov}%")
                 return False
         else:
             self.logger.debug(f'---- Protein {protein_id} is not in {prophage_info}')

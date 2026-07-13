@@ -14,7 +14,7 @@ process VIRFINDER {
   tuple val(meta), path("${meta.id}.${fasta.baseName}.txt"), emit: result_tsv
 
   when:
-  fasta.size() > 0
+  fasta.countFasta() > 0
 
   script:
   """

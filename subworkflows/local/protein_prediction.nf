@@ -20,13 +20,13 @@ workflow PREDICT_PROTEINS {
         category_fasta = input_fastas
 
         // ORF detection --> prodigal
-        PRODIGAL (
+        PRODIGAL(
             input_fastas
         )
-        proteins     = PRODIGAL.out.proteins
+        proteins = PRODIGAL.out.proteins
         gff = PRODIGAL.out.gff
         
-        RENAME_PRODIGAL (
+        RENAME_PRODIGAL(
              proteins.join(gff, by: [0, 1])
         )
         proteins_gff = RENAME_PRODIGAL.out.gff

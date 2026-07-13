@@ -12,7 +12,7 @@ from typing import IO
 from Bio import SeqIO
 
 from parse_viral_pred import Record
-from split_proteins_by_categories import parse_attrs
+from utils import parse_attrs
 
 logging.basicConfig(level=logging.INFO)
 
@@ -324,7 +324,10 @@ def get_checkv_results(
             csv_reader = csv.DictReader(file_handle, delimiter="\t")
             for row in csv_reader:
                 contig_id = row["contig_id"]
-                if int(row['viral_genes']) == 0 and row['checkv_quality'] == "Not-determined":
+                viral_genes_count = row['viral_genes'].strip()
+                if viral_genes_count == '':
+                    raise ValueError("viral_genes is empty")
+                if int(viral_genes_count) == 0 and row['checkv_quality'] == "Not-determined":
                     not_determined.add(contig_id)
                     checkv_info = "no_viral_genes"
                 else:
