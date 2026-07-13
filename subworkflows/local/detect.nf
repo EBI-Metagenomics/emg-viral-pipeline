@@ -91,7 +91,7 @@ workflow DETECT {
   pprmeta_output = CSVTK_CONCAT_PPRMETA.out.csv
 
   // parsing predictions
-  PARSE(renamed_assembly_and_contigs_count.join(virfinder_output).join(virsorter_output).join(pprmeta_output))
+  PARSE(renamed_assembly.join(virfinder_output).join(virsorter_output).join(pprmeta_output))
 
   emit:
   detect_output = PARSE.out.map { meta, fasta, _vs_meta, _log -> tuple(meta, fasta) }

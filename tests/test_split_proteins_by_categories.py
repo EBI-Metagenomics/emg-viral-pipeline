@@ -1,8 +1,16 @@
+import os
 import subprocess
 from pathlib import Path
 import hashlib
 import tempfile
 import unittest
+
+# The script is run as a subprocess below, so it needs "bin" on its PYTHONPATH
+# to resolve its bare `from constants import ...` / `from utils import ...`
+# imports, mirroring the `pythonpath = . bin` setting in pytest.ini used for
+# in-process test imports.
+SUBPROCESS_ENV = {**os.environ, "PYTHONPATH": os.path.join(os.getcwd(), "bin")}
+
 
 def md5sum(path):
     return hashlib.md5(path.read_bytes()).hexdigest()
@@ -27,7 +35,7 @@ class SplitProteins(unittest.TestCase):
             str(output),
         ]
     
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, env=SUBPROCESS_ENV)
     
         assert result.returncode == 0, result.stderr
         # file exists
@@ -59,7 +67,7 @@ class SplitProteins(unittest.TestCase):
             str(output),
         ]
 
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, env=SUBPROCESS_ENV)
 
         assert result.returncode == 0, result.stderr
         # file exists
@@ -95,7 +103,7 @@ class SplitProteins(unittest.TestCase):
             str(output),
         ]
 
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, env=SUBPROCESS_ENV)
 
         assert result.returncode == 0, result.stderr
         # file exists
@@ -136,7 +144,7 @@ class SplitProteins(unittest.TestCase):
             str(output),
         ]
 
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, env=SUBPROCESS_ENV)
 
         assert result.returncode == 0, result.stderr
         # file exists
