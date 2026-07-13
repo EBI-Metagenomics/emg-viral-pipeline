@@ -8,7 +8,7 @@ process HMMER {
 
   input:
   tuple val(meta), val(set_name), path(faa)
-  path db
+  tuple val(meta_db), path(db)
   val is_viphog_db
 
   output:

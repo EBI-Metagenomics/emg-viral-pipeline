@@ -8,7 +8,7 @@ process BLAST_FILTER {
 
   input:
   tuple val(meta), val(confidence_set_name), path(blast), path(blast_filtered)
-  path db
+  tuple val(meta_db), path(db)
 
   output:
   tuple val(meta), val(confidence_set_name), path("*.meta")

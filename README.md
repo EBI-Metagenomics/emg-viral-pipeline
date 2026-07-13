@@ -379,50 +379,58 @@ Additional material (assemblies used for benchmarking in the paper, ...) as well
 
 Here, we also list databases used and automatically downloaded by the pipeline **(in v2.0.0)** when it is first run. We deposited database files on a separate FTP to ensure their accessibility. The files can be also downloaded manually and then used as an input for the pipeline to prevent the auto-download (see `--help` in the Nextflow pipeline).
 
+Each database is fetched from a URL that can also be overridden independently via a `--<name>_download_link` parameter (e.g. `--viphog_download_link`), in case you need to point at a mirror or a different version. This only takes effect when the corresponding database path (e.g. `--viphog`) is not already provided.
+
 ### Virus-specific protein profile HMMs
 
 * **ViPhOGs** (mandatory, used for taxonomy assignment)
-    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vpHMM_database_v3.tar.gz`
+    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vpHMM_database_v3.tar.gz` (`--viphog_download_link`)
     * Additional metadata file for filtering the ViPhOGs (according to taxonomy updates by the [ICTV](https://ictv.global/taxonomy))
-        * `wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/additional_data_vpHMMs_v4.tsv`
+        * `wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/additional_data_vpHMMs_v4.tsv` (`--meta_download_link`)
     * [Publication](https://www.mdpi.com/1999-4915/13/6/1164)
-* **pVOGs** (optional)
-    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/pvogs.tar.gz`
+* **pVOGs** (optional, `--hmmextend`)
+    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/pvogs.tar.gz` (`--pvogs_download_link`)
     * [Publication](https://doi.org/10.1093/nar/gkw975)
-* **RVDB** (optional)
-    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/rvdb.tar.gz`
+* **RVDB** (optional, `--hmmextend`)
+    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/rvdb.tar.gz` (`--rvdb_download_link`)
     * [Publication](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7492780/)
-* **VOGDB** (optional)
-    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vogdb.tar.gz`
+* **VOGDB** (optional, `--hmmextend`)
+    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vogdb.tar.gz` (`--vogdb_download_link`)
     * [Publication](https://vogdb.org/)
-* **VPF** (optional)
-    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vpf.tar.gz`
+* **VPF** (optional, `--hmmextend`)
+    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vpf.tar.gz` (`--vpf_download_link`)
     * [Publication](https://doi.org/10.1093/nar/gky1127)
 
 ### Initial virus prediction on contig level
 
-* **VirSorter** HMMs
-    * `wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virsorter-data-v2.tar.gz`
+* **VirSorter2** database (default; used unless `--use_virsorter_v1` is set)
+    * `wget https://osf.io/v46sc/download` (`--virsorter2_download_link`)
+    * [Publication](https://doi.org/10.1186/s40168-020-00990-y)
+* **VirSorter** (v1) HMMs (used with `--use_virsorter_v1`)
+    * `wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virsorter-data-v2.tar.gz` (`--virsorter_download_link`)
     * [Publication](https://peerj.com/articles/985/)
 * **Virfinder** model
-    * `wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virfinder/VF.modEPV_k8.rda`
+    * `wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virfinder/VF.modEPV_k8.rda` (`--virfinder_download_link`)
     * [Publication](https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-017-0283-5)
+* **PPR-Meta**
+    * `wget https://github.com/zhenchengfang/PPR-Meta/archive/refs/tags/v1.1.tar.gz` (`--pprmeta_download_link`)
+    * [Publication](https://doi.org/10.1093/gigascience/giaa112)
 
 ### Virus prediction QC
 
 * **CheckV**
-    * `wget https://portal.nersc.gov/CheckV/checkv-db-v1.5.tar.gz`
+    * `wget https://portal.nersc.gov/CheckV/checkv-db-v1.5.tar.gz` (`--checkv_download_link`)
     * [Publication](https://www.nature.com/articles/s41587-020-00774-7)
 
 ### Taxonomy annotation
 
 * **NCBI taxonomy**
-    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/2022-11-01_ete3_ncbi_tax.sqlite.gz`
+    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/2022-11-01_ete3_ncbi_tax.sqlite.gz` (`--ncbi_download_link`)
 
 ### Additional blast-based assignment (optional, super slow)
 
-* **IMG/VR**
-    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/IMG_VR_2018-07-01_4.tar.gz`
+* **IMG/VR** (optional, `--blastextend`)
+    * `wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/IMG_VR_2018-07-01_4.tar.gz` (`--imgvr_download_link`)
     * [Publication](https://doi.org/10.1093/nar/gkw1030)
 
 

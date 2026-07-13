@@ -43,13 +43,13 @@ process VIRSORTER {
 
   input:
   tuple val(meta), path(fasta)
-  path database
+  tuple val(meta_db), path(database)
 
   output:
   tuple val(meta), path("*")
 
   when:
-  fasta.countFasta() > 0
+  fasta.size() > 0
 
   script:
   if (params.virome) {

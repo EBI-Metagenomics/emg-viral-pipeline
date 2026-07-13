@@ -5,13 +5,13 @@ process PPRMETA {
 
   input:
   tuple val(meta), path(fasta)
-  path pprmeta_git
+  tuple val(meta_db), path(pprmeta_git)
 
   output:
   tuple val(meta), path("${meta.id}.${fasta.baseName}_pprmeta.csv"), emit: result_csv
 
   when:
-  fasta.countFasta() > 0
+  fasta.size() > 0
 
   script:
   """

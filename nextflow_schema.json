@@ -152,6 +152,92 @@
                 }
             }
         },
+        "database_download_links": {
+            "title": "Database download links",
+            "type": "object",
+            "fa_icon": "fas fa-download",
+            "description": "URLs used to auto-download each database when the corresponding path above is not provided.",
+            "properties": {
+                "virsorter_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virsorter-data-v2.tar.gz",
+                    "description": "download link for the VirSorter database",
+                    "hidden": true
+                },
+                "virsorter2_download_link": {
+                    "type": "string",
+                    "default": "https://osf.io/v46sc/download",
+                    "description": "download link for the VirSorter2 database",
+                    "hidden": true
+                },
+                "virfinder_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virfinder/VF.modEPV_k8.rda",
+                    "description": "download link for the VirFinder model",
+                    "hidden": true
+                },
+                "viphog_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vpHMM_database_v3.tar.gz",
+                    "description": "download link for the ViPhOG database",
+                    "hidden": true
+                },
+                "ncbi_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/2022-11-01_ete3_ncbi_tax.sqlite.gz",
+                    "description": "download link for the NCBI taxonomy database",
+                    "hidden": true
+                },
+                "checkv_download_link": {
+                    "type": "string",
+                    "default": "https://portal.nersc.gov/CheckV/checkv-db-v1.5.tar.gz",
+                    "description": "download link for the CheckV database",
+                    "hidden": true
+                },
+                "rvdb_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/rvdb.tar.gz",
+                    "description": "download link for the RVDB",
+                    "hidden": true
+                },
+                "pvogs_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/pvogs.tar.gz",
+                    "description": "download link for the pVOGS",
+                    "hidden": true
+                },
+                "vogdb_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vogdb.tar.gz",
+                    "description": "download link for the VOGDB",
+                    "hidden": true
+                },
+                "vpf_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vpf.tar.gz",
+                    "description": "download link for the VPF from IMG/VR",
+                    "hidden": true
+                },
+                "imgvr_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/IMG_VR_2018-07-01_4.tar.gz",
+                    "description": "download link for the IMG/VR database",
+                    "hidden": true
+                },
+                "pprmeta_download_link": {
+                    "type": "string",
+                    "default": "https://github.com/zhenchengfang/PPR-Meta/archive/refs/tags/v1.1.tar.gz",
+                    "description": "download link for the PPR-Meta github archive",
+                    "hidden": true
+                },
+                "meta_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/additional_data_vpHMMs_v4.tsv",
+                    "description": "download link for the ViPhOG metadata tsv",
+                    "hidden": true
+                }
+            }
+        },
         "parameters": {
             "title": "Parameters",
             "type": "object",
@@ -425,6 +511,9 @@
         },
         {
             "$ref": "#/$defs/databases"
+        },
+        {
+            "$ref": "#/$defs/database_download_links"
         },
         {
             "$ref": "#/$defs/parameters"

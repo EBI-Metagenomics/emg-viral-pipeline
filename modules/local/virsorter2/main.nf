@@ -8,14 +8,14 @@ process VIRSORTER2 {
 
   input:
   tuple val(meta), file(fasta)
-  path database
+  tuple val(meta_db), path(database)
 
   output:
   tuple val(meta), path("*.final-viral-score.tsv"),    emit: score_tsv
   tuple val(meta), path("*.final-viral-boundary.tsv"), emit: boundary_tsv
   tuple val(meta), path("*.final-viral-combined.fa"),  emit: combined_fa
 
-  when: fasta.countFasta() > 0
+  when: fasta.size() > 0
 
   script:
   def args = task.ext.args ?: ''

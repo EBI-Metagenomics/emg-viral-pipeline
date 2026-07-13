@@ -14,7 +14,7 @@ process RATIO_EVALUE {
 
     input:
     tuple val(meta), val(set_name), path(modified_table)
-    path model_metadata
+    tuple val(meta_db), path(model_metadata)
 
     output:
     tuple val(meta), val(set_name), path("${set_name}_modified_informative.tsv"), emit: informative_hits_tsv

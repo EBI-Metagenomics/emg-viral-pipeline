@@ -2,16 +2,19 @@ process virsorterGetDB {
   label 'process_low'    
   container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'
   
-  publishDir "${params.virsorter}", pattern: "virsorter-data", mode: params.cloudProcess ? 'copy' : 'symlink'
-  
+  publishDir "${params.databases}", pattern: "virsorter-data", mode: params.cloudProcess ? 'copy' : 'symlink'
+
+  input:
+  tuple val(meta), val(db_link)
+
   output:
-    path("virsorter-data", type: 'dir')
-    
+    tuple val(meta), path("virsorter-data", type: 'dir'), emit: database_dir
+
   script:
     """
-    wget ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virsorter-data-v2.tar.gz 
-    tar -xvzf virsorter-data-v2.tar.gz
-    rm virsorter-data-v2.tar.gz
+    wget -nH ${db_link} -O virsorter-data.tar.gz
+    tar -xvzf virsorter-data.tar.gz
+    rm virsorter-data.tar.gz
     """
 }
 

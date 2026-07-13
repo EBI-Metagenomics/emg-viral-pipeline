@@ -1,16 +1,25 @@
 process checkVGetDB {
     label 'process_low'    
-    container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'
+    container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+        ? 'https://depot.galaxyproject.org/singularity/checkv:1.0.1--pyhdfd78af_0'
+        : 'biocontainers/checkv:1.0.1--pyhdfd78af_0'}"
     
-    publishDir "${params.checkv}", mode: params.cloudProcess ? 'copy' : 'symlink'
-      
+    publishDir "${params.databases}", mode: params.cloudProcess ? 'copy' : 'symlink'
+
+    input:
+    tuple val(meta), val(db_link)
+
     output:
-        path("checkv-db-v*", type: 'dir')
+        tuple val(meta), path("checkv-db-v*", type: 'dir'), emit: database_dir
     script:
         """
-        wget https://portal.nersc.gov/CheckV/checkv-db-v1.5.tar.gz
-        tar -zxvf checkv-db-v1.5.tar.gz
-        rm checkv-db-v1.5.tar.gz
+        wget -nH ${db_link} -O checkv-db.tar.gz
+        tar -zxvf checkv-db.tar.gz
+        rm checkv-db.tar.gz
+
+        # build diamond database
+        cd checkv-db-v*.*/genome_db
+        diamond makedb --in checkv_reps.faa --db checkv_reps
         """
     stub:
         """

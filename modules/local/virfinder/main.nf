@@ -8,13 +8,13 @@ process VIRFINDER {
 
   input:
   tuple val(meta), path(fasta)
-  path model
+  tuple val(meta_db), path(model)
 
   output:
   tuple val(meta), path("${meta.id}.${fasta.baseName}.txt"), emit: result_tsv
 
   when:
-  fasta.countFasta() > 0
+  fasta.size() > 0
 
   script:
   """
