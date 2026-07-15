@@ -30,12 +30,12 @@ process PARSE {
   container 'quay.io/microbiome-informatics/virify-python3:1.2'
 
   input:
-  tuple val(meta), path(fasta), val(contig_number), path(virfinder), path(virsorter), path(pprmeta)
+  tuple val(meta), path(fasta), path(virfinder), path(virsorter), path(pprmeta)
 
   output:
   tuple val(meta), path("*.fna"), path('virsorter_metadata.tsv'), path("${meta.id}_virus_predictions.stats"), optional: true
 
-  when: contig_number.toInteger() > 0
+  when: fasta.size() > 0
 
   script:
   if (!params.use_virsorter_v1) {

@@ -2,19 +2,18 @@ process rvdbGetDB {
   label 'process_low'    
   container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'    
   
-  if (params.cloudProcess) { 
-    publishDir "${params.databases}/", mode: 'copy', pattern: "rvdb" 
-  }
-  else { 
-    storeDir "${params.databases}/" 
-  }  
+  publishDir "${params.databases}", mode: params.cloudProcess ? 'copy' : 'symlink'
+
+  input:
+  tuple val(meta), val(db_link)
 
   output:
-    path("rvdb", type: 'dir')
+    tuple val(meta), path("rvdb", type: 'dir'), emit: database_dir
 
   script:
     """
-    wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/rvdb.tar.gz && tar -zxvf rvdb.tar.gz
+    wget -nH ${db_link} -O rvdb.tar.gz
+    tar -zxvf rvdb.tar.gz
     rm rvdb.tar.gz
     """
 }

@@ -11,7 +11,7 @@ process ASSIGN {
 
     input:
     tuple val(meta), val(set_name), path(tab)
-    path db
+    tuple val(meta_db), path(db)
     path factor
 
     output:

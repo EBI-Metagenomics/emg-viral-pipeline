@@ -3,19 +3,18 @@ process pvogsGetDB {
   label 'process_low'    
   container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'    
   
-  if (params.cloudProcess) { 
-    publishDir "${params.databases}/", mode: 'copy', pattern: "pvogs" 
-  }
-  else { 
-    storeDir "${params.databases}/" 
-  }  
+  publishDir "${params.databases}", mode: params.cloudProcess ? 'copy' : 'symlink'
+
+  input:
+  tuple val(meta), val(db_link)
 
   output:
-    path("pvogs", type: 'dir')
+    tuple val(meta), path("pvogs", type: 'dir'), emit: database_dir
 
   script:
     """
-    wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/pvogs.tar.gz && tar -zxvf pvogs.tar.gz
+    wget -nH ${db_link} -O pvogs.tar.gz
+    tar -zxvf pvogs.tar.gz
     rm pvogs.tar.gz
     """
 }

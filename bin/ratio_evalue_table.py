@@ -129,10 +129,10 @@ if __name__ == "__main__":
         taxa_dict["ViPhOG" + str(tsv_df["Number"][i]) + ".faa"] = tsv_df["Associated"][i]
 
     output_df = ratio_evalue(input_df, taxa_dict, float(evalue))
-
-    if output_df is None or output_df.empty:
-        print("No informative hits against the ViPhOG database "
-              "were obtained for the contigs provided")
-    else:
-        with open(output_file, "w") as of_handle:
+    
+    with open(output_file, "w") as of_handle:
+        if output_df is None or output_df.empty:
+            print("No informative hits against the ViPhOG database "
+                  "were obtained for the contigs provided")
+        else:
             output_df.to_csv(of_handle, sep="\t", index=False)

@@ -10,7 +10,7 @@ process CHECKV {
 
     input:
     tuple val(meta), val(confidence_set_name), path(fasta)
-    path database
+    tuple val(meta_db), path(database)
 
     output:
     tuple val(meta), val(confidence_set_name), path("${confidence_set_name}_quality_summary.tsv")

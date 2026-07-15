@@ -13,12 +13,10 @@ workflow PREPROCESS {
     main:
 
     // filter contigs by length
-    LENGTH_FILTERING(assembly)  // out: (meta, filtered.fasta, env)
-
-    filtered_fasta = LENGTH_FILTERING.out.map { meta, fasta, contigs_count -> tuple(meta, fasta, contigs_count) }
+    LENGTH_FILTERING(assembly)  // out: (meta, filtered.fasta)
 
     // rename the length-filtered assembly
-    RENAME(filtered_fasta)  // out: (meta, renamed.fasta, map)
+    RENAME(LENGTH_FILTERING.out)  // out: (meta, renamed.fasta, map)
 
     emit:
     mapfile                            = RENAME.out.mapfile

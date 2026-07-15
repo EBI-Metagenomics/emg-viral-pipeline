@@ -2,19 +2,18 @@ process vpfGetDB {
   label 'process_low'    
   container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'
   
-  if (params.cloudProcess) { 
-    publishDir "${params.databases}/", mode: 'copy', pattern: "vpf" 
-  }
-  else { 
-    storeDir "${params.databases}/" 
-  }  
+  publishDir "${params.databases}", mode: params.cloudProcess ? 'copy' : 'symlink'
+
+  input:
+  tuple val(meta), val(db_link)
 
   output:
-    path("vpf", type: 'dir')
+    tuple val(meta), path("vpf", type: 'dir'), emit: database_dir
 
   script:
     """
-    wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vpf.tar.gz && tar -zxvf vpf.tar.gz
+    wget -nH ${db_link} -O vpf.tar.gz
+    tar -zxvf vpf.tar.gz
     rm vpf.tar.gz
     """
 }
