@@ -37,6 +37,7 @@ workflow VIRIFY {
     input_ch = Channel.empty()
     mashmap_ref_ch = Channel.empty()
     factor_file = Channel.empty()
+    ch_multiqc_files = Channel.empty()
     ch_multiqc_config = Channel.fromPath("${projectDir}/assets/multiqc_config.yml", checkIfExists: true)
     ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config, checkIfExists: true) : Channel.empty()
     ch_multiqc_logo = params.multiqc_logo ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.fromPath("${projectDir}/assets/mgnify_logo.png")
@@ -60,7 +61,6 @@ workflow VIRIFY {
     }
     samplesheet = Channel.fromList(samplesheetToList(params.samplesheet, "./assets/schema_input.json"))
     input_ch = samplesheet.map(groupInputs)
-    }
 
     // mashmap input
     if (params.mashmap) {
