@@ -87,28 +87,26 @@ nextflow info EBI-Metagenomics/emg-viral-pipeline
 
 ### Input
 
-The pipeline accepts the assembly either using the `--fasta` parameter for a single one. Or the `--samplesheet` parameter to indicate a .csv that contains as many assemblies. The former allows for greater parallelization as one head nextflow job can run many assemblies at once.
-Samplesheet
+The pipeline accepts assemblies via the `--samplesheet` parameter, a .csv file that can list as many assemblies as needed.
 
 #### Samplesheet
 
 The samplesheet must be a .csv file that contains the following columns:
 
 - id - Sample identifier (mandatory)
-- assembly - Assembly file in FASTA format (optional)
-- fastq_1 - FastQ file for reads 1 in '.fq.gz' or '.fastq.gz' format (optional)
-- fastq_2 - FastQ file for reads 2 in '.fq.gz' or '.fastq.gz' format
-- protein - Proteins file in FASTA format (optional)
- 
-The fastq_1 and fastq_2 files are optional and can be provided if the user wants the reads to be assembled. The proteins file is also optional and can be provided to avoid calling the protein caller again.
+- assembly - Assembly file in FASTA format (mandatory)
+- proteins_gff - Proteins file in GFF3 format (optional)
+- proteins_faa - Proteins file in FASTA format (optional)
+
+The proteins_gff and proteins_faa files are optional and, if both provided, allow the pipeline to skip calling the protein caller (Prodigal) again.
 
 > [!NOTE]  
 > The pipeline expects proteins in Prodigal (Pyrodigal too) format with specific description fields (e.g., `>contig1_1 # 1 # 100 # 200 # +`). Only proteins with this format will be processed for ViPhOG annotation. Proteins from other gene callers (e.g., FrageneScan) that don't follow this format will be automatically excluded from the annotation process.
 
 [Example](assets/example_input.csv)
 ```
-id,assembly,fastq_1,fastq_2,proteins
-ERZ123,ERZ123.fasta,,,
+id,assembly,proteins_gff,proteins_faa
+ERZ123,ERZ123.fasta,,
 ```
 
 ### Example execution
@@ -117,7 +115,7 @@ Run annotation for a small assembly file (10 contigs, 0.78 Mbp) on your local Li
 
 ```bash
 nextflow run EBI-Metagenomics/emg-viral-pipeline -r v3.0.0 \\
-    --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" \\
+    --samplesheet samplesheet.csv \\
     --cores 4 -profile local,docker
 ```
 
@@ -160,7 +158,7 @@ Now run:
 
 ```bash
 nextflow run EBI-Metagenomics/emg-viral-pipeline -r v0.4.0 \\
-    --fasta "/home/$USER/.nextflow/assets/EBI-Metagenomics/emg-viral-pipeline/nextflow/test/assembly.fasta" \\
+    --samplesheet samplesheet.csv \\
     --cores 4 -profile local,docker \\
     -with-tower
 ```
@@ -339,11 +337,9 @@ Although VIRify has been benchmarked and validated with metagenomic data in mind
 
 **1. Quality control:** As for metagenomic data, a thorough quality control of the FASTQ sequence reads to remove low-quality bases, adapters and host contamination (if appropriate) is required prior to assembly. This is especially important for metatranscriptomes as small errors can further decrease the quality and contiguity of the assembly obtained. We have used [TrimGalore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/) for this purpose.
 
-**2. Assembly:** There are many assemblers available that are appropriate for either metagenomic or single-species transcriptomic data. However, to our knowledge, there is no assembler currently available specifically for metatranscriptomic data. From our preliminary investigations, we have found that transcriptome-specific assemblers (e.g. [rnaSPAdes](http://cab.spbu.ru/software/spades/)) generate more contiguous and complete metatranscriptome assemblies compared to metagenomic alternatives (e.g. [MEGAHIT](https://github.com/voutcn/megahit/releases) and [metaSPAdes](http://cab.spbu.ru/software/spades/)).
+**2. Pre-processing:** Metatranscriptomes generate highly fragmented assemblies. Therefore, filtering contigs based on a set minimum length has a substantial impact in the number of contigs processed in VIRify. It has also been observed that the number of false-positive detections of [VirFinder](https://github.com/jessieren/VirFinder/releases) (one of the tools included in VIRify) is lower among larger contigs. The choice of a length threshold will depend on the complexity of the sample and the sequencing technology used, but in our experience any contigs <2 kb should be analysed with caution.
 
-**3. Post-processing:** Metatranscriptomes generate highly fragmented assemblies. Therefore, filtering contigs based on a set minimum length has a substantial impact in the number of contigs processed in VIRify. It has also been observed that the number of false-positive detections of [VirFinder](https://github.com/jessieren/VirFinder/releases) (one of the tools included in VIRify) is lower among larger contigs. The choice of a length threshold will depend on the complexity of the sample and the sequencing technology used, but in our experience any contigs <2 kb should be analysed with caution.
-
-**4. Classification:** The classification module of VIRify depends on the presence of a minimum number and proportion of phylogenetically-informative genes within each contig in order to confidently assign a taxonomic lineage. Therefore, short contigs typically obtained from metatranscriptome assemblies remain generally unclassified. For targeted classification of RNA viruses (for instance, to search for Coronavirus-related sequences), alternative DNA- or protein-based classification methods can be used. Two of the possible options are: (i) using [MashMap](https://github.com/marbl/MashMap/releases) to screen the VIRify contigs against a database of RNA viruses (e.g. Coronaviridae) or (ii) using [hmmsearch](http://hmmer.org/download.html) to screen the proteins obtained in the VIRify contigs against marker genes of the taxon of interest.
+**3. Classification:** The classification module of VIRify depends on the presence of a minimum number and proportion of phylogenetically-informative genes within each contig in order to confidently assign a taxonomic lineage. Therefore, short contigs typically obtained from metatranscriptome assemblies remain generally unclassified. For targeted classification of RNA viruses (for instance, to search for Coronavirus-related sequences), alternative DNA- or protein-based classification methods can be used. Two of the possible options are: (i) using [MashMap](https://github.com/marbl/MashMap/releases) to screen the VIRify contigs against a database of RNA viruses (e.g. Coronaviridae) or (ii) using [hmmsearch](http://hmmer.org/download.html) to screen the proteins obtained in the VIRify contigs against marker genes of the taxon of interest.
 
 <a name="faq"></a>
 

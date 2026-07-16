@@ -19,16 +19,6 @@
                 "errorMessage": "Assembly file in FASTA format",
                 "minLength": 3
             },
-            "fastq_1": {
-                "type": "string",
-                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
-            },
-            "fastq_2": {
-                "type": "string",
-                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 2 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
-            },
             "proteins_gff": {
                 "type": "string",
                 "pattern": "^\\S+\\.(gff)(\\.gz)?$",
@@ -40,23 +30,10 @@
                 "errorMessage": "The file with proteins detected for the assembly in fasta format (optionally compressed with .gz)"
             }
         },
-        "required": ["id"],
+        "required": ["id", "assembly"],
         "dependentRequired": {
             "proteins_gff": ["proteins_faa"],
             "proteins_faa": ["proteins_gff"]
-        },
-        "oneOf": [
-          {
-            "required": ["assembly"],
-            "description": "An assembly file must be provided"
-          },
-          {
-            "required": ["fastq_1", "fastq_2"],
-            "description": "Both fastq_1 and fastq_2 files must be provided"
-          }
-        ],
-        "errorMessage": {
-          "oneOf": "You must specify either an assembly file or both fastq_1 and fastq_2 files."
         }
     }
 }
