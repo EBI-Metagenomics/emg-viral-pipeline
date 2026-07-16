@@ -6,11 +6,12 @@
 
 1. [ The VIRify pipeline ](#virify)
 2. [ Pipeline overview ](#overview)
-3. [ Usage ](docs/usage.md)
+3. [ Usage ](#usage)
 4. [ Output ](docs/output.md)
-5. [ Detour: Metatranscriptomics ](docs/development.md#metatranscriptome)
+5. [ Note about Metatranscriptomes ](docs/development.md#metatranscriptome)
 6. [ Frequently Asked Questions (FAQ) ](docs/development.md#faq)
 7. [ Technical Details ](docs/development.md#technical)
+  - [VirSorter2 Circular Genome Handling](docs/development.md#virsorter2-circular-genome-handling)
 8. [ Citations ](#cite)
 
 <a name="virify"></a>
@@ -26,6 +27,9 @@ VIRify is a [Nextflow](https://www.nextflow.io/) pipeline for the detection, ann
 ![VIRify Overview](figures/virify_fig1_workflow.png)
 For further details please check: [doi.org/10.1101/2022.08.22.504484](https://doi.org/10.1101/2022.08.22.504484)
 
+<a name="usage"></a>
+
+# Usage
 
 ## Requirements
 
@@ -53,7 +57,7 @@ nextflow run EBI-Metagenomics/emg-viral-pipeline -r v3.0.0 \\
     --cores 4 -profile local,docker
 ```
 
-See the [Execution](docs/usage.md#execution) and [Profiles](docs/usage.md#profiles) sections for further instructions, including how to resume a run, run on an HPC cluster (SLURM/LSF with Singularity), and switch execution profiles.
+See the [Execution](docs/usage.md#execution), [Profiles](docs/usage.md#profiles) and [Monitoring](docs/usage.md#monitoring) sections for further instructions, including how to resume a run, run on an HPC cluster (SLURM/LSF with Singularity), and switch execution profiles.
 
 ## Output
 
