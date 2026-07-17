@@ -37,6 +37,7 @@ my_favourite_assembly,ERZ123.fasta,,
 ## Databases
 
 We deposited database files on a separate FTP to ensure their accessibility. Each database is fetched from the URL in the table below, which can be overridden independently via its "Download link argument" (e.g. `--viphog_download_link`), in case you need to point at a mirror or a different version. The link is only used when the corresponding "Input argument" path is not already provided, so you can also download a database manually and pass it in directly to prevent the auto-download (see `--help` in the Nextflow pipeline).
+All fetched databases would be saved to folder regulated by `--databases` argument (default: `nextflow-autodownload-databases`).
 
 Additional material (assemblies used for benchmarking in the paper, ...) as well as the ViPhOG HMMs with model-specific bit score thresholds used in VIRify are available at [osf.io/fbrxy](https://osf.io/fbrxy/).
 
@@ -83,43 +84,7 @@ Additional material (assemblies used for benchmarking in the paper, ...) as well
 
 Run annotation for a small assembly file (10 contigs, 0.78 Mbp) on your local Linux machine using Docker containers (per default `--cores 4`; takes approximately 10 min on a 8 core i7 laptop + time for database download; ~19 GB):
 
-```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline -r v3.0.0 \
-    --samplesheet samplesheet.csv \
-    --cores 4 -profile local,docker
-```
-
-__Please note__ that in particular the following parameters are important to handle where Nextflow writes files.
-
-* `--workdir` or `-w` (here your work directories with intermediate data will be saved)
-* `--databases` (here your databases will be saved and the workflow checks if they are already available under this path)
-* `--singularity_cachedir` (here Singularity containers will be cached, not needed for Docker, default path: `./singularity`)
-
 **Please clean up your work directory from time to time to save disk space!**
-
-### Resuming a run
-
-If a run is interrupted (e.g., killed, out of memory, or a transient download failure), re-launch the exact same command with `-resume` appended. Nextflow will reuse the cached results from the `work` directory and only re-run the tasks that failed or changed:
-
-```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline -r v3.0.0 \
-    --samplesheet samplesheet.csv \
-    --cores 4 -profile local,docker \
-    -resume
-```
-
-### Running on an HPC cluster
-
-For SLURM or LSF clusters, combine the executor profile with `singularity` instead of `docker`, and make sure `--workdir`/`--singularity_cachedir` point to shared, writable storage:
-
-```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline -r v3.0.0 \
-    --samplesheet samplesheet.csv \
-    --databases /shared/path/nextflow-autodownload-databases \
-    --workdir /shared/path/work \
-    --singularity_cachedir /shared/path/singularity \
-    -profile slurm,singularity
-```
 
 ### Useful runtime flags
 
@@ -131,16 +96,19 @@ nextflow run EBI-Metagenomics/emg-viral-pipeline -r v3.0.0 \
 
 ## Profiles
 
-Nextflow uses a merged profile handling system so you have to define an executor (e.g., `local`, `lsf`, `slurm`) and an engine (`docker`, `singularity`) to run the pipeline according to your needs and infrastructure. 
-
-Per default, the workflow runs locally (e.g., on your laptop) with Docker. When you execute the workflow on a HPC you can for example switch to a specific job scheduler and Singularity instead of Docker:
-
-* SLURM (``-profile slurm,singularity``)
-* LSF (``-profile lsf,singularity``)
-
-Don't forget, especially on an HPC, to define further important parameters such as `-w`, `--databases`, and `--singularity_cachedir` as mentioned above.
+Nextflow uses a merged profile handling system so you have to define an executor (e.g., `local`, `lsf`, `slurm`) and an engine (e.g., `docker`, `singularity`) to run the pipeline according to your needs and infrastructure. Per default, the workflow runs locally (e.g., on your laptop) with Docker. 
 
 The engine `conda` is not working at the moment until there is a conda recipe for PPR-Meta or we switch the tool. Sorry. Use Docker. Or Singularity. Please. Or install PPR-Meta by yourself and then use the `conda` profile (not recommended).  
+
+
+### Example of execution command
+```bash
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v4.0.0 \
+    --samplesheet samplesheet.csv \
+    --cores 4 \
+    -profile local,docker \
+    -resume
+```
 
 ## Monitoring
 

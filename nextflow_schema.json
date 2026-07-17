@@ -385,16 +385,6 @@
                     "default": "nextflow-autodownload-databases",
                     "description": "directory path to databases"
                 },
-                "workdir": {
-                    "type": "string",
-                    "default": "work",
-                    "description": "working directory"
-                },
-                "singularity_cachedir": {
-                    "type": "string",
-                    "default": "singularity",
-                    "description": "singularity folder"
-                },
                 "cloudProcess": {
                     "type": "boolean",
                     "description": "run on cloud"
