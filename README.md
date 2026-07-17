@@ -24,7 +24,7 @@ VIRify is a [Nextflow](https://www.nextflow.io/) pipeline for the detection, ann
 <a name="overview"></a>
 
 # Pipeline overview
-![VIRify Overview](figures/virify_fig1_workflow.png)
+![VIRify Overview](figures/virify_schema.png)
 For further details please check: [doi.org/10.1101/2022.08.22.504484](https://doi.org/10.1101/2022.08.22.504484)
 
 <a name="usage"></a>
