@@ -25,7 +25,6 @@ include { WRITE_GFF                   } from '../../modules/local/write_gff'
 include { PLOT_CONTIG_MAP             } from '../../modules/local/plot_contig_map'
 
 include { HMMER_PREDICTION            } from './hmmer_processing'
-include { PREDICT_PROTEINS            } from './protein_prediction'
 
 
 workflow ANNOTATE {
@@ -48,9 +47,6 @@ workflow ANNOTATE {
     mashmap_ref_ch
 
     main:
-
-    // Extract per-category fasta and proteins (runs prodigal if not use_proteins)
-    PREDICT_PROTEINS( category_fastas )
 
     category_fasta = PREDICT_PROTEINS.out.category_fasta
     proteins_fasta = PREDICT_PROTEINS.out.proteins
