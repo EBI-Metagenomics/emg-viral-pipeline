@@ -9,21 +9,8 @@
             "title": "Inputs",
             "type": "object",
             "fa_icon": "fas fa-dna",
-            "description": "Files required for the workflow (reads or assemblies).",
+            "description": "Files required for the workflow.",
             "properties": {
-                "fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA file, no assembly produced by pipeline",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
-                },
-                "assemble": {
-                    "type": "boolean",
-                    "description": "file pairs, experimental feature that performs SPAdes assembly first"
-                },
                 "samplesheet": {
                     "type": "string",
                     "format": "file-path",
@@ -31,26 +18,9 @@
                     "pattern": "^\\S+\\.csv$",
                     "schema": "assets/schema_input.json",
                     "description": "Path to comma-separated file containing information about inputs to be used.",
-                    "help_text": "You will need to create a design file with information about the assembly/raw_reads running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a minimum of 2 columns for assembly (ID, fasta) or 3 columns for raw reads (ID, fastq1, fastq2), and a header row.",
+                    "help_text": "You will need to create a design file with information about the assembly running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a minimum of 2 columns for assembly (ID, fasta) and a header row.",
                     "fa_icon": "fas fa-file-csv"
                 }
-            },
-            "oneOf": [
-                {
-                    "required": [
-                        "fasta"
-                    ],
-                    "description": "An assembly file must be provided"
-                },
-                {
-                    "required": [
-                        "samplesheet"
-                    ],
-                    "description": "Assembly or raw reads should be provided in samplesheet"
-                }
-            ],
-            "errorMessage": {
-                "oneOf": "You must specify either an assembly file or samplesheet input."
             }
         },
         "options": {
@@ -354,13 +324,6 @@
             "fa_icon": "fas fa-dna",
             "description": "Output folders",
             "properties": {
-                "assemblydir": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "default": "00-assembly",
-                    "description": "output directory for assembly step",
-                    "fa_icon": "far fa-file-code"
-                },
                 "virusdir": {
                     "type": "string",
                     "format": "directory-path",
@@ -421,16 +384,6 @@
                     "type": "string",
                     "default": "nextflow-autodownload-databases",
                     "description": "directory path to databases"
-                },
-                "workdir": {
-                    "type": "string",
-                    "default": "work",
-                    "description": "working directory"
-                },
-                "singularity_cachedir": {
-                    "type": "string",
-                    "default": "singularity",
-                    "description": "singularity folder"
                 },
                 "cloudProcess": {
                     "type": "boolean",

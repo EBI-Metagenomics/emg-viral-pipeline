@@ -13,7 +13,6 @@ include { MULTIQC                           } from '../modules/nf-core/multiqc'
 * SUB WORKFLOWS
 **************************/
 
-include { ASSEMBLE_ILLUMINA                 } from '../subworkflows/local/assemble_illumina'
 include { ANNOTATE                          } from '../subworkflows/local/annotate'
 include { DETECT                            } from '../subworkflows/local/detect'
 include { DOWNLOAD_DATABASES                } from '../subworkflows/local/download_databases'
@@ -38,51 +37,30 @@ workflow VIRIFY {
     input_ch = Channel.empty()
     mashmap_ref_ch = Channel.empty()
     factor_file = Channel.empty()
+    ch_multiqc_files = Channel.empty()
     ch_multiqc_config = Channel.fromPath("${projectDir}/assets/multiqc_config.yml", checkIfExists: true)
     ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config, checkIfExists: true) : Channel.empty()
     ch_multiqc_logo = params.multiqc_logo ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.fromPath("${projectDir}/assets/mgnify_logo.png")
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
 
-    if (params.samplesheet) {
-        groupInputs = { id, assembly, fq1, fq2, proteins_gff, proteins_faa ->
-            if (fq1 == []) {
-                if (params.use_proteins && proteins_gff && proteins_faa) {
-                    return tuple(
-                        ["id": id],
-                        assembly,
-                        proteins_gff,
-                        proteins_faa
-                    )
-                }
-                else {
-                    return tuple(
-                        ["id": id],
-                        assembly,
-                    )
-                }
-            }
-            else {
-                if (params.assemble) {
-                    return tuple(
-                        ["id": id],
-                        [fq1, fq2],
-                    )
-                }
-                else {
-                    exit(1, "input missing, use [--assemble] flag with raw reads")
-                }
-            }
+    samplesheet = Channel.fromList(samplesheetToList(params.samplesheet, "./assets/schema_input.json"))
+    samplesheet
+        .map { id, assembly, proteins_gff, proteins_faa ->
+            tuple(
+                ["id": id],
+                assembly,
+                proteins_gff ?: null,
+                proteins_faa ?: null
+            )
         }
-        samplesheet = Channel.fromList(samplesheetToList(params.samplesheet, "./assets/schema_input.json"))
-        input_ch = samplesheet.map(groupInputs)
-    }
-
-    // one sample of assembly
-    if (params.fasta) {
-        input_ch = Channel
-            .fromPath(params.fasta, checkIfExists: true)
-            .map { file -> tuple(["id": file.simpleName], file) }
-    }
+        .branch { meta, assembly, proteins_gff, proteins_faa ->
+            assembly_ch: proteins_gff && proteins_faa
+                return tuple(meta, assembly, proteins_gff, proteins_faa)
+            assembly_proteins_ch: true
+                return tuple(meta, assembly)
+        }
+        .set { input_branched }
+    
 
     // mashmap input
     if (params.mashmap) {
@@ -128,25 +106,8 @@ workflow VIRIFY {
 
     /**************************************************************/
 
-    assembly_ch = Channel.empty()
-    proteins_ch = Channel.empty()
-
-    // ----------- if --assemble specified - assemble reads first
-    if (params.assemble) {
-        ASSEMBLE_ILLUMINA(input_ch)
-        assembly_ch = ASSEMBLE_ILLUMINA.out.assembly
-    }
-    else {
-        if (params.use_proteins) {
-            assembly_ch = input_ch.map { meta, assembly, _proteins_gff, _proteins_faa -> tuple(meta, assembly) }
-        }
-        else {
-            assembly_ch = input_ch
-        }
-    }
-
     // ----------- length filtering + rename fasta ------------------ //
-    PREPROCESS(assembly_ch)
+    PREPROCESS(input_branched.assembly_ch)
 
     mapfile = PREPROCESS.out.mapfile
 
@@ -160,7 +121,7 @@ workflow VIRIFY {
     // ----------- if --onlyannotate - skip DETECT step
     if (params.onlyannotate) {
         // use filtered fasta with short names
-        category_fasta = RESTORE_FILTERED_FASTA.out
+        category_fasta = RESTORE_FILTERED_FASTA.out  // [meta, fasta.basename, full_fasta]
     }
     else {
         DETECT(
@@ -181,18 +142,19 @@ workflow VIRIFY {
             }
             .transpose(by: 1)
         RESTORE_CATEGORY_FASTA(files_to_restore, "temporary", "short")
-        category_fasta = RESTORE_CATEGORY_FASTA.out
+        category_fasta = RESTORE_CATEGORY_FASTA.out  // [meta, category_name, category_fasta]
     }
 
     // ----------- split proteins into HC/LC/PP - if provided
-    if (params.use_proteins) {
+    proteins_ch = Channel.empty()
+    protein_files_ch = input_branched.assembly_proteins_ch
+        .map { meta, _assembly, proteins_gff, proteins_faa ->
+            tuple(meta, proteins_gff, proteins_faa)
+        }
+        
+    SPLIT_PROTEINS(category_fasta.groupTuple().join(protein_files_ch).transpose())
 
-        faa = input_ch.map { meta, _assembly, proteins_gff, proteins_faa -> tuple(meta, proteins_gff, proteins_faa) }
-
-        SPLIT_PROTEINS(category_fasta.groupTuple().join(faa).transpose())
-
-        proteins_ch = SPLIT_PROTEINS.out.fasta_proteins_gff
-    }
+    proteins_ch = SPLIT_PROTEINS.out.fasta_proteins_gff  // [meta, category_name, category_fasta, category_faa, category_gff]
 
     // ----------- ANNOTATE
     // category_fastas is already per-category: (meta, set_name, fasta) or (meta, set_name, fasta, faa)
@@ -221,17 +183,12 @@ workflow VIRIFY {
         ANNOTATE.out.chromomap,
     )
 
-    if (params.assemble) {
-
-        ch_multiqc_files = ASSEMBLE_ILLUMINA.out.ch_multiqc_files
-
-        MULTIQC(
-            ch_multiqc_files.collect(),
-            ch_multiqc_config.toList(),
-            ch_multiqc_custom_config.toList(),
-            ch_multiqc_logo.toList(),
-            false,
-            false,
-        )
-    }
+    MULTIQC(
+        ch_multiqc_files.collect(),
+        ch_multiqc_config.toList(),
+        ch_multiqc_custom_config.toList(),
+        ch_multiqc_logo.toList(),
+        false,
+        false,
+    )
 }
