@@ -43,24 +43,24 @@ workflow VIRIFY {
     ch_multiqc_logo = params.multiqc_logo ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.fromPath("${projectDir}/assets/mgnify_logo.png")
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
 
-    samplesheet = Channel.fromList(samplesheetToList(params.samplesheet, "./assets/schema_input.json"))
-    samplesheet
-        .map { id, assembly, proteins_gff, proteins_faa ->
-            tuple(
+    groupInputs = { id, assembly, proteins_gff, proteins_faa ->
+        if (params.use_proteins && proteins_gff && proteins_faa) {
+            return tuple(
                 ["id": id],
                 assembly,
-                proteins_gff ?: null,
-                proteins_faa ?: null
+                proteins_gff,
+                proteins_faa
             )
         }
-        .branch { meta, assembly, proteins_gff, proteins_faa ->
-            assembly_ch: proteins_gff && proteins_faa
-                return tuple(meta, assembly, proteins_gff, proteins_faa)
-            assembly_proteins_ch: true
-                return tuple(meta, assembly)
+        else {
+            return tuple(
+                ["id": id],
+                assembly,
+            )
         }
-        .set { input_branched }
-    
+    }
+    samplesheet = Channel.fromList(samplesheetToList(params.samplesheet, "./assets/schema_input.json"))
+    input_ch = samplesheet.map(groupInputs)
 
     // mashmap input
     if (params.mashmap) {
@@ -106,8 +106,17 @@ workflow VIRIFY {
 
     /**************************************************************/
 
+    proteins_ch = Channel.empty()
+
+    if (params.use_proteins) {
+        assembly_ch = input_ch.map { meta, assembly, _proteins_gff, _proteins_faa -> tuple(meta, assembly) }
+    }
+    else {
+        assembly_ch = input_ch
+    }
+
     // ----------- length filtering + rename fasta ------------------ //
-    PREPROCESS(input_branched.assembly_ch)
+    PREPROCESS(assembly_ch)
 
     mapfile = PREPROCESS.out.mapfile
 
@@ -121,7 +130,7 @@ workflow VIRIFY {
     // ----------- if --onlyannotate - skip DETECT step
     if (params.onlyannotate) {
         // use filtered fasta with short names
-        category_fasta = RESTORE_FILTERED_FASTA.out  // [meta, fasta.basename, full_fasta]
+        category_fasta = RESTORE_FILTERED_FASTA.out
     }
     else {
         DETECT(
@@ -142,19 +151,18 @@ workflow VIRIFY {
             }
             .transpose(by: 1)
         RESTORE_CATEGORY_FASTA(files_to_restore, "temporary", "short")
-        category_fasta = RESTORE_CATEGORY_FASTA.out  // [meta, category_name, category_fasta]
+        category_fasta = RESTORE_CATEGORY_FASTA.out
     }
 
     // ----------- split proteins into HC/LC/PP - if provided
-    proteins_ch = Channel.empty()
-    protein_files_ch = input_branched.assembly_proteins_ch
-        .map { meta, _assembly, proteins_gff, proteins_faa ->
-            tuple(meta, proteins_gff, proteins_faa)
-        }
-        
-    SPLIT_PROTEINS(category_fasta.groupTuple().join(protein_files_ch).transpose())
+    if (params.use_proteins) {
 
-    proteins_ch = SPLIT_PROTEINS.out.fasta_proteins_gff  // [meta, category_name, category_fasta, category_faa, category_gff]
+        faa = input_ch.map { meta, _assembly, proteins_gff, proteins_faa -> tuple(meta, proteins_gff, proteins_faa) }
+
+        SPLIT_PROTEINS(category_fasta.groupTuple().join(faa).transpose())
+
+        proteins_ch = SPLIT_PROTEINS.out.fasta_proteins_gff
+    }
 
     // ----------- ANNOTATE
     // category_fastas is already per-category: (meta, set_name, fasta) or (meta, set_name, fasta, faa)
