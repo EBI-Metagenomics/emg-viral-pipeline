@@ -30,7 +30,7 @@ include { HMMER_PREDICTION            } from './hmmer_processing'
 workflow ANNOTATE {
 
     take:
-    category_fastas     // (meta, set_name, fasta) or (meta, set_name, fasta, faa, gff) when use_proteins
+    category_input     // (meta, set_name, fasta, faa, gff) 
     assembly_fasta      // (meta, fasta) — full assembly per sample, used only for GFF output
 
     // reference databases and aux files //
@@ -47,19 +47,23 @@ workflow ANNOTATE {
     mashmap_ref_ch
 
     main:
-
-    category_fasta = PREDICT_PROTEINS.out.category_fasta
-    proteins_fasta = PREDICT_PROTEINS.out.proteins
-    proteins_gff   = PREDICT_PROTEINS.out.proteins_gff
+    
+    category_input
+        .multiMap{ meta, set_name, fasta, faa, gff ->
+            category_fasta: [meta, set_name, fasta]
+            proteins_fasta: [meta, set_name, faa]
+            proteins_gff: [meta, set_name, gff]
+        }
+        .set{input}
 
     // annotation --> hmmer with chunking
-    HMMER_PREDICTION(proteins_fasta, viphog_db, rvdb_db, pvogs_db, vogdb_db, vpf_db) // out: [meta, set_name, hmm_modified.tsv]
+    HMMER_PREDICTION(input.proteins_fasta, viphog_db, rvdb_db, pvogs_db, vogdb_db, vpf_db) // out: [meta, set_name, hmm_modified.tsv]
 
     // calculate hit qual per protein
     RATIO_EVALUE( HMMER_PREDICTION.out.hmm_result, additional_model_data )
 
     // annotate contigs based on ViPhOGs
-    ANNOTATION( RATIO_EVALUE.out.informative_hits_tsv.join(proteins_gff, by:[0,1]) )
+    ANNOTATION( RATIO_EVALUE.out.informative_hits_tsv.join(input.proteins_gff, by:[0,1]) )
 
     // plot visuals --> PDFs
     PLOT_CONTIG_MAP( ANNOTATION.out.annotations )
@@ -69,16 +73,16 @@ workflow ANNOTATE {
 
     // blast IMG/VR for more information
     if (params.blastextend) {
-      BLAST( category_fasta, imgvr_db )
+      BLAST(input.category_fasta, imgvr_db)
       BLAST_FILTER( BLAST.out, imgvr_db )
     }
 
     if ( params.mashmap ) {
-        MASHMAP( category_fasta, mashmap_ref_ch )
+        MASHMAP(input.category_fasta, mashmap_ref_ch)
     }
 
     CHECKV(
-      category_fasta,
+      input.category_fasta,
       checkv_db.first()
     )
 
@@ -86,7 +90,7 @@ workflow ANNOTATE {
     viphos_annotations   = ANNOTATION.out.annotations.map { meta, _type, data -> [meta, data] }.groupTuple()
     taxonomy_annotations = ASSIGN.out.map { meta, _type, data -> [meta, data] }.groupTuple()
     checkv_results       = CHECKV.out.map { meta, _type, data -> [meta, data] }.groupTuple()
-    category_gffs        = proteins_gff.map { meta, _type, gff -> [meta, gff] }.groupTuple()
+    category_gffs        = input.proteins_gff.map { meta, _type, gff -> [meta, gff] }.groupTuple()
 
     WRITE_GFF(
       assembly_fasta
@@ -107,7 +111,7 @@ workflow ANNOTATE {
       WRITE_GFF.out.gff
     )
 
-    chromomap_ch = category_fasta
+    chromomap_ch = input.category_fasta
         .join(PLOT_CONTIG_MAP.out, by: [0, 1])
         .map { meta, set_name, fasta, _dir, table -> [meta, set_name, fasta, table] }
 

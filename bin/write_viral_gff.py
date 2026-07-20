@@ -76,12 +76,6 @@ def parse_args() -> argparse.Namespace:
         required=False,
     )
     parser.add_argument(
-        "--use-proteins",
-        dest="use_proteins",
-        help="Set when the pipeline used externally predicted proteins as input",
-        action="store_true",
-    )
-    parser.add_argument(
         "-g",
         "--gff",
         dest="gff_files",
@@ -205,42 +199,13 @@ def define_viral_sequence_type(contig: str, contig_len: int) -> tuple[str, bool]
     return viral_sequence_type, prophage_overrun
 
 
-def redefine_coords(
-    prophage_start: int | None,
-    prophage_end: int | None,
-    start: int,
-    end: int,
-    use_proteins: bool,
-) -> tuple[int, int]:
-    """Adjust CDS coordinates to be relative to the full contig when needed.
-
-    When the pipeline predicted proteins itself (prodigal mode), CDS coordinates in
-    the annotation TSV are relative to the prophage region and must be shifted by
-    prophage_start to become absolute.  When the user supplied proteins, coordinates
-    are already absolute and are returned unchanged.
-
-    :param prophage_start: Prophage region start on the full contig, or None.
-    :param prophage_end: Prophage region end on the full contig, or None.
-    :param start: CDS start coordinate from the annotation TSV.
-    :param end: CDS end coordinate from the annotation TSV.
-    :param use_proteins: True when user-supplied proteins were used (coordinates already absolute).
-    :return: Tuple of (adjusted_start, adjusted_end).
-    """
-    if prophage_start is not None and prophage_end is not None and not use_proteins:
-        start = start + prophage_start
-        end = end + prophage_start
-    return start, end
-
-
-def build_cds_data(contig, contig_len, start, end, direction, cds_id, use_proteins):
+def build_cds_data(contig, contig_len, direction, cds_id):
     
     viral_sequence_type, does_the_prophage_overrun = define_viral_sequence_type(
         contig, contig_len
     )
 
     prophage_start, prophage_end, _ = Record.get_prophage_metadata_from_contig(contig)
-    if prophage_start is not None and prophage_end is not None:
-        start, end = redefine_coords(prophage_start, prophage_end, start, end, use_proteins)
 
     direction = direction.replace("-1", "-").replace("1", "+")
     
@@ -250,13 +215,12 @@ def build_cds_data(contig, contig_len, start, end, direction, cds_id, use_protei
             f"prophage-{prophage_start}:{contig_len}",
         )
         
-    return viral_sequence_type, start, end, direction, cds_id
+    return viral_sequence_type, direction, cds_id
     
 
 def get_annotation_results(
     virify_annotation_files: list[str],
-    contigs_len_dict: dict[str, int],
-    use_proteins: bool = False,
+    contigs_len_dict: dict[str, int]
 ) -> tuple[dict[str, set[str]], dict[str, list]]:
     """Aggregate VIRify annotation TSVs into structures ready for GFF writing.
 
@@ -266,8 +230,6 @@ def get_annotation_results(
 
     :param virify_annotation_files: Paths to *_annotation.tsv files produced by viral_contigs_annotation.py.
     :param contigs_len_dict: Mapping of base contig name to sequence length.
-    :param use_proteins: True when user-supplied proteins were used; CDS coordinates are
-                         then already absolute and are not shifted.
     :return: Tuple of (viral_sequences, cds_annotations) where:
              - viral_sequences maps full contig ID to a set of viral sequence type strings
                ("phage_linear", "phage_circular", or "prophage-START:END").
@@ -282,14 +244,12 @@ def get_annotation_results(
             for row in csv_reader:
                 contig = row["Contig"]
                 cds_id = row["CDS_ID"]
-                start = int(row["Start"])
-                end = int(row["End"])
                 direction = row["Direction"]
                 
                 clean_contig_name = Record.remove_prophage_from_contig(contig)
                 contig_len = contigs_len_dict.get(clean_contig_name)
                 if contig_len is not None:
-                    viral_sequence_type, start, end, direction, cds_id = build_cds_data(contig, contig_len, start, end, direction, cds_id, use_proteins)
+                    viral_sequence_type, direction, cds_id = build_cds_data(contig, contig_len, direction, cds_id)
                 
                 best_hit = row["Best_hit"]
                 
@@ -426,8 +386,7 @@ def get_taxonomy_results(taxonomy_files: list[str]) -> dict[str, str]:
 def get_proteins_from_gff(
     gff_files: list[str],
     contigs_len_dict: dict[str, int],
-    cds_best_hits,
-    use_proteins
+    cds_best_hits
 ) -> dict[str, set[str]]:
     """Supplement viral_sequences with contigs from per-category GFF files that have no proteins.
 
@@ -479,8 +438,7 @@ def get_proteins_from_gff(
             genecaller = protein_record_cols[1]
             direction = protein_record_cols[6]
 
-            viral_sequence_type, start, end, direction, cds_id = build_cds_data(contig_id, contig_len, start, end,
-                                                                            direction, cds_id, use_proteins)
+            viral_sequence_type, direction, cds_id = build_cds_data(contig_id, contig_len, direction, cds_id)
             # Add proteins into CDS dictionary
             annotation = ""
             if contig_id in cds_best_hits.keys() and cds_id in cds_best_hits[contig_id].keys():
@@ -495,22 +453,18 @@ def get_proteins_from_gff(
 
 def get_sequence_regions(
     viral_sequences: dict[str, set[str]],
-    contigs_len_dict: dict[str, int],
-    use_proteins: bool,
+    contigs_len_dict: dict[str, int]
 ) -> list[tuple[str, int]]:
     """Build a sorted list of (contig_name, length) pairs for GFF ##sequence-region headers.
 
-    Each unique base contig name is represented once.  When use_proteins is True,
+    Each unique base contig name is represented once.  When using proteins predicted on full contig,
     contigs missing from the assembly are skipped with a warning rather than raising
     an error, because users may supply proteins for contigs that were filtered out
     by the length threshold.
 
     :param viral_sequences: Mapping of full contig ID to viral sequence types.
     :param contigs_len_dict: Mapping of base contig name to sequence length.
-    :param use_proteins: If True, missing contigs produce a warning rather than an error.
     :return: List of (clean_contig_name, length) tuples sorted by contig name.
-    :raises ValueError: If no sequence regions could be collected, or if a contig is
-                        missing from the assembly and use_proteins is False.
     """
     sequence_regions: list[tuple[str, int]] = []
     used_contigs: set[str] = set()
@@ -523,10 +477,7 @@ def get_sequence_regions(
         used_contigs.add(clean_contig_name)
         contig_length = contigs_len_dict.get(clean_contig_name)
         if contig_length is None:
-            if use_proteins:
-                missed_contigs += 1
-            else:
-                raise ValueError(f"Contig {clean_contig_name} not found in the assembly.")
+            missed_contigs += 1
             continue
         sequence_regions.append((clean_contig_name, contig_length))
 
@@ -733,12 +684,12 @@ if __name__ == "__main__":
     # define virify HC/LC/PP quality
     virify_quality = define_virify_quality(checkv_files)
     # get viphogs annotation for proteins
-    cds_best_hits = get_annotation_results(virify_files, contigs_len_dict, args.use_proteins)
+    cds_best_hits = get_annotation_results(virify_files, contigs_len_dict)
     
     # get proteins from GFF and add viphogs annotation where it exists
-    viral_sequences, cds_annotations = get_proteins_from_gff(args.gff_files, contigs_len_dict, cds_best_hits, args.use_proteins)
+    viral_sequences, cds_annotations = get_proteins_from_gff(args.gff_files, contigs_len_dict, cds_best_hits)
     
-    sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict, args.use_proteins)
+    sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
     checkv_dict = get_checkv_results(checkv_files, sequence_regions)
     taxonomy_dict = get_taxonomy_results(taxonomy_files)
 

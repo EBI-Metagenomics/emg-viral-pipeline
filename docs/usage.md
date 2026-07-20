@@ -88,7 +88,6 @@ Run annotation for a small assembly file (10 contigs, 0.78 Mbp) on your local Li
 
 ### Useful runtime flags
 
-* `--onlyannotate` - skip virus detection (VirSorter/VirFinder/PPR-Meta) and annotate all input contigs directly; useful if you already have a curated set of viral contigs.
 * `--hmmextend` - run additional HMM databases (pVOGs, RVDB, VOGDB, VPF) for more annotation hits.
 * `--blastextend` - run the additional BLAST-based comparison against IMG/VR (slow).
 * `--publish_all` - publish the expanded, per-step output folder structure (see [Output](output.md)) instead of just `08-final`.

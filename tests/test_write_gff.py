@@ -20,12 +20,12 @@ from bin.write_viral_gff import (
 )
 
 
-def _build_gff_inputs(annotation_files, checkv_files, gff_files, contigs_len_dict, use_proteins=False):
+def _build_gff_inputs(annotation_files, checkv_files, gff_files, contigs_len_dict):
     """Replace the old aggregate_annotations: derive virify_quality, cds_best_hits, viral_sequences, cds_annotations."""
     virify_quality = define_virify_quality(checkv_files)
-    cds_best_hits = get_annotation_results(annotation_files, contigs_len_dict, use_proteins)
+    cds_best_hits = get_annotation_results(annotation_files, contigs_len_dict)
     viral_sequences, cds_annotations = get_proteins_from_gff(
-        gff_files, contigs_len_dict, cds_best_hits, use_proteins
+        gff_files, contigs_len_dict, cds_best_hits
     )
     return viral_sequences, cds_annotations, virify_quality
 
@@ -93,7 +93,7 @@ class TestWriteGFF(unittest.TestCase):
         viral_sequences, cds_annotations, virify_quality = _build_gff_inputs(
             annotation_files, checkv_files, gff_files, contigs_len_dict
         )
-        sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict, False)
+        sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
         checkv_dict = get_checkv_results(checkv_files, sequence_regions)
         taxonomy_dict = get_taxonomy_results(taxonomy_files)
 
@@ -165,7 +165,7 @@ class TestWriteGFF(unittest.TestCase):
         contigs_len_dict = get_contig_lengths_per_contig(assembly_fasta)
 
         viral_sequences, cds_annotations, virify_quality = _build_gff_inputs(
-            [annotations_tsv], [checkv_tsv], [annotations_gff], contigs_len_dict, False
+            [annotations_tsv], [checkv_tsv], [annotations_gff], contigs_len_dict
         )
 
         # Verify that prophage coordinates were truncated in the viral_sequences.
@@ -178,7 +178,7 @@ class TestWriteGFF(unittest.TestCase):
         self.assertTrue(any("prophage-500:1000" in s for s in prophage_types))
         self.assertFalse(any("prophage-500:1200" in s for s in prophage_types))
 
-        sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict, False)
+        sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
         checkv_dict = get_checkv_results([checkv_tsv], sequence_regions)
         taxonomy_dict = get_taxonomy_results([taxonomy_tsv])
 
@@ -232,7 +232,7 @@ def test_phage_circular_checkv_key_normalization(tmp_path):
 
     sample_prefix = str(tmp_path / "test_phage_circular")
 
-    sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict, False)
+    sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
     checkv_dict = get_checkv_results([str(checkv_tsv)], sequence_regions)
     taxonomy_dict = get_taxonomy_results([str(taxonomy_tsv)])
 
@@ -279,7 +279,7 @@ def test_no_checkv_match_raises_error():
     viral_sequences, cds_annotations, virify_quality = _build_gff_inputs(
         [str(annotation)], [str(checkv)], [str(gff)], contigs_len_dict
     )
-    sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict, False)
+    sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
 
     with pytest.raises(ValueError, match="None of the.*GFF contigs"):
         get_checkv_results([str(checkv)], sequence_regions)
@@ -390,7 +390,7 @@ def test_partial_checkv_results_warns(tmp_path):
     viral_sequences, cds_annotations, virify_quality = _build_gff_inputs(
         [str(annotation)], [str(checkv)], [str(gff)], contigs_len_dict
     )
-    sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict, False)
+    sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
 
     with patch("logging.warning") as mock_warn:
         checkv_dict = get_checkv_results([str(checkv)], sequence_regions)
@@ -432,7 +432,7 @@ def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
     contigs_len_dict = get_contig_lengths_per_contig(str(assembly_fasta))
 
     viral_sequences, cds_annotations, virify_quality = _build_gff_inputs(
-        [str(annotation_tsv)], [str(checkv_tsv)], [str(annotation_gff)], contigs_len_dict, True
+        [str(annotation_tsv)], [str(checkv_tsv)], [str(annotation_gff)], contigs_len_dict
     )
 
     # Both contigs appear in annotation output before write_gff filtering
@@ -443,7 +443,7 @@ def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
     sample_prefix = str(tmp_path / "test_missing_contig")
 
     with patch("logging.warning") as mock_warn:
-        sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict, use_proteins=True)
+        sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
         checkv_dict = get_checkv_results([str(checkv_tsv)], sequence_regions)
         taxonomy_dict = get_taxonomy_results([str(taxonomy_tsv)])
         write_gff(
@@ -467,11 +467,6 @@ def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
     gff_content = output_gff.read_text()
     assert "valid_contig" in gff_content
     assert "missing_contig" not in gff_content
-
-    with pytest.raises(ValueError) as _e:
-        # When the flag use_proteins is off if a contig id is not found
-        # An exception is thrown, as this is not expected
-        get_sequence_regions(viral_sequences, contigs_len_dict, use_proteins=False)
 
 
 def test_missing_annotation_file(tmp_path):
@@ -511,7 +506,7 @@ def test_missing_annotation_file(tmp_path):
     viral_sequences, cds_annotations, virify_quality = _build_gff_inputs(
         [str(lc_annotation)], checkv_files, gff_files, contigs_len_dict
     )
-    sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict, False)
+    sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
     checkv_dict = get_checkv_results(checkv_files, sequence_regions)
     taxonomy_dict = get_taxonomy_results([str(lc_taxonomy)])
 

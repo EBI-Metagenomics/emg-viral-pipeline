@@ -11,10 +11,8 @@ process WRITE_GFF {
     tuple val(meta), path("${meta.id}_virify.gff"), emit: gff
 
     script:
-    def use_proteins_flag = params.use_proteins ? "--use-proteins": "" ;
     """
     write_viral_gff.py \\
-      $use_proteins_flag \\
       -v ${viphos_annotations.join(' ')} \\
       -c ${quality_summaries.join(' ')} \\
       -t ${taxonomies.join(' ')} \\
