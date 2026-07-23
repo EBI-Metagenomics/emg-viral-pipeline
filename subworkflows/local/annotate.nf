@@ -48,13 +48,12 @@ workflow ANNOTATE {
 
     main:
     
-    category_input
+    input = category_input
         .multiMap{ meta, set_name, fasta, faa, gff ->
             category_fasta: [meta, set_name, fasta]
             proteins_fasta: [meta, set_name, faa]
             proteins_gff: [meta, set_name, gff]
         }
-        .set{input}
 
     // annotation --> hmmer with chunking
     HMMER_PREDICTION(input.proteins_fasta, viphog_db, rvdb_db, pvogs_db, vogdb_db, vpf_db) // out: [meta, set_name, hmm_modified.tsv]

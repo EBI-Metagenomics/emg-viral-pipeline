@@ -10,8 +10,13 @@ process PRODIGAL {
       tuple val(meta), path("${meta.id}_prodigal.gff"), path("${meta.id}_prodigal.faa"), emit: proteins_files
 
     script:
+    def fasta_file = fasta.name.endsWith('.gz') ? fasta.baseName : fasta.name
     """
-    prodigal -p "meta" -a ${meta.id}_prodigal.faa -f gff -o ${meta.id}_prodigal.gff -i ${fasta}
+    if [[ ${fasta} == *.gz ]]; then
+        gunzip -c ${fasta} > ${fasta_file}
+    fi
+
+    prodigal -p "meta" -a ${meta.id}_prodigal.faa -f gff -o ${meta.id}_prodigal.gff -i ${fasta_file}
     """
 }
 
