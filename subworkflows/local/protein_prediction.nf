@@ -1,4 +1,4 @@
-include { PRODIGAL        } from '../../modules/local/prodigal'
+include { PYRODIGAL       } from '../modules/nf-core/pyrodigal/main'  
 include { RENAME_PRODIGAL } from '../../modules/local/rename_prodigal'
 
 workflow PREDICT_PROTEINS {
@@ -7,16 +7,16 @@ workflow PREDICT_PROTEINS {
 
     main:
     
-        // ORF detection --> prodigal
-        PRODIGAL(
-            input_fastas
+        // ORF detection --> pyrodigal
+        PYRODIGAL(
+            input_fastas,
+            "gff"
         )
         
         RENAME_PRODIGAL(
-             PRODIGAL.out.proteins_files
+             PYRODIGAL.out.annotations.join(PYRODIGAL.out.faa)
         )
-        proteins_gff = RENAME_PRODIGAL.out.gff
 
     emit:
-        predicted_proteins = PRODIGAL.out.proteins_files.join(proteins_gff).map{ meta, gff, faa, renamed_gff -> [meta, renamed_gff, faa]}
+        predicted_proteins = RENAME_PRODIGAL.out.gff.join(PYRODIGAL.out.faa)
 }

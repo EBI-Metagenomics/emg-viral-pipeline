@@ -14,9 +14,11 @@
 # limitations under the License.
 
 import argparse
+import gzip
 import logging
 import sys
 import re
+from typing import IO
 
 from constants import PRODIGAL_RENAMED_ID_REGEXP
 from utils import parse_attrs
@@ -53,9 +55,20 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def open_file(filename: str) -> IO[str]:
+    """Open a file, handling both gzipped and plain text formats.
+
+    :param filename: Path to file (.gz or uncompressed).
+    :return: Text-mode file handle.
+    """
+    if filename.endswith(".gz"):
+        return gzip.open(filename, "rt")
+    return open(filename, "r")
+
+
 def read_faa(proteins: str) -> set[str]:
     protein_names = set()
-    with open(proteins, "r") as file_in:
+    with open_file(proteins) as file_in:
         for line in file_in:
             if not line.startswith(">"):
                 continue
@@ -76,7 +89,7 @@ def rename_proteins_in_gff(gff: str, protein_names: set[str], output: str) -> No
     :param output: output corrected gff
     :return: -
     """
-    with open(gff, "r") as file_in, open(output, "w") as file_out:
+    with open_file(gff) as file_in, open(output, "w") as file_out:
         for line in file_in:
             if line.startswith("#"):
                 file_out.write(line)
