@@ -1,4 +1,4 @@
-include { PYRODIGAL       } from '../modules/nf-core/pyrodigal/main'  
+include { PYRODIGAL       } from '../../modules/nf-core/pyrodigal/main'  
 include { RENAME_PRODIGAL } from '../../modules/local/rename_prodigal'
 
 workflow PREDICT_PROTEINS {
