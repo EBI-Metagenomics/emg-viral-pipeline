@@ -7,6 +7,8 @@ include { samplesheetToList                 } from 'plugin/nf-schema'
 **************************/
 include { RESTORE as RESTORE_CATEGORY_FASTA } from '../modules/local/restore'
 include { RESTORE as RESTORE_FILTERED_FASTA } from '../modules/local/restore'
+include { SPLIT_PROTEINS                    } from '../modules/local/split_proteins'
+
 include { MULTIQC                           } from '../modules/nf-core/multiqc'
 
 /************************** 
@@ -21,15 +23,9 @@ include { PREPROCESS                        } from '../subworkflows/local/prepro
 include { PREDICT_PROTEINS                  } from '../subworkflows/local/protein_prediction/main'
 include { PROTEINS_COMPATIBILITY            } from '../subworkflows/local/proteins_compatibility/main'
 
-include { SPLIT_PROTEINS                    } from '../modules/local/split_proteins'
-
 /************************** 
 * WORKFLOW ENTRY POINT
 **************************/
-
-/* 
-Here the main workflow starts and runs the defined sub workflows. 
-*/
 
 workflow VIRIFY {
 
