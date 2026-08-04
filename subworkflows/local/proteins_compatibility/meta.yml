@@ -68,6 +68,13 @@ output:
           type: file
           description: FASTA file of protein sequences
           pattern: "*.{faa,fasta}"
+  not_matched_proteins_report:
+    - "not_matched_proteins_report.tsv":
+        type: file
+        description: |
+          TSV report listing sample IDs whose supplied proteins did not match
+          their assembly and were therefore excluded from the pipeline
+        pattern: "*.tsv"
 authors:
   - "@KateSakharova"
 maintainers:
