@@ -1,0 +1,74 @@
+name: "proteins_compatibility"
+description: |
+  Checks whether user-supplied proteins (faa/gff) are compatible with the
+  provided assembly fasta. Samples whose proteins already use long,
+  contig-based IDs are passed through as-is; samples using prodigal's
+  short-format IDs are renamed to the long format; samples whose proteins
+  don't match the assembly at all are reported and excluded.
+keywords:
+  - annotation
+  - prodigal
+  - validation
+  - rename
+components:
+  - local/check_proteins_compatibility
+  - local/rename_prodigal
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test' ]
+    - fasta:
+        type: file
+        description: Assembly FASTA file the proteins were predicted from
+        pattern: "*.{fasta,fa,fna}"
+    - gff:
+        type: file
+        description: User-supplied GFF3 file with predicted proteins
+        pattern: "*.gff"
+    - faa:
+        type: file
+        description: User-supplied FASTA file with predicted protein sequences
+        pattern: "*.{faa,fasta}"
+output:
+  checked_records:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'test' ]
+      - fasta:
+          type: file
+          description: Assembly FASTA file
+          pattern: "*.{fasta,fa,fna}"
+      - gff:
+          type: file
+          description: GFF3 file, already compatible and not renamed
+          pattern: "*.gff"
+      - faa:
+          type: file
+          description: FASTA file of protein sequences, already compatible
+          pattern: "*.{faa,fasta}"
+  renamed_records:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'test' ]
+      - fasta:
+          type: file
+          description: Assembly FASTA file
+          pattern: "*.{fasta,fa,fna}"
+      - gff:
+          type: file
+          description: GFF3 file with short-format IDs renamed to long, contig-based IDs
+          pattern: "*_renamed.gff"
+      - faa:
+          type: file
+          description: FASTA file of protein sequences
+          pattern: "*.{faa,fasta}"
+authors:
+  - "@KateSakharova"
+maintainers:
+  - "@KateSakharova"

@@ -1,0 +1,40 @@
+name: "predict_proteins"
+description: |
+  Predicts proteins from an assembly FASTA file with pyrodigal, then renames
+  the short-format prodigal protein IDs in the GFF to long, contig-based IDs.
+keywords:
+  - annotation
+  - prediction
+  - prokaryote
+  - orf
+  - pyrodigal
+components:
+  - pyrodigal
+  - local/rename_prodigal
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test' ]
+    - input_fastas:
+        type: file
+        description: Assembly FASTA file to predict proteins from
+        pattern: "*.{fasta,fa,fna}"
+output:
+  predicted_proteins:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'test' ]
+      - gff:
+          type: file
+          description: GFF3 file of predicted proteins with long, contig-based IDs
+          pattern: "*_renamed.gff"
+      - faa:
+          type: file
+          description: FASTA file of predicted protein sequences
+          pattern: "*.faa.gz"
+authors:
+  - "@KateSakharova"
