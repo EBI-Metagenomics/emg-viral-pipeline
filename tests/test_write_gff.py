@@ -1,22 +1,23 @@
 #!/bin/env python3
 
-import os
-from pathlib import Path
-import unittest
-from unittest.mock import patch
 import glob
+import os
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
 import pytest
 
 from bin.parse_viral_pred import Record
 from bin.write_viral_gff import (
-    write_gff,
-    get_contig_lengths_per_contig,
-    get_annotation_results,
-    get_proteins_from_gff,
     define_virify_quality,
+    get_annotation_results,
     get_checkv_results,
-    get_taxonomy_results,
+    get_contig_lengths_per_contig,
+    get_proteins_from_gff,
     get_sequence_regions,
+    get_taxonomy_results,
+    write_gff,
 )
 
 
@@ -87,7 +88,9 @@ class TestWriteGFF(unittest.TestCase):
         gff_files = glob.glob(
             self._build_path("/write_viral_gff/simple_test/gff") + "/*.gff"
         )
-        assembly_file = self._build_path("/write_viral_gff/simple_test") + "/assembly.fasta"
+        assembly_file = (
+            self._build_path("/write_viral_gff/simple_test") + "/assembly.fasta"
+        )
 
         contigs_len_dict = get_contig_lengths_per_contig(assembly_file)
         viral_sequences, cds_annotations, virify_quality = _build_gff_inputs(
@@ -156,10 +159,12 @@ class TestWriteGFF(unittest.TestCase):
             + "/annotations.gff"
         )
         checkv_tsv = (
-            self._build_path("/write_viral_gff/circular_visorter2_fixtures") + "/checkv.tsv"
+            self._build_path("/write_viral_gff/circular_visorter2_fixtures")
+            + "/checkv.tsv"
         )
         taxonomy_tsv = (
-            self._build_path("/write_viral_gff/circular_visorter2_fixtures") + "/taxonomy.tsv"
+            self._build_path("/write_viral_gff/circular_visorter2_fixtures")
+            + "/taxonomy.tsv"
         )
 
         contigs_len_dict = get_contig_lengths_per_contig(assembly_fasta)
@@ -225,7 +230,10 @@ def test_phage_circular_checkv_key_normalization(tmp_path):
     contigs_len_dict = get_contig_lengths_per_contig(str(assembly_fasta))
 
     viral_sequences, cds_annotations, virify_quality = _build_gff_inputs(
-        [str(annotation_tsv)], [str(checkv_tsv)], [str(annotation_gff)], contigs_len_dict
+        [str(annotation_tsv)],
+        [str(checkv_tsv)],
+        [str(annotation_gff)],
+        contigs_len_dict,
     )
 
     assert "contig1|phage-circular" in viral_sequences
@@ -432,7 +440,10 @@ def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
     contigs_len_dict = get_contig_lengths_per_contig(str(assembly_fasta))
 
     viral_sequences, cds_annotations, virify_quality = _build_gff_inputs(
-        [str(annotation_tsv)], [str(checkv_tsv)], [str(annotation_gff)], contigs_len_dict
+        [str(annotation_tsv)],
+        [str(checkv_tsv)],
+        [str(annotation_gff)],
+        contigs_len_dict,
     )
 
     # Both contigs appear in annotation output before write_gff filtering
@@ -485,7 +496,9 @@ def test_missing_annotation_file(tmp_path):
     lc_annotation = fixtures / "low_confidence_viral_contigs_split_annotation.tsv"
     hc_checkv = fixtures / "high_confidence_viral_contigs_quality_summary.tsv"
     lc_checkv = fixtures / "low_confidence_viral_contigs_quality_summary.tsv"
-    lc_taxonomy = fixtures / "low_confidence_viral_contigs_split_annotation_taxonomy.tsv"
+    lc_taxonomy = (
+        fixtures / "low_confidence_viral_contigs_split_annotation_taxonomy.tsv"
+    )
 
     contigs_len_dict = get_contig_lengths_per_contig(str(assembly))
 
@@ -501,7 +514,9 @@ def test_missing_annotation_file(tmp_path):
                     continue
                 cols = line.strip().split("\t")
                 if len(cols) == 9 and cols[2] == "CDS":
-                    input_cds_per_contig[cols[0]] = input_cds_per_contig.get(cols[0], 0) + 1
+                    input_cds_per_contig[cols[0]] = (
+                        input_cds_per_contig.get(cols[0], 0) + 1
+                    )
 
     viral_sequences, cds_annotations, virify_quality = _build_gff_inputs(
         [str(lc_annotation)], checkv_files, gff_files, contigs_len_dict
@@ -530,7 +545,8 @@ def test_missing_annotation_file(tmp_path):
     # 9983 has no annotation TSV → taxonomy falls back to unclassified
     assert "ERZ27225067_9983" in content
     mobile_element_lines_9983 = [
-        l for l in content.splitlines()
+        l
+        for l in content.splitlines()
         if l.startswith("ERZ27225067_9983") and "viral_sequence" in l
     ]
     assert mobile_element_lines_9983, "9983 mobile-element record missing from output"
@@ -539,7 +555,8 @@ def test_missing_annotation_file(tmp_path):
     # Protein count: every CDS from an included contig must appear in the output
     output_cds = content.count("\tCDS\t")
     expected_cds = sum(
-        count for contig, count in input_cds_per_contig.items()
+        count
+        for contig, count in input_cds_per_contig.items()
         if "ERZ27225067_9986" not in contig
     )
     assert output_cds == expected_cds, (

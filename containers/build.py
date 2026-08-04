@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-import sys
 import glob
+import sys
 from pathlib import Path
 
-from dockerfile_parse import DockerfileParser
 import docker
+from dockerfile_parse import DockerfileParser
 
 
 def main():
@@ -17,7 +17,7 @@ def main():
 
         df_parsed = DockerfileParser(path=df_location)
 
-        print("")
+        print()
         print("--- Building ---")
         print(f"## dockerfile {df_location}")
 

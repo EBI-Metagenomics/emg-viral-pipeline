@@ -20,14 +20,14 @@ workflow {
       helpMSG()
       exit(0)
     }
-    
+
     validateParameters()
-    
+
     log.info(paramsSummaryLog(workflow))
-    
+
     if (params.meta_version == "v4") {
       printMetadataV4Warning()
     }
-    
+
     VIRIFY()
 }

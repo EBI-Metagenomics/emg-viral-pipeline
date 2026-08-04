@@ -6,7 +6,6 @@ import re
 from pathlib import Path
 
 import pandas as pd
-
 from constants import PRODIGAL_RENAMED_ID_REGEXP
 from utils import parse_attrs
 
@@ -20,27 +19,27 @@ def parse_gff(gff_file: str) -> dict:
     cds_info = {}
     with open(gff_file) as fh:
         for line in fh:
-            if line.startswith('#'):
+            if line.startswith("#"):
                 continue
-            cols = line.strip().split('\t')
-            if len(cols) != 9 or cols[2] != 'CDS':
+            cols = line.strip().split("\t")
+            if len(cols) != 9 or cols[2] != "CDS":
                 continue
             attrs, _ = parse_attrs(cols[8])
-            protein_id = attrs.get('ID', '').strip()
+            protein_id = attrs.get("ID", "").strip()
             if protein_id:
                 seqid = cols[0]
-                if '|prophage-' in seqid:
-                    # Prodigal can use <contigNumber_proteinNumber> like 1_1 
+                if "|prophage-" in seqid:
+                    # Prodigal can use <contigNumber_proteinNumber> like 1_1
                     # and do not apply _proteinNumber to real contig name
                     if re.fullmatch(PRODIGAL_RENAMED_ID_REGEXP, protein_id):
                         # if GFF ID has pattern <contigNumber_proteinNumber>
-                        protein_suffix = protein_id.rsplit('_', 1)[-1]
-                        protein_id = f"{seqid}_{protein_suffix}"                  
+                        protein_suffix = protein_id.rsplit("_", 1)[-1]
+                        protein_id = f"{seqid}_{protein_suffix}"
                 cds_info[protein_id] = {
-                    'contig': seqid,
-                    'start': cols[3],
-                    'end': cols[4],
-                    'strand': cols[6],
+                    "contig": seqid,
+                    "start": cols[3],
+                    "end": cols[4],
+                    "strand": cols[6],
                 }
     return cds_info
 
@@ -55,15 +54,15 @@ def extract_annotations(ratio_evalue_file: str, gff_data: dict) -> list:
              [Contig, CDS_ID, Start, End, Direction, Best_hit, Abs_Evalue_exp, Label]
     """
     annotation_list = []
-    
+
     if Path(ratio_evalue_file).stat().st_size == 0:
         return annotation_list
-    
+
     ratio_evalue_df = pd.read_csv(ratio_evalue_file, sep="\t")
 
     for protein_id, info in gff_data.items():
-        contig_id = info['contig']
-        protein_prop = [protein_id, info['start'], info['end'], info['strand']]
+        contig_id = info["contig"]
+        protein_prop = [protein_id, info["start"], info["end"], info["strand"]]
 
         ratio_lookup_key = protein_id
 

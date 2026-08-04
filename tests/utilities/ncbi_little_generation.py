@@ -1,12 +1,12 @@
 #!/bin/
 
-import sqlite3
 import argparse
 import csv
+import sqlite3
 
 
 def main(ncbi_db, virify_vphmms):
-    """This script will remove all the NCBI taxons that are not present in 
+    """This script will remove all the NCBI taxons that are not present in
     the additional_data_vpHMMs_v3 file from the ete3 ncbi taxonomy file.
     """
     tax_ids = set()

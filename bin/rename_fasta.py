@@ -2,9 +2,9 @@
 
 import argparse
 import csv
-import sys
-import re
 import os
+import re
+import sys
 
 
 def _parse_name(seq):
@@ -50,7 +50,7 @@ def rename(args):
                     count += 1
                     fasta_out.write(f">{args.prefix}{count}\n")
                     name, _ = _parse_name(line)
-                    short_name = name.split(' ')[0]
+                    short_name = name.split(" ")[0]
                     temporary_name = f"{args.prefix}{count}"
                     tsv_map.writerow([name, temporary_name, short_name])
                 else:
@@ -77,25 +77,24 @@ def restore(args):
         for m in csv.DictReader(map_tsv, delimiter="\t"):
             mapping[m[args.from_restore]] = m[args.to_restore]
 
-    with open(args.input, "r") as fasta_in:
-        with open(args.output, "w") as fasta_out:
-            for line in fasta_in:
-                if line.startswith(">"):
-                    mod, metadata = _parse_name(line)
-                    # prophage metada removal
-                    original = mapping.get(mod, None)
-                    if not original:
-                        print(
-                            f"Missing sequence in mapping for {mod}. Header: {line}",
-                            file=sys.stderr,
-                        )
-                        original = mod
-                    if len(metadata):
-                        fasta_out.write(f">{original}|{'|'.join(metadata)}\n")
-                    else:
-                        fasta_out.write(f">{original}\n")
+    with open(args.input, "r") as fasta_in, open(args.output, "w") as fasta_out:
+        for line in fasta_in:
+            if line.startswith(">"):
+                mod, metadata = _parse_name(line)
+                # prophage metada removal
+                original = mapping.get(mod, None)
+                if not original:
+                    print(
+                        f"Missing sequence in mapping for {mod}. Header: {line}",
+                        file=sys.stderr,
+                    )
+                    original = mod
+                if len(metadata):
+                    fasta_out.write(f">{original}|{'|'.join(metadata)}\n")
                 else:
-                    fasta_out.write(line)
+                    fasta_out.write(f">{original}\n")
+            else:
+                fasta_out.write(line)
 
 
 def main():
@@ -131,16 +130,16 @@ def main():
     restore_parser.add_argument(
         "--from-restore",
         help="Name of column FROM what do renaming. "
-             "Example, temporary name: seq1, short name: ERZ.1, original name: ERZ1 NODE1_len10_cov3.8",
+        "Example, temporary name: seq1, short name: ERZ.1, original name: ERZ1 NODE1_len10_cov3.8",
         type=str,
-        choices=['temporary', 'original', 'short']
+        choices=["temporary", "original", "short"],
     )
     restore_parser.add_argument(
         "--to-restore",
         help="Name of column TO what do renaming. "
-             "Example, temporary name: seq1, short name: ERZ.1, original name: ERZ1 NODE1_len10_cov3.8",
+        "Example, temporary name: seq1, short name: ERZ.1, original name: ERZ1 NODE1_len10_cov3.8",
         type=str,
-        choices=['temporary', 'original', 'short']
+        choices=["temporary", "original", "short"],
     )
     restore_parser.set_defaults(func=restore)
 

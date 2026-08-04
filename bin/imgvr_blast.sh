@@ -34,7 +34,7 @@ while getopts "c:d:q:o:" opt; do
             usage;
             exit 1
         fi
-        ;;    
+        ;;
     q)
         QUERY="$OPTARG"
         if [ ! -s "$QUERY" ];
@@ -70,7 +70,7 @@ fi
 
 BLAST_FORMAT="6 qseqid sseqid pident length mismatch gapopen qstart qend qlen sstart send evalue bitscore slen"
 
-HEADER_BLAST="qseqid\\tsseqid\\tpident\\tlength\\tmismatch\\tgapopen\\tqstart\\tqend\\tqlen\\tsstart\\tsend\\tevalue\\tbitscore\\tslen" 
+HEADER_BLAST="qseqid\\tsseqid\\tpident\\tlength\\tmismatch\\tgapopen\\tqstart\\tqend\\tqlen\\tsstart\\tsend\\tevalue\\tbitscore\\tslen"
 
 echo -e $HEADER_BLAST > "$OUT_FILE".tsv
 

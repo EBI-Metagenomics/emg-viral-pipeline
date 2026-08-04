@@ -2,7 +2,7 @@
 
 include { samplesheetToList                 } from 'plugin/nf-schema'
 
-/************************** 
+/**************************
 * MODULES
 **************************/
 include { RESTORE as RESTORE_CATEGORY_FASTA } from '../modules/local/restore'
@@ -11,7 +11,7 @@ include { SPLIT_PROTEINS                    } from '../modules/local/split_prote
 
 include { MULTIQC                           } from '../modules/nf-core/multiqc'
 
-/************************** 
+/**************************
 * SUB WORKFLOWS
 **************************/
 
@@ -23,14 +23,14 @@ include { PREPROCESS                        } from '../subworkflows/local/prepro
 include { PREDICT_PROTEINS                  } from '../subworkflows/local/protein_prediction/main'
 include { PROTEINS_COMPATIBILITY            } from '../subworkflows/local/proteins_compatibility/main'
 
-/************************** 
+/**************************
 * WORKFLOW ENTRY POINT
 **************************/
 
 workflow VIRIFY {
 
-    /************************** 
-    * INPUT CHANNELS 
+    /**************************
+    * INPUT CHANNELS
     **************************/
 
     // mashmap input
@@ -44,7 +44,7 @@ workflow VIRIFY {
     if (params.factor) {
         factor_file = file(params.factor, checkIfExists: true)
     }
-    
+
     // multiqc inputs
     ch_multiqc_files = Channel.empty()
     ch_multiqc_config = Channel.fromPath("${projectDir}/assets/multiqc_config.yml", checkIfExists: true)
@@ -63,7 +63,7 @@ workflow VIRIFY {
             )
         }
         .set { input_assembly_proteins_ch }
-   
+
     /**************************************************************/
     // check/ download all databases
 
@@ -115,23 +115,23 @@ workflow VIRIFY {
        .join(input_assembly_proteins_ch)
        .filter{ meta, name, fasta, gff, faa -> gff == null }
        .map{meta, name, fasta, gff, faa -> [meta, fasta] }
-      
+
     PREDICT_PROTEINS(records_without_proteins)
     newly_predicted = records_without_proteins.join(PREDICT_PROTEINS.out.predicted_proteins)  // [meta, fasta, gff, faa]
-    
+
     // join into one channel with all records having proteins predicted
     records_with_proteins = assembly_with_short_contignames
        .join(input_assembly_proteins_ch)
        .filter{ meta, name, fasta, gff, faa -> gff != null }
        .map{ meta, name, fasta, gff, faa -> [meta, fasta, gff, faa] }
-       
+
     // check proteins compatibility and return only records with correct format
     PROTEINS_COMPATIBILITY(records_with_proteins)
-    
+
     full_input = PROTEINS_COMPATIBILITY.out.checked_records
                  .mix(PROTEINS_COMPATIBILITY.out.renamed_records)
                  .mix(newly_predicted)
-    
+
     // ----------- define HC/LC/PP groups
     DETECT(
         filtered_and_renamed_assembly,
@@ -152,17 +152,17 @@ workflow VIRIFY {
         .transpose(by: 1)
     RESTORE_CATEGORY_FASTA(files_to_restore, "temporary", "short")
     category_fasta = RESTORE_CATEGORY_FASTA.out  // [meta, category_name, category_fasta]
-    
-    // ----------- split proteins into HC/LC/PP 
+
+    // ----------- split proteins into HC/LC/PP
     protein_files_ch = full_input
         .map { meta, _assembly, proteins_gff, proteins_faa ->
             tuple(meta, proteins_gff, proteins_faa)
         }
-        
+
     SPLIT_PROTEINS(category_fasta.groupTuple().join(protein_files_ch).transpose())
 
     proteins_ch = SPLIT_PROTEINS.out.fasta_proteins_gff  // [meta, category_name, category_fasta, category_faa, category_gff]
-    
+
     // ----------- ANNOTATE
     // category_fastas is already per-category: (meta, set_name, fasta, faa, gff)
     // assembly_with_short_contignames is passed separately as a per-sample channel
@@ -183,7 +183,7 @@ workflow VIRIFY {
         mashmap_ref_ch,
     )
 
-    // ----------- PLOT 
+    // ----------- PLOT
     PLOT(
         ANNOTATE.out.assign_output,
         ANNOTATE.out.chromomap,

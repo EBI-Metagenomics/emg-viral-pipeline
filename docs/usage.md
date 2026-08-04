@@ -18,14 +18,14 @@ The samplesheet must be a `.csv` file that contains the following columns:
 - `proteins_faa` - Proteins file in FASTA format (optional)
 
 The `proteins_gff` and `proteins_faa` files are optional and, if both provided, allow the pipeline to skip calling the protein caller (Prodigal) again.
-> [!NOTE]  
+> [!NOTE]
 > The pipeline was tested on `FAA` and `GFF` from the following tools:
 > - Prodigal
 > - Pyrodigal
-> - Prokka 
+> - Prokka
 > - FragGeneScan
-> 
-> Important: headers from `FAA` fasta should match `ID=` in the `GFF attributes` column. 
+>
+> Important: headers from `FAA` fasta should match `ID=` in the `GFF attributes` column.
 
 [Example](../assets/example_input.csv)
 ```
@@ -95,9 +95,9 @@ Run annotation for a small assembly file (10 contigs, 0.78 Mbp) on your local Li
 
 ## Profiles
 
-Nextflow uses a merged profile handling system so you have to define an executor (e.g., `local`, `lsf`, `slurm`) and an engine (e.g., `docker`, `singularity`) to run the pipeline according to your needs and infrastructure. Per default, the workflow runs locally (e.g., on your laptop) with Docker. 
+Nextflow uses a merged profile handling system so you have to define an executor (e.g., `local`, `lsf`, `slurm`) and an engine (e.g., `docker`, `singularity`) to run the pipeline according to your needs and infrastructure. Per default, the workflow runs locally (e.g., on your laptop) with Docker.
 
-The engine `conda` is not working at the moment until there is a conda recipe for PPR-Meta or we switch the tool. Sorry. Use Docker. Or Singularity. Please. Or install PPR-Meta by yourself and then use the `conda` profile (not recommended).  
+The engine `conda` is not working at the moment until there is a conda recipe for PPR-Meta or we switch the tool. Sorry. Use Docker. Or Singularity. Please. Or install PPR-Meta by yourself and then use the `conda` profile (not recommended).
 
 
 ### Example of execution command
@@ -111,7 +111,7 @@ nextflow run EBI-Metagenomics/emg-viral-pipeline -r v4.0.0 \
 
 ## Monitoring
 
-<img align="right" width="400px" src="../figures/tower.png" alt="Monitoring with Nextflow Tower" /> 
+<img align="right" width="400px" src="../figures/tower.png" alt="Monitoring with Nextflow Tower" />
 
 To monitor your Nextflow computations, VIRify can be connected to [Nextflow Tower](https://tower.nf). You need a user access token to connect your Tower account with the pipeline. Simply [generate a login](https://tower.nf/login) using your email and then click the link sent to this address.
 
@@ -138,7 +138,7 @@ Alternatively, you can also pull the code from this repository and activate the 
 tower {
     accessToken = ''
     enabled = true
-} 
+}
 ```
 
 You can also directly enter your access token here instead of generating the above-mentioned environment variable.

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # Copyright 2024-2026 EMBL - European Bioinformatics Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,8 +15,8 @@
 import argparse
 import gzip
 import logging
-import sys
 import re
+import sys
 from typing import IO
 
 from constants import PRODIGAL_RENAMED_ID_REGEXP
@@ -80,12 +79,12 @@ def read_faa(proteins: str) -> set[str]:
 def rename_proteins_in_gff(gff: str, protein_names: set[str], output: str) -> None:
     """
     Function renames ID in prodigal gff from digit_digit to protein name in prodigal header in faa file
-    Example, 
+    Example,
     gff: ID=1_1;partial=00;start_type=ATG...
     faa: >MGYG000495417_3|prophage-23410:59937_1 # 1 # 498 # -1 # ID=1_1;partial=00
     output gff: ID=MGYG000495417_3|prophage-23410:59937_1;partial=00;start_type=ATG ...
     :param gff: prodigal gff
-    :param protein_names: list of unique protein headers from prodigal faa 
+    :param protein_names: list of unique protein headers from prodigal faa
     :param output: output corrected gff
     :return: -
     """

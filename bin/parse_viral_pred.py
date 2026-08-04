@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 
 import argparse
-import re
-import sys
 import csv
 import os
+import re
+import sys
 from copy import copy
 from os.path import isfile
 from pathlib import Path
 
-from Bio import SeqIO
-
 import pandas as pd
-
+from Bio import SeqIO
 
 MAX_N_PCT = 50
 
@@ -62,7 +60,7 @@ class Record:
         if "prophage" in contig_header:
             prange = contig_header.split("prophage-")[1]
             match = re.search(
-                "(?P<start>\d+):(?P<end>\d+)", prange, re.IGNORECASE
+                r"(?P<start>\d+):(?P<end>\d+)", prange, re.IGNORECASE
             ).groupdict()
             start = int(match["start"])
             end = int(match["end"])
@@ -173,9 +171,13 @@ def parse_virus_sorter(sorter_files):
                 clean_name, circular, prange = _parse_virsorter_metadata(record.id)
                 record.id = clean_name
                 if category in ["1", "2"]:
-                    high_confidence[record.id] = Record(record, "high_confidence", circular)
+                    high_confidence[record.id] = Record(
+                        record, "high_confidence", circular
+                    )
                 elif category == "3":
-                    low_confidence[record.id] = Record(record, "low_confidence", circular)
+                    low_confidence[record.id] = Record(
+                        record, "low_confidence", circular
+                    )
                 elif category in ["4", "5"]:
                     # add the prophage position within the contig
                     prophages.setdefault(record.id, []).append(
@@ -281,10 +283,10 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
             if not circular or not max_score:
                 continue
             circular = circular.startswith("circular")
-            
+
             if "partial" in record.id:
                 record.id = clean_name
-                # In VirSorter2 records inherit "circular" label from the contig, which is incorrect for partial sequences 
+                # In VirSorter2 records inherit "circular" label from the contig, which is incorrect for partial sequences
                 # as they are extracted from the contig and might not be circular themselves.
                 # https://github.com/jiarong/VirSorter2/issues/251
                 # We rewrite "circular" to linear for partial sequences to avoid misinterpretation of the results.
@@ -296,9 +298,13 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
             else:
                 record.id = clean_name
                 if float(max_score) >= float(vs_cutoff):
-                    high_confidence[clean_name] = Record(record, "high_confidence", circular)
+                    high_confidence[clean_name] = Record(
+                        record, "high_confidence", circular
+                    )
                 else:
-                    low_confidence[clean_name] = Record(record, "low_confidence", circular)
+                    low_confidence[clean_name] = Record(
+                        record, "low_confidence", circular
+                    )
     number_of_phages = sum([len(prophages[i]) for i in prophages])
     print(f"Virus Sorter2 found {len(high_confidence)} high confidence contigs.")
     print(f"Virus Sorter2 found {len(low_confidence)} low confidence contigs.")
@@ -390,15 +396,15 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff, out
                     )
                 elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
                     lc_predictions_contigs.append(seq_record)
-                    
+
     print(f"Number of skipped contigs {len(skipped_contigs)}")
     # report skipped contigs
     if skipped_contigs:
-        output_file = os.path.join(outdir, 'sanity_check_failed_contigs.txt')
-        with open(output_file, 'w') as file_out:
-            file_out.write('\n'.join(skipped_contigs))
+        output_file = os.path.join(outdir, "sanity_check_failed_contigs.txt")
+        with open(output_file, "w") as file_out:
+            file_out.write("\n".join(skipped_contigs))
             print("Skipped contigs were written to {}")
-    
+
     return (
         hc_predictions_contigs,
         lc_predictions_contigs,

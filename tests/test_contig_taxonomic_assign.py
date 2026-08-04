@@ -2,13 +2,13 @@
 
 import os
 import unittest
-from pathlib import Path
 from collections import namedtuple
+from pathlib import Path
 
 import pandas as pd
 
-from bin.contig_taxonomic_assign import main as contig_taxonomic_assign_main
 from bin.contig_taxonomic_assign import contig_tax
+from bin.contig_taxonomic_assign import main as contig_taxonomic_assign_main
 
 
 class TestContigTaxonomicAssignation(unittest.TestCase):

@@ -43,7 +43,7 @@ For further details please check: [doi.org/10.1101/2022.08.22.504484](https://do
 The pipeline accepts assemblies via the `--samplesheet` parameter, a .csv file that can list as many assemblies as needed. Check the [Samplesheet](docs/usage.md#samplesheet) section before running the pipeline.
 
 ## Databases
-All required databases are automatically downloaded by the pipeline when it is first run. Specify the `--databases` argument to define where databases should be downloaded. By default, databases are downloaded to `nextflow-autodownload-databases` folder. 
+All required databases are automatically downloaded by the pipeline when it is first run. Specify the `--databases` argument to define where databases should be downloaded. By default, databases are downloaded to `nextflow-autodownload-databases` folder.
 
 If the databases have already been downloaded, provide the existing directory using this argument instead. See the [Databases](docs/usage.md#databases) section for more information.
 
@@ -73,6 +73,6 @@ If you use the pipeline or ViPhOG HMMs in your work, please cite accordingly:
 
 [Moreno-Gallego, Jaime Leonardo, and Alejandro Reyes. "Informative regions in viral genomes." _Viruses_ 13.6 (2021): 1164.](https://www.mdpi.com/1999-4915/13/6/1164)
 
-**VIRify:** 
+**VIRify:**
 
 [Rangel-Pineros, Guillermo, et al. "VIRify: an integrated detection, annotation and taxonomic classification pipeline using virus-specific protein profile hidden Markov models." _bioRxiv_ (2022)](https://doi.org/10.1101/2022.08.22.504484)

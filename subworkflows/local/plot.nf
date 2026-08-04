@@ -9,7 +9,7 @@ include { CHROMOMAP                } from '../../modules/local/chromomap'
 include { BALLOON                  } from '../../modules/local/balloon'
 
 /*
- * Plot results. Basically runs krona and sankey. ChromoMap and Balloon are still experimental features and should be used with caution. 
+ * Plot results. Basically runs krona and sankey. ChromoMap and Balloon are still experimental features and should be used with caution.
 */
 workflow PLOT {
 

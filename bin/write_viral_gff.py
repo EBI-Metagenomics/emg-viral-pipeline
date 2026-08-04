@@ -10,7 +10,6 @@ import sys
 from typing import IO
 
 from Bio import SeqIO
-
 from parse_viral_pred import Record
 from utils import parse_attrs
 
@@ -183,7 +182,9 @@ def define_viral_sequence_type(contig: str, contig_len: int) -> tuple[str, bool]
              indicates whether the end coordinate was clamped.
     """
     viral_sequence_type = "phage_linear"
-    prophage_start, prophage_end, circular = Record.get_prophage_metadata_from_contig(contig)
+    prophage_start, prophage_end, circular = Record.get_prophage_metadata_from_contig(
+        contig
+    )
 
     if circular:
         viral_sequence_type = "phage_circular"
@@ -200,7 +201,7 @@ def define_viral_sequence_type(contig: str, contig_len: int) -> tuple[str, bool]
 
 
 def build_cds_data(contig, contig_len, direction, cds_id):
-    
+
     viral_sequence_type, does_the_prophage_overrun = define_viral_sequence_type(
         contig, contig_len
     )
@@ -208,19 +209,18 @@ def build_cds_data(contig, contig_len, direction, cds_id):
     prophage_start, prophage_end, _ = Record.get_prophage_metadata_from_contig(contig)
 
     direction = direction.replace("-1", "-").replace("1", "+")
-    
+
     if does_the_prophage_overrun:
         cds_id = cds_id.replace(
             f"prophage-{prophage_start}:{prophage_end}",
             f"prophage-{prophage_start}:{contig_len}",
         )
-        
+
     return viral_sequence_type, direction, cds_id
-    
+
 
 def get_annotation_results(
-    virify_annotation_files: list[str],
-    contigs_len_dict: dict[str, int]
+    virify_annotation_files: list[str], contigs_len_dict: dict[str, int]
 ) -> tuple[dict[str, set[str]], dict[str, list]]:
     """Aggregate VIRify annotation TSVs into structures ready for GFF writing.
 
@@ -245,14 +245,16 @@ def get_annotation_results(
                 contig = row["Contig"]
                 cds_id = row["CDS_ID"]
                 direction = row["Direction"]
-                
+
                 clean_contig_name = Record.remove_prophage_from_contig(contig)
                 contig_len = contigs_len_dict.get(clean_contig_name)
                 if contig_len is not None:
-                    viral_sequence_type, direction, cds_id = build_cds_data(contig, contig_len, direction, cds_id)
-                
+                    viral_sequence_type, direction, cds_id = build_cds_data(
+                        contig, contig_len, direction, cds_id
+                    )
+
                 best_hit = row["Best_hit"]
-                
+
                 viphog_annotation = ""
                 if best_hit != "No hit":
                     best_hit = best_hit.replace(".faa", "")
@@ -284,10 +286,13 @@ def get_checkv_results(
             csv_reader = csv.DictReader(file_handle, delimiter="\t")
             for row in csv_reader:
                 contig_id = row["contig_id"]
-                viral_genes_count = row['viral_genes'].strip()
-                if viral_genes_count == '':
+                viral_genes_count = row["viral_genes"].strip()
+                if viral_genes_count == "":
                     raise ValueError("viral_genes is empty")
-                if int(viral_genes_count) == 0 and row['checkv_quality'] == "Not-determined":
+                if (
+                    int(viral_genes_count) == 0
+                    and row["checkv_quality"] == "Not-determined"
+                ):
                     not_determined.add(contig_id)
                     checkv_info = "no_viral_genes"
                 else:
@@ -319,7 +324,7 @@ def get_checkv_results(
             "and will use placeholder NA values: "
             + ", ".join(sorted(contigs_without_checkv))
         )
-    
+
     if not_determined:
         logging.warning(
             f"{len(list(not_determined))} viral contigs have no viral genes detected by CheckV. "
@@ -384,9 +389,7 @@ def get_taxonomy_results(taxonomy_files: list[str]) -> dict[str, str]:
 
 
 def get_proteins_from_gff(
-    gff_files: list[str],
-    contigs_len_dict: dict[str, int],
-    cds_best_hits
+    gff_files: list[str], contigs_len_dict: dict[str, int], cds_best_hits
 ) -> dict[str, set[str]]:
     """Supplement viral_sequences with contigs from per-category GFF files that have no proteins.
 
@@ -412,25 +415,23 @@ def get_proteins_from_gff(
                 cols = line.strip().split("\t")
                 if len(cols) == 9:
                     record = cols[2]
-                    if record != 'CDS':
+                    if record != "CDS":
                         continue
                     contig_id = cols[0]
                     contigs_proteins.setdefault(contig_id, [])
                     contigs_proteins[contig_id].append(line)
-                    
+
     for contig_id in contigs_proteins:
         # Add contig into processing list
         # TODO: maybe required to change does_the_prophage_overrun to new coords of prophage
         clean_contig_name = Record.remove_prophage_from_contig(contig_id)
         contig_len = contigs_len_dict.get(clean_contig_name, 0)
-        viral_sequence_type, _ = define_viral_sequence_type(
-            contig_id, contig_len
-        )
+        viral_sequence_type, _ = define_viral_sequence_type(contig_id, contig_len)
         viral_sequences[contig_id] = {viral_sequence_type}
         logging.info(f"Added contig from GFF {contig_id}")
         annotation_exists = False
         for protein_record in contigs_proteins[contig_id]:
-            protein_record_cols = protein_record.strip().split('\t')
+            protein_record_cols = protein_record.strip().split("\t")
             attrs, _ = parse_attrs(protein_record_cols[8])
             cds_id = attrs.get("ID", "").strip()
             start = int(protein_record_cols[3])
@@ -438,22 +439,28 @@ def get_proteins_from_gff(
             genecaller = protein_record_cols[1]
             direction = protein_record_cols[6]
 
-            viral_sequence_type, direction, cds_id = build_cds_data(contig_id, contig_len, direction, cds_id)
+            viral_sequence_type, direction, cds_id = build_cds_data(
+                contig_id, contig_len, direction, cds_id
+            )
             # Add proteins into CDS dictionary
             annotation = ""
-            if contig_id in cds_best_hits.keys() and cds_id in cds_best_hits[contig_id].keys():
+            if (
+                contig_id in cds_best_hits.keys()
+                and cds_id in cds_best_hits[contig_id].keys()
+            ):
                 annotation = cds_best_hits[contig_id][cds_id]
                 annotation_exists = True
             cds_annotations.setdefault(clean_contig_name, []).append(
                 [cds_id, start, end, direction, annotation, contig_id, genecaller]
             )
-        logging.info(f"Viphogs annotation{' does not' if not annotation_exists else ''} exist for contig {contig_id}")
+        logging.info(
+            f"Viphogs annotation{' does not' if not annotation_exists else ''} exist for contig {contig_id}"
+        )
     return viral_sequences, cds_annotations
 
 
 def get_sequence_regions(
-    viral_sequences: dict[str, set[str]],
-    contigs_len_dict: dict[str, int]
+    viral_sequences: dict[str, set[str]], contigs_len_dict: dict[str, int]
 ) -> list[tuple[str, int]]:
     """Build a sorted list of (contig_name, length) pairs for GFF ##sequence-region headers.
 
@@ -560,7 +567,7 @@ def write_gff(
 
     all_records: list[tuple[str, int, str]] = []
     skipped_contigs = set()
-    
+
     for contig_name, viral_sequence_types in viral_sequences.items():
         clean_contig_name = Record.remove_prophage_from_contig(contig_name)
         quality = virify_quality.get(contig_name, "unknown")
@@ -585,10 +592,13 @@ def write_gff(
                 element_category = "prophage"
                 mobile_element_type = "prophage"
 
-            if checkv_dict.get(clean_contig_name) and checkv_dict.get(clean_contig_name) == "no_viral_genes":
+            if (
+                checkv_dict.get(clean_contig_name)
+                and checkv_dict.get(clean_contig_name) == "no_viral_genes"
+            ):
                 skipped_contigs.add(clean_contig_name)
                 continue
-            
+
             mobile_element_attributes = [
                 id_,
                 f"virify_quality={quality}",
@@ -605,8 +615,8 @@ def write_gff(
             if taxonomy:
                 mobile_element_attributes.append(f"taxonomy={taxonomy}")
             else:
-                mobile_element_attributes.append(f"taxonomy=unclassified")
-                
+                mobile_element_attributes.append("taxonomy=unclassified")
+
             mobile_elements_line = "\t".join(
                 [
                     clean_contig_name,
@@ -626,14 +636,21 @@ def write_gff(
         if contig_name in list(skipped_contigs):
             continue
         for cds_data in contig_cds:
-            cds_id, start, end, direction, viphog_annotation, original_contig, genecaller = cds_data
+            (
+                cds_id,
+                start,
+                end,
+                direction,
+                viphog_annotation,
+                original_contig,
+                genecaller,
+            ) = cds_data
             cds_id = cds_id.replace("prophage-0:", "prophage-1:")
 
             contig_len = contigs_len_dict.get(contig_name)
             if contig_len is None:
                 continue
-            if end > contig_len:
-                end = contig_len
+            end = min(end, contig_len)
 
             quality = virify_quality.get(original_contig, "unknown")
             cds_attributes = [
@@ -677,7 +694,9 @@ def write_gff(
 if __name__ == "__main__":
     args = parse_args()
 
-    assembly_file, virify_files, checkv_files, taxonomy_files, ena_mapping = evaluate_inputs(args)
+    assembly_file, virify_files, checkv_files, taxonomy_files, ena_mapping = (
+        evaluate_inputs(args)
+    )
 
     logging.info("Collecting annotation data")
     contigs_len_dict = get_contig_lengths_per_contig(assembly_file)
@@ -685,10 +704,12 @@ if __name__ == "__main__":
     virify_quality = define_virify_quality(checkv_files)
     # get viphogs annotation for proteins
     cds_best_hits = get_annotation_results(virify_files, contigs_len_dict)
-    
+
     # get proteins from GFF and add viphogs annotation where it exists
-    viral_sequences, cds_annotations = get_proteins_from_gff(args.gff_files, contigs_len_dict, cds_best_hits)
-    
+    viral_sequences, cds_annotations = get_proteins_from_gff(
+        args.gff_files, contigs_len_dict, cds_best_hits
+    )
+
     sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
     checkv_dict = get_checkv_results(checkv_files, sequence_regions)
     taxonomy_dict = get_taxonomy_results(taxonomy_files)

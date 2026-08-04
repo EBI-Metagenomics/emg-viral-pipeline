@@ -96,7 +96,7 @@ class TestCheckCompatibility(unittest.TestCase):
         self.assertEqual(
             check_compatibility(fasta_path, faa_path, gff_path), NOT_MATCHED
         )
-        
+
     def test_dots_and_undersore(self):
         fasta = ">assembly.A\nACGTACGTACGT\n"
         faa = ">assembly_A_1 # 1 # 100 # +1 # ID=9_9;partial=00\nMKV*\n"

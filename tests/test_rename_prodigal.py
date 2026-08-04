@@ -8,7 +8,6 @@ import unittest
 
 from bin.rename_prodigal import parse_attrs, read_faa, rename_proteins_in_gff
 
-
 TEST_DATA = os.path.join(os.path.dirname(__file__), "rename_prodigal")
 
 _GFF_COLS = "contig\tsource\tCDS\t1\t100\t.\t+\t0\t"

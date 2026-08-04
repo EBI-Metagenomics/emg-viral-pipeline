@@ -2,11 +2,11 @@
 include { SEQKIT_SPLIT2                       } from '../../modules/nf-core/seqkit/split2/main'
 include { CAT_CAT as CONCATENATE_HMMER_TBLOUT } from '../../modules/nf-core/cat/cat/main'
 
-include { HMMER as HMMER_VIPHOGS              } from '../../modules/local/hmmer' 
+include { HMMER as HMMER_VIPHOGS              } from '../../modules/local/hmmer'
 include { HMMER as HMMER_RVDB                 } from '../../modules/local/hmmer'
-include { HMMER as HMMER_PVOGS                } from '../../modules/local/hmmer' 
-include { HMMER as HMMER_VOGDB                } from '../../modules/local/hmmer' 
-include { HMMER as HMMER_VPF                  } from '../../modules/local/hmmer' 
+include { HMMER as HMMER_PVOGS                } from '../../modules/local/hmmer'
+include { HMMER as HMMER_VOGDB                } from '../../modules/local/hmmer'
+include { HMMER as HMMER_VPF                  } from '../../modules/local/hmmer'
 include { HMM_POSTPROCESSING                  } from '../../modules/local/hmm_postprocessing'
 
 
@@ -19,9 +19,9 @@ workflow HMMER_PREDICTION {
     pvogs_db
     vogdb_db
     vpf_db
-    
+
     main:
-    
+
     // chunk big fasta file
     SEQKIT_SPLIT2(
         proteins,
@@ -30,11 +30,11 @@ workflow HMMER_PREDICTION {
     def ch_protein_chunks = SEQKIT_SPLIT2.out.assembly.transpose()
 
     HMMER_VIPHOGS( ch_protein_chunks, viphog_db, true )
-    
+
     CONCATENATE_HMMER_TBLOUT(
         HMMER_VIPHOGS.out.groupTuple(by: [0,1])
     )
-    
+
     HMM_POSTPROCESSING( CONCATENATE_HMMER_TBLOUT.out.file_out )
 
     // hmmer additional databases
@@ -44,7 +44,7 @@ workflow HMMER_PREDICTION {
       HMMER_VOGDB( proteins, vogdb_db, false )
       HMMER_VPF( proteins, vpf_db, false )
     }
-    
+
     emit:
     hmm_result = HMM_POSTPROCESSING.out
 }
