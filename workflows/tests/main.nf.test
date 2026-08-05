@@ -10,7 +10,7 @@ nextflow_pipeline {
     test("Run full pipeline with test_full profile") {
         when {
             params {
-                samplesheet = "${projectDir}/tests/samplesheet.csv" 
+                samplesheet = "${projectDir}/tests/test_data/MGYG000495417_samplesheet.csv" 
                 output = "results"
             }
         }
