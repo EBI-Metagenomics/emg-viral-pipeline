@@ -1,13 +1,13 @@
-name: nf-test for subworkflows
+name: End to end test
 
 on:
   push:
-    branches: ["master", "fix/github-actions"]
+    branches: ["master"]
   pull_request:
     branches: ["master"]
 
 jobs:
-  subwf-test:
+  e2e-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -47,7 +47,7 @@ jobs:
           df -h
 
       - name: Run Tests
-        run: nf-test test --verbose --tag subworkflows --profile docker,local
+        run: nf-test test --verbose --profile docker,test_full,local --tag pipeline
 
       - name: Move .nf-test output to non-hidden folder for artifact upload
         if: always()

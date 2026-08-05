@@ -2,7 +2,7 @@ name: Linting
 
 on:
   push:
-    branches: [ "master", "fix/github-actions" ]
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
