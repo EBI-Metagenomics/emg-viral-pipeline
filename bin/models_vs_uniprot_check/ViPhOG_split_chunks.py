@@ -44,17 +44,17 @@ else:
     viphog_unique_sorted = sorted(viphog_unique, key=operator.itemgetter(1))
     print("Done!")
 
-    def chunks(l, n):
-        chunk_size = int(len(l) / n)
-        if len(l) % n == 0:
-            for i in range(0, len(l), chunk_size):
-                yield l[i : i + chunk_size]
+    def chunks(input_list, n):
+        chunk_size = int(len(input_list) / n)
+        if len(input_list) % n == 0:
+            for i in range(0, len(input_list), chunk_size):
+                yield input_list[i : i + chunk_size]
         else:
-            for i in range(0, len(l), chunk_size):
-                if len(l[i + chunk_size :]) >= chunk_size:
-                    yield l[i : i + chunk_size]
+            for i in range(0, len(input_list), chunk_size):
+                if len(input_list[i + chunk_size :]) >= chunk_size:
+                    yield input_list[i : i + chunk_size]
                 else:
-                    yield l[i:]
+                    yield input_list[i:]
                     break
 
     print("Sorting ViPhOGs into chunks and generating corresponding files...")
@@ -66,5 +66,5 @@ else:
     for i, j in enumerate(viphog_gen):
         with open("unique_hits_chunks/chunk_%s.tsv" % (i + 1), "w") as output_file:
             output_file.write("profile\tunique_hits\n")
-            output_file.writelines("%s\t%s\n" % (x, y) for x, y in j)
+            output_file.writelines(f"{x}\t{y}\n" for x, y in j)
     print("Done!")

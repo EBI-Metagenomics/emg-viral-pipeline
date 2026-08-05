@@ -1,5 +1,3 @@
-#!/bin/env python3
-
 import hashlib
 import os
 import shutil
@@ -73,12 +71,10 @@ class ParseViralPredictions(unittest.TestCase):
         )
 
         self.assertSetEqual(
-            set([r.seq_id for _, r in hc.items()]), set(["pos_phage_2", "pos_phage_1"])
+            {r.seq_id for _, r in hc.items()}, {"pos_phage_2", "pos_phage_1"}
         )
-        self.assertSetEqual(set([r.seq_id for _, r in lc.items()]), set())
-        self.assertSetEqual(
-            set([r[0].seq_id for _, r in p.items()]), set(["pos_phage_0"])
-        )
+        self.assertSetEqual({r.seq_id for _, r in lc.items()}, set())
+        self.assertSetEqual({r[0].seq_id for _, r in p.items()}, {"pos_phage_0"})
 
     def test_parsing_virsorter2(self):
         VS_CUTOFF = 0.9
@@ -87,21 +83,19 @@ class ParseViralPredictions(unittest.TestCase):
             [os.path.join(path, f) for f in os.listdir(path)], VS_CUTOFF
         )
         self.assertSetEqual(
-            set([r.seq_id for _, r in hc.items()]),
-            set(["seq3", "seq4", "seq5", "seq6", "seq7"]),
+            {r.seq_id for _, r in hc.items()},
+            {"seq3", "seq4", "seq5", "seq6", "seq7"},
         )
-        self.assertSetEqual(set([r.seq_id for _, r in lc.items()]), set(["seq8"]))
-        self.assertSetEqual(
-            set([r[0].seq_id for _, r in p.items()]), set(["seq1", "seq2"])
-        )
+        self.assertSetEqual({r.seq_id for _, r in lc.items()}, {"seq8"})
+        self.assertSetEqual({r[0].seq_id for _, r in p.items()}, {"seq1", "seq2"})
 
     def test_parsing_virfinder(self):
         """For virfinder => virsorter_finder_test_data/input.fasta the expected is:"""
         path = self._build_path("/base_fixtures/virfinder_output.tsv")
         hc, lc = parse_virus_finder(path)
 
-        self.assertSetEqual(hc, set(["pos.phage.0", "pos.phage.3"]))
-        self.assertSetEqual(lc, set(["pos.phage.1", "pos.phage.2"]))
+        self.assertSetEqual(hc, {"pos.phage.0", "pos.phage.3"})
+        self.assertSetEqual(lc, {"pos.phage.1", "pos.phage.2"})
 
     def test_parsing_with_dups(self):
         """Test that no duplicates are reported"""
@@ -117,9 +111,9 @@ class ParseViralPredictions(unittest.TestCase):
             pprmeta_path, vf_path, vs_files, None, assembly, 0.9, test_dir
         )
 
-        hc_ids = set([h.id for h in hc])
-        lc_ids = set([l.id for l in lc])
-        pp_ids = set([p.id for p in pp])
+        hc_ids = {high.id for high in hc}
+        lc_ids = {low.id for low in lc}
+        pp_ids = {proph.id for proph in pp}
 
         self.assertEqual(13, len(hc_ids))
         self.assertEqual(40, len(lc_ids))
@@ -149,30 +143,27 @@ class ParseViralPredictions(unittest.TestCase):
 
         main(pprmeta_path, vf_path, vs_files, None, assembly, test_dir, 0.9)
 
-        with open(test_dir + "/high_confidence_viral_contigs.fna", "rb") as hc_f:
-            with open(
-                self._build_path(
-                    "/kleiner2015/expected/"
-                    "high_confidence_putative_viral_contigs.fna"
-                ),
-                "rb",
-            ) as hc_e:
-                self.assertEqual(
-                    hashlib.md5(hc_f.read()).hexdigest(),
-                    hashlib.md5(hc_e.read()).hexdigest(),
-                )
+        with open(test_dir + "/high_confidence_viral_contigs.fna", "rb") as hc_f, open(
+            self._build_path(
+                "/kleiner2015/expected/" "high_confidence_putative_viral_contigs.fna"
+            ),
+            "rb",
+        ) as hc_e:
+            self.assertEqual(
+                hashlib.md5(hc_f.read()).hexdigest(),
+                hashlib.md5(hc_e.read()).hexdigest(),
+            )
 
-        with open(test_dir + "/low_confidence_viral_contigs.fna", "rb") as lc_f:
-            with open(
-                self._build_path(
-                    "/kleiner2015/expected/" "low_confidence_putative_viral_contigs.fna"
-                ),
-                "rb",
-            ) as lc_e:
-                self.assertEqual(
-                    hashlib.md5(lc_f.read()).hexdigest(),
-                    hashlib.md5(lc_e.read()).hexdigest(),
-                )
+        with open(test_dir + "/low_confidence_viral_contigs.fna", "rb") as lc_f, open(
+            self._build_path(
+                "/kleiner2015/expected/" "low_confidence_putative_viral_contigs.fna"
+            ),
+            "rb",
+        ) as lc_e:
+            self.assertEqual(
+                hashlib.md5(lc_f.read()).hexdigest(),
+                hashlib.md5(lc_e.read()).hexdigest(),
+            )
 
         with open(test_dir + "/prophages.fna", "rb") as p_f, open(
             self._build_path("/kleiner2015/expected/" "putative_prophages.fna"), "rb"
@@ -211,18 +202,17 @@ class ParseViralPredictions(unittest.TestCase):
 
         main(pprmeta_path, vf_path, sorter_files, None, assembly, test_dir, 0.9)
 
-        with open(test_dir + "/high_confidence_viral_contigs.fna", "rb") as hc_f:
-            with open(
-                self._build_path(
-                    "/virsorter_precedence/expected/"
-                    "/high_confidence_putative_viral_contigs.fna"
-                ),
-                "rb",
-            ) as hc_e:
-                self.assertEqual(
-                    hashlib.md5(hc_f.read()).hexdigest(),
-                    hashlib.md5(hc_e.read()).hexdigest(),
-                )
+        with open(test_dir + "/high_confidence_viral_contigs.fna", "rb") as hc_f, open(
+            self._build_path(
+                "/virsorter_precedence/expected/"
+                "/high_confidence_putative_viral_contigs.fna"
+            ),
+            "rb",
+        ) as hc_e:
+            self.assertEqual(
+                hashlib.md5(hc_f.read()).hexdigest(),
+                hashlib.md5(hc_e.read()).hexdigest(),
+            )
 
         with open(test_dir + "/low_confidence_viral_contigs.fna", "rb") as lc_f:
             content = lc_f.readlines()
@@ -287,18 +277,17 @@ class ParseViralPredictions(unittest.TestCase):
 
         main(pprmeta_path, vf_path, None, sorter_files, assembly, test_dir, 0.9)
 
-        with open(test_dir + "/high_confidence_viral_contigs.fna", "rb") as hc_f:
-            with open(
-                self._build_path(
-                    "/virsorter_precedence/expected_vs2/"
-                    "/high_confidence_viral_contigs.fna"
-                ),
-                "rb",
-            ) as hc_e:
-                self.assertEqual(
-                    hashlib.md5(hc_f.read()).hexdigest(),
-                    hashlib.md5(hc_e.read()).hexdigest(),
-                )
+        with open(test_dir + "/high_confidence_viral_contigs.fna", "rb") as hc_f, open(
+            self._build_path(
+                "/virsorter_precedence/expected_vs2/"
+                "/high_confidence_viral_contigs.fna"
+            ),
+            "rb",
+        ) as hc_e:
+            self.assertEqual(
+                hashlib.md5(hc_f.read()).hexdigest(),
+                hashlib.md5(hc_e.read()).hexdigest(),
+            )
 
         assert not os.path.exists(test_dir + "/low_confidence_viral_contigs.fna")
 

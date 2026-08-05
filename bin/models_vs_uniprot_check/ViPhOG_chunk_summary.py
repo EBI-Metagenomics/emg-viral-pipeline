@@ -44,16 +44,16 @@ else:
                 line = line.rstrip()
                 viphog_id = line.split("\t")[0]
                 unique_hits = line.split("\t")[1]
-                results_file = glob.glob("hmm*_domtbl/%s_*.tbl" % viphog_id)[0]
+                results_file = glob.glob(f"hmm*_domtbl/{viphog_id}_*.tbl")[0]
                 with open(results_file) as hits_file:
                     taxid_dict = {}
                     for row in hits_file:
                         if not re.search(r"^#", row) and float(row.split()[6]) <= 1e-3:
-                            taxid = [
+                            taxid = next(
                                 x.split("=")[1]
                                 for x in row.split()
                                 if re.search(r"OX=", x)
-                            ][0]
+                            )
                             if taxid not in taxid_dict:
                                 taxid_dict[taxid] = [float(row.split()[7])]
                             elif float(row.split()[7]) not in taxid_dict[taxid]:
@@ -74,7 +74,8 @@ else:
                                     elem_results[lineage_names[x]][0] += 1
                                     elem_results[lineage_names[x]][1].append(max(value))
                                     break
-                        except:
+                        except (KeyError, ValueError):
+                            print("Did not get ncbi lineage")
                             continue
                     results_per_rank.append(
                         [

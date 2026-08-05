@@ -1,5 +1,3 @@
-#!/bin/env python3
-
 import gzip
 import os
 import tempfile
@@ -15,9 +13,8 @@ from bin.check_proteins_compatibility import (
 
 
 def _write_tmp(content: str, suffix: str = "") -> str:
-    tmp = tempfile.NamedTemporaryFile(mode="w", suffix=suffix, delete=False)
-    tmp.write(content)
-    tmp.close()
+    with tempfile.NamedTemporaryFile(mode="w", suffix=suffix, delete=False) as tmp:
+        tmp.write(content)
     return tmp.name
 
 
@@ -126,9 +123,12 @@ class TestCheckCompatibility(unittest.TestCase):
             "contig_1\tProdigal\tCDS\t1\t100\t.\t+\t0\tID=1_1;partial=00\n"
         )
 
-        fasta_path = tempfile.NamedTemporaryFile(suffix=".fasta.gz", delete=False).name
-        faa_path = tempfile.NamedTemporaryFile(suffix=".faa.gz", delete=False).name
-        gff_path = tempfile.NamedTemporaryFile(suffix=".gff.gz", delete=False).name
+        with tempfile.NamedTemporaryFile(suffix=".fasta.gz", delete=False) as f:
+            fasta_path = f.name
+        with tempfile.NamedTemporaryFile(suffix=".faa.gz", delete=False) as f:
+            faa_path = f.name
+        with tempfile.NamedTemporaryFile(suffix=".gff.gz", delete=False) as f:
+            gff_path = f.name
         self._to_remove.extend([fasta_path, faa_path, gff_path])
 
         with gzip.open(fasta_path, "wt") as f:

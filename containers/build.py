@@ -27,7 +27,7 @@ def main():
         print(f"## tool:{tool} - version:{version_tag}")
 
         try:
-            image, build_log = client.images.build(
+            _, build_log = client.images.build(
                 path=str(df_path.parent),
                 rm=True,
                 tag=f"quay.io/microbiome-informatics/{tool}:{version_tag}",
@@ -46,7 +46,7 @@ def main():
                 file=sys.stderr,
             )
             print(f"Build exception {build_ex}", file=sys.stderr)
-            raise build_ex
+            raise
 
 
 if __name__ == "__main__":

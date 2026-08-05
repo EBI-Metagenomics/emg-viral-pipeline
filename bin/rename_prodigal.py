@@ -23,6 +23,7 @@ from constants import PRODIGAL_RENAMED_ID_REGEXP
 from utils import parse_attrs
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -106,7 +107,7 @@ def rename_proteins_in_gff(gff: str, protein_names: set[str], output: str) -> No
             attrs, _ = parse_attrs(fields[8])
             protein_id = attrs.get("ID")
             if not protein_id:
-                logging.warning("No ID in: %s", "\t".join(fields))
+                logger.warning("No ID in: %s", "\t".join(fields))
                 file_out.write("\t".join(fields) + "\n")
                 continue
             if not re.fullmatch(PRODIGAL_RENAMED_ID_REGEXP, protein_id):
@@ -117,7 +118,7 @@ def rename_proteins_in_gff(gff: str, protein_names: set[str], output: str) -> No
             protein_suffix = protein_id.rsplit("_", 1)[-1]
             new_protein = f"{contig_id}_{protein_suffix}"
             if new_protein not in protein_names:
-                logging.warning("%s was not found in FAA", new_protein)
+                logger.warning("%s was not found in FAA", new_protein)
                 file_out.write("\t".join(fields) + "\n")
                 continue
             new_attr = fields[8].replace(f"ID={protein_id}", f"ID={new_protein}")

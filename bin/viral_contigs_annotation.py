@@ -28,13 +28,14 @@ def parse_gff(gff_file: str) -> dict:
             protein_id = attrs.get("ID", "").strip()
             if protein_id:
                 seqid = cols[0]
-                if "|prophage-" in seqid:
-                    # Prodigal can use <contigNumber_proteinNumber> like 1_1
-                    # and do not apply _proteinNumber to real contig name
-                    if re.fullmatch(PRODIGAL_RENAMED_ID_REGEXP, protein_id):
-                        # if GFF ID has pattern <contigNumber_proteinNumber>
-                        protein_suffix = protein_id.rsplit("_", 1)[-1]
-                        protein_id = f"{seqid}_{protein_suffix}"
+                # Prodigal can use <contigNumber_proteinNumber> like 1_1
+                # and do not apply _proteinNumber to real contig name
+                if "|prophage-" in seqid and re.fullmatch(
+                    PRODIGAL_RENAMED_ID_REGEXP, protein_id
+                ):
+                    # if GFF ID has pattern <contigNumber_proteinNumber>
+                    protein_suffix = protein_id.rsplit("_", 1)[-1]
+                    protein_id = f"{seqid}_{protein_suffix}"
                 cds_info[protein_id] = {
                     "contig": seqid,
                     "start": cols[3],

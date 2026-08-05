@@ -32,7 +32,7 @@ def clean(lineage_parts, ranks):
                 converted_tax.append(tax_value.strip())
                 last_known_rank = tax_value.strip()
         if len(lineage_parts) == undefined_count:
-            return tuple(["undefined"])
+            return ("undefined",)
         # check last values should not end to undefined_
         remove_elements = 0
         for item in reversed(converted_tax):
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         header = False
         tsv = Path(input_table)
         if not tsv.is_file():
-            raise Exception("Input file missing. Path: " + input_table)
+            raise FileNotFoundError("Input file missing. Path: " + input_table)
         with open(tsv, mode="r") as tsv_reader:
             for line in tsv_reader:
                 if not header:

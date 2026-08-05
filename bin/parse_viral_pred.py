@@ -158,9 +158,9 @@ def parse_virus_sorter(sorter_files):
     Putative prophages are in categories 4 and 5
     (which correspond to VirSorter confidence categories 1 and 2)
     """
-    high_confidence = dict()
-    low_confidence = dict()
-    prophages = dict()
+    high_confidence = {}
+    low_confidence = {}
+    prophages = {}
 
     for file in sorter_files or []:
         if not isfile(file) or ".fasta" not in file:
@@ -231,9 +231,9 @@ def parse_virus_sorter2(sorter_files, vs_cutoff):
         "seqname_new": "object",
     }
 
-    high_confidence = dict()
-    low_confidence = dict()
-    prophages = dict()
+    high_confidence = {}
+    low_confidence = {}
+    prophages = {}
 
     final_boundary_file, final_score_file, final_combined_fa_file = "", "", ""
     for sorter_results_file in sorter_files:
@@ -479,7 +479,7 @@ def main(pprmeta, finder, sorter, sorter2, assembly, outdir, vs_cutoff, prefix=F
             tsv_writer.writerow(header)
             tsv_writer.writerows([shc.to_tsv() for _, shc in sorter_hc.items()])
             tsv_writer.writerows([slc.to_tsv() for _, slc in sorter_lc.items()])
-            for _, plist in sorter_prophages.items():
+            for plist in sorter_prophages.values():
                 tsv_writer.writerows([ph.to_tsv() for ph in plist])
 
     if not at_least_one:
@@ -488,7 +488,7 @@ def main(pprmeta, finder, sorter, sorter2, assembly, outdir, vs_cutoff, prefix=F
             " in the analysed metagenomic assembly",
             file=sys.stderr,
         )
-        exit(0)
+        sys.exit(0)
 
 
 if __name__ == "__main__":

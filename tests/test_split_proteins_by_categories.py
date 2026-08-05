@@ -35,7 +35,9 @@ class SplitProteins(unittest.TestCase):
             str(output),
         ]
 
-        result = subprocess.run(cmd, capture_output=True, text=True, env=SUBPROCESS_ENV)
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, env=SUBPROCESS_ENV, check=False
+        )
 
         assert result.returncode == 0, result.stderr
         # file exists
@@ -67,7 +69,9 @@ class SplitProteins(unittest.TestCase):
             str(output),
         ]
 
-        result = subprocess.run(cmd, capture_output=True, text=True, env=SUBPROCESS_ENV)
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, env=SUBPROCESS_ENV, check=False
+        )
 
         assert result.returncode == 0, result.stderr
         # file exists
@@ -111,7 +115,9 @@ class SplitProteins(unittest.TestCase):
             str(output),
         ]
 
-        result = subprocess.run(cmd, capture_output=True, text=True, env=SUBPROCESS_ENV)
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, env=SUBPROCESS_ENV, check=False
+        )
 
         assert result.returncode == 0, result.stderr
         # file exists
@@ -152,7 +158,9 @@ class SplitProteins(unittest.TestCase):
             str(output),
         ]
 
-        result = subprocess.run(cmd, capture_output=True, text=True, env=SUBPROCESS_ENV)
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, env=SUBPROCESS_ENV, check=False
+        )
 
         assert result.returncode == 0, result.stderr
         # file exists

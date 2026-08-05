@@ -1,5 +1,3 @@
-#!/bin/env python3
-
 import glob
 import os
 import unittest
@@ -262,7 +260,9 @@ def test_phage_circular_checkv_key_normalization(tmp_path):
     # The seqid column (col 1) must use the clean base name; the |phage-circular
     # suffix may still appear in CDS ID attributes, but never as a seqid.
     data_lines = [
-        l for l in gff_content.splitlines() if l.strip() and not l.startswith("#")
+        line
+        for line in gff_content.splitlines()
+        if line.strip() and not line.startswith("#")
     ]
     assert data_lines, "GFF output contains no data lines"
     seqids = {line.split("\t")[0] for line in data_lines}
@@ -284,7 +284,7 @@ def test_no_checkv_match_raises_error():
     checkv = fixtures / "checkv.tsv"
 
     contigs_len_dict = get_contig_lengths_per_contig(str(assembly))
-    viral_sequences, cds_annotations, virify_quality = _build_gff_inputs(
+    viral_sequences, _, _ = _build_gff_inputs(
         [str(annotation)], [str(checkv)], [str(gff)], contigs_len_dict
     )
     sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
@@ -302,59 +302,19 @@ def test_partial_checkv_results_warns(tmp_path):
     assembly = tmp_path / "assembly.fasta"
     assembly.write_text(">contig1\n" + "A" * 1000 + "\n>contig2\n" + "A" * 500 + "\n")
 
-    CHECKV_HEADER = "\t".join(
-        [
-            "contig_id",
-            "contig_length",
-            "provirus",
-            "proviral_length",
-            "gene_count",
-            "viral_genes",
-            "host_genes",
-            "checkv_quality",
-            "miuvig_quality",
-            "completeness",
-            "completeness_method",
-            "contamination",
-            "kmer_freq",
-            "warnings",
-        ]
+    CHECKV_HEADER = "contig_id\tcontig_length\tprovirus\tproviral_length\tgene_count\tviral_genes\thost_genes\tcheckv_quality\tmiuvig_quality\tcompleteness\tcompleteness_method\tcontamination\tkmer_freq\twarnings"
+    ANNOTATION_HEADER = (
+        "Contig\tCDS_ID\tStart\tEnd\tDirection\tBest_hit\tAbs_Evalue_exp\tLabel"
     )
-    ANNOTATION_HEADER = "\t".join(
-        [
-            "Contig",
-            "CDS_ID",
-            "Start",
-            "End",
-            "Direction",
-            "Best_hit",
-            "Abs_Evalue_exp",
-            "Label",
-        ]
-    )
-    TAXONOMY_HEADER = "\t".join(
-        [
-            "contig_ID",
-            "superkingdom",
-            "kingdom",
-            "phylum",
-            "subphylum",
-            "class",
-            "order",
-            "suborder",
-            "family",
-            "subfamily",
-            "genus",
-        ]
-    )
+    TAXONOMY_HEADER = "contig_ID\tsuperkingdom\tkingdom\tphylum\tsubphylum\tclass\torder\tsuborder\tfamily\tsubfamily\tgenus"
 
     annotation = tmp_path / "annotation.tsv"
     annotation.write_text(
         ANNOTATION_HEADER
         + "\n"
-        + "\t".join(["contig1", "contig1_1", "1", "100", "1", "No hit", "NA", ""])
+        + "contig1\tcontig1_1\t1\t100\t1\tNo hit\tNA\t"
         + "\n"
-        + "\t".join(["contig2", "contig2_1", "1", "100", "1", "No hit", "NA", ""])
+        + "contig2\tcontig2_1\t1\t100\t1\tNo hit\tNA\t"
         + "\n"
     )
 
@@ -370,24 +330,7 @@ def test_partial_checkv_results_warns(tmp_path):
     checkv.write_text(
         CHECKV_HEADER
         + "\n"
-        + "\t".join(
-            [
-                "contig1",
-                "1000",
-                "No",
-                "NA",
-                "2",
-                "1",
-                "0",
-                "High-quality",
-                "High-quality",
-                "90.0",
-                "HMM-based",
-                "0.0",
-                "1.0",
-                "",
-            ]
-        )
+        + "contig1\t1000\tNo\tNA\t2\t1\t0\tHigh-quality\tHigh-quality\t90.0\tHMM-based\t0.0\t1.0\t"
         + "\n"
     )
 
@@ -545,12 +488,12 @@ def test_missing_annotation_file(tmp_path):
     # 9983 has no annotation TSV → taxonomy falls back to unclassified
     assert "ERZ27225067_9983" in content
     mobile_element_lines_9983 = [
-        l
-        for l in content.splitlines()
-        if l.startswith("ERZ27225067_9983") and "viral_sequence" in l
+        line
+        for line in content.splitlines()
+        if line.startswith("ERZ27225067_9983") and "viral_sequence" in line
     ]
     assert mobile_element_lines_9983, "9983 mobile-element record missing from output"
-    assert any("taxonomy=unclassified" in l for l in mobile_element_lines_9983)
+    assert any("taxonomy=unclassified" in line for line in mobile_element_lines_9983)
 
     # Protein count: every CDS from an included contig must appear in the output
     output_cds = content.count("\tCDS\t")

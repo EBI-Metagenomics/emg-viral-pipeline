@@ -1,5 +1,3 @@
-#!/bin/env python3
-
 import os
 import unittest
 from collections import namedtuple

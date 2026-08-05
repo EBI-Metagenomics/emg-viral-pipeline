@@ -40,21 +40,22 @@ def rename(args):
     mapping between new and old files in tsv (args.map)
     """
     print("Renaming " + args.input)
-    with open(args.input, "r") as fasta_in:
-        with open(args.output, "w") as fasta_out, open(args.map, "w") as map_tsv:
-            count = 0
-            tsv_map = csv.writer(map_tsv, delimiter="\t")
-            tsv_map.writerow(["original", "temporary", "short"])
-            for line in fasta_in:
-                if line.startswith(">"):
-                    count += 1
-                    fasta_out.write(f">{args.prefix}{count}\n")
-                    name, _ = _parse_name(line)
-                    short_name = name.split(" ")[0]
-                    temporary_name = f"{args.prefix}{count}"
-                    tsv_map.writerow([name, temporary_name, short_name])
-                else:
-                    fasta_out.write(line)
+    with open(args.input, "r") as fasta_in, open(args.output, "w") as fasta_out, open(
+        args.map, "w"
+    ) as map_tsv:
+        count = 0
+        tsv_map = csv.writer(map_tsv, delimiter="\t")
+        tsv_map.writerow(["original", "temporary", "short"])
+        for line in fasta_in:
+            if line.startswith(">"):
+                count += 1
+                fasta_out.write(f">{args.prefix}{count}\n")
+                name, _ = _parse_name(line)
+                short_name = name.split(" ")[0]
+                temporary_name = f"{args.prefix}{count}"
+                tsv_map.writerow([name, temporary_name, short_name])
+            else:
+                fasta_out.write(line)
     print(f"Wrote {count} sequences to {args.output}.")
 
 

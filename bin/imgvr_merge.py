@@ -30,7 +30,7 @@ if __name__ == "__main__":
     if "empty" in args.filtered:
         print("Empty file, ignoring and creating empty tsv")
         open(args.outfile, "w").close()
-        exit(0)
+        sys.exit(0)
 
     db = {}
     db_headers = []

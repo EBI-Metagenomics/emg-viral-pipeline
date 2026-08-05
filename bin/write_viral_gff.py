@@ -14,6 +14,7 @@ from parse_viral_pred import Record
 from utils import parse_attrs
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 SCORE = "."
 
@@ -98,7 +99,7 @@ def evaluate_inputs(
              ena_mapping is None when --rename-contigs is not set.
     """
     if args.rename_contigs and not args.ena_contigs:
-        logging.error(
+        logger.error(
             "Contig renaming selected but no contig file provided. "
             "Provide path to ENA contig file with --ena-contigs"
         )
@@ -108,17 +109,17 @@ def evaluate_inputs(
     checkv_files: list[str] = args.checkv_files
     taxonomy_files: list[str] = args.taxonomy_files
 
-    logging.info(f"found assembly file: {assembly_file}")
-    logging.info(f"found virify files: {virify_files}")
-    logging.info(f"found checkV files: {checkv_files}")
-    logging.info(f"found taxonomy files: {taxonomy_files}")
+    logger.info(f"found assembly file: {assembly_file}")
+    logger.info(f"found virify files: {virify_files}")
+    logger.info(f"found checkV files: {checkv_files}")
+    logger.info(f"found taxonomy files: {taxonomy_files}")
 
     if not assembly_file:
-        logging.info("No contigs in assembly file.. exiting")
+        logger.info("No contigs in assembly file.. exiting")
         sys.exit(0)
 
     if args.rename_contigs:
-        logging.warning(
+        logger.warning(
             "Provided sample ID is ignored with --rename-contigs option. "
             "ENA ERZ accession will be used"
         )
@@ -249,7 +250,7 @@ def get_annotation_results(
                 clean_contig_name = Record.remove_prophage_from_contig(contig)
                 contig_len = contigs_len_dict.get(clean_contig_name)
                 if contig_len is not None:
-                    viral_sequence_type, direction, cds_id = build_cds_data(
+                    _, direction, cds_id = build_cds_data(
                         contig, contig_len, direction, cds_id
                     )
 
@@ -319,14 +320,14 @@ def get_checkv_results(
         )
 
     if contigs_without_checkv:
-        logging.warning(
+        logger.warning(
             f"{len(contigs_without_checkv)} viral contigs have no CheckV results "
             "and will use placeholder NA values: "
             + ", ".join(sorted(contigs_without_checkv))
         )
 
     if not_determined:
-        logging.warning(
+        logger.warning(
             f"{len(list(not_determined))} viral contigs have no viral genes detected by CheckV. "
             f"These contigs would be skipped in GFF: {','.join(list(not_determined))}"
         )
@@ -421,16 +422,16 @@ def get_proteins_from_gff(
                     contigs_proteins.setdefault(contig_id, [])
                     contigs_proteins[contig_id].append(line)
 
-    for contig_id in contigs_proteins:
+    for contig_id, protein_records in contigs_proteins.items():
         # Add contig into processing list
         # TODO: maybe required to change does_the_prophage_overrun to new coords of prophage
         clean_contig_name = Record.remove_prophage_from_contig(contig_id)
         contig_len = contigs_len_dict.get(clean_contig_name, 0)
         viral_sequence_type, _ = define_viral_sequence_type(contig_id, contig_len)
         viral_sequences[contig_id] = {viral_sequence_type}
-        logging.info(f"Added contig from GFF {contig_id}")
+        logger.info(f"Added contig from GFF {contig_id}")
         annotation_exists = False
-        for protein_record in contigs_proteins[contig_id]:
+        for protein_record in protein_records:
             protein_record_cols = protein_record.strip().split("\t")
             attrs, _ = parse_attrs(protein_record_cols[8])
             cds_id = attrs.get("ID", "").strip()
@@ -444,16 +445,13 @@ def get_proteins_from_gff(
             )
             # Add proteins into CDS dictionary
             annotation = ""
-            if (
-                contig_id in cds_best_hits.keys()
-                and cds_id in cds_best_hits[contig_id].keys()
-            ):
+            if contig_id in cds_best_hits and cds_id in cds_best_hits[contig_id]:
                 annotation = cds_best_hits[contig_id][cds_id]
                 annotation_exists = True
             cds_annotations.setdefault(clean_contig_name, []).append(
                 [cds_id, start, end, direction, annotation, contig_id, genecaller]
             )
-        logging.info(
+        logger.info(
             f"Viphogs annotation{' does not' if not annotation_exists else ''} exist for contig {contig_id}"
         )
     return viral_sequences, cds_annotations
@@ -489,7 +487,7 @@ def get_sequence_regions(
         sequence_regions.append((clean_contig_name, contig_length))
 
     if missed_contigs > 0:
-        logging.warning(
+        logger.warning(
             f"{missed_contigs} contigs were not found in the assembly and were skipped"
         )
 
@@ -560,7 +558,7 @@ def write_gff(
                         the output filename uses the ERZ accession prefix.
     """
     if ena_mapping:
-        ena_assembly_accession = list(ena_mapping.values())[0].split(".")[0]
+        ena_assembly_accession = next(iter(ena_mapping.values())).split(".")[0]
         output_filename = f"{ena_assembly_accession}_virify.gff"
     else:
         output_filename = f"{sample_prefix}_virify.gff"
@@ -698,7 +696,7 @@ if __name__ == "__main__":
         evaluate_inputs(args)
     )
 
-    logging.info("Collecting annotation data")
+    logger.info("Collecting annotation data")
     contigs_len_dict = get_contig_lengths_per_contig(assembly_file)
     # define virify HC/LC/PP quality
     virify_quality = define_virify_quality(checkv_files)
@@ -714,7 +712,7 @@ if __name__ == "__main__":
     checkv_dict = get_checkv_results(checkv_files, sequence_regions)
     taxonomy_dict = get_taxonomy_results(taxonomy_files)
 
-    logging.info("Generating the gff output")
+    logger.info("Generating the gff output")
     write_gff(
         checkv_dict,
         taxonomy_dict,

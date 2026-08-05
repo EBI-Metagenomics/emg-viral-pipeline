@@ -51,7 +51,9 @@ if __name__ == "__main__":
     #   followed by a free text target sequence description, as follows
     domain_table = Path(args.input_table)
     if not domain_table.is_file():
-        raise Exception("Input domain hits table missing. Path: " + args.input_table)
+        raise FileNotFoundError(
+            "Input domain hits table missing. Path: " + args.input_table
+        )
 
     with open(args.outfile_name + ".tsv", "w", newline="") as out_table:
         tsv_writer = csv.writer(out_table, delimiter="\t", quoting=csv.QUOTE_MINIMAL)

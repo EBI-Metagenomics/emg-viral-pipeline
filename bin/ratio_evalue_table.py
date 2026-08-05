@@ -79,7 +79,7 @@ def ratio_evalue(vphmm_df, taxa_dict, evalue):
                 hmm_ratio = (coord_to - coord_from + 1) / t_len
 
             fs_e_value = float(vphmm_specific_df["full sequence E-value"][i])
-            e_value_exponential = abs(int(("%E" % fs_e_value).split("E")[-1]))
+            e_value_exponential = abs(int((f"{fs_e_value:E}").split("E")[-1]))
 
             final_hit_list.append(
                 (

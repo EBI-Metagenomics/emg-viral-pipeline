@@ -1,5 +1,3 @@
-#!/bin/env python
-
 import unittest
 
 from bin.generate_counts_table import clean

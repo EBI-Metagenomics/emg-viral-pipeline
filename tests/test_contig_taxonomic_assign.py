@@ -1,5 +1,3 @@
-#!/bin/env python3
-
 import os
 import unittest
 from collections import namedtuple
@@ -54,7 +52,7 @@ class TestContigTaxonomicAssignation(unittest.TestCase):
 
         self.assertListEqual(expected_file_content, output_file_content)
 
-        Path(self._fixtures_folder / "input_taxonomic_assignment_taxonomy.tsv").unlink
+        Path(self._fixtures_folder / "input_taxonomic_assignment_taxonomy.tsv").unlink()
 
     def test_50_50_tie_leaves_subfamily_unassigned(self):
         """A perfect 50/50 tie between two subfamilies must leave the rank empty.

@@ -16,6 +16,7 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
+logger = logging.getLogger(__name__)
 
 
 # Some taxa are discontinued, we should exclude them (https://github.com/EBI-Metagenomics/emg-viral-pipeline/issues/113):
@@ -97,8 +98,8 @@ def main(args):
         exclude_deprecated_taxa,
     )
 
-    logging.info(f"Processing input file: {args.input_file}")
-    logging.info(
+    logger.info(f"Processing input file: {args.input_file}")
+    logger.info(
         f"Settings: tax_thres={args.tax_thres:.2f}, version4={args.version4}, exclude_deprecated={exclude_deprecated_taxa}"
     )
 
@@ -131,7 +132,7 @@ def contig_tax(
     viphog_rank = ["genus", "subfamily", "family", "order"]
     contig_set = set(annot_df["Contig"])
 
-    logging.info(f"Assigning taxonomy for {len(contig_set)} contigs")
+    logger.info(f"Assigning taxonomy for {len(contig_set)} contigs")
 
     assigned = 0
     unassigned_no_hits = 0
@@ -143,13 +144,13 @@ def contig_tax(
         total_prot = len(contig_df)
         annot_prot = sum(contig_df["Best_hit"] != "No hit")
         if annot_prot == 0:
-            logging.debug(
+            logger.debug(
                 f"Contig {contig}: no ViPhOG hits ({total_prot} proteins) - skipping"
             )
             unassigned_no_hits += 1
             contig_lineage.extend([""] * len(output_taxa_order[1:]))
         else:
-            logging.debug(
+            logger.debug(
                 f"Contig {contig}: {annot_prot}/{total_prot} proteins with ViPhOG hits"
             )
             contig_hits = contig_df[pd.notnull(contig_df["Label"])]["Label"].values
@@ -158,7 +159,7 @@ def contig_tax(
                 if len(ncbi.get_name_translator([item])):
                     taxid_list.append(ncbi.get_name_translator([item])[item][0])
                 else:
-                    logging.warning(
+                    logger.warning(
                         f"Taxon label '{item}' not found in NCBI db (contig {contig})"
                     )
 
@@ -172,7 +173,7 @@ def contig_tax(
                             # Check is some taxa should be excluded
                             if exclude_deprecated_taxa:
                                 if taxa_to_check in EXCLUDE_TAXA:
-                                    logging.info(
+                                    logger.info(
                                         f"Taxon '{taxa_to_check}' is deprecated and excluded (contig {contig})"
                                     )
                                 else:
@@ -182,12 +183,12 @@ def contig_tax(
                     if lineage_dict:
                         hit_lineages.append(lineage_dict)
                 except ValueError:
-                    logging.warning(
+                    logger.warning(
                         f"Cannot retrieve lineage for taxid {item} (contig {contig})"
                     )
 
             if not hit_lineages:
-                logging.debug(
+                logger.debug(
                     f"Contig {contig}: no valid lineages resolved from {len(taxid_list)} hits"
                 )
 
@@ -208,11 +209,11 @@ def contig_tax(
                         prop_hits = hit_count / total_hits
                         taxon_factor = (
                             taxon_factor_dict[hit_taxon]["factor"]
-                            if hit_taxon in taxon_factor_dict.keys()
+                            if hit_taxon in taxon_factor_dict
                             else 1
                         )
                         effective_thres = tax_thres * taxon_factor
-                        logging.debug(
+                        logger.debug(
                             f"Contig {contig} | rank={rank} | taxon={hit_taxon} | prop={prop_hits:.2f} | thres={effective_thres:.2f} (factor={taxon_factor:.2f})"
                         )
                         if prop_hits < effective_thres:
@@ -232,14 +233,14 @@ def contig_tax(
                         best_diff = sorted_under[0][1]
                         tied_candidates = [t for t in sorted_under if t[1] == best_diff]
                         if len(tied_candidates) > 1:
-                            logging.debug(
+                            logger.debug(
                                 f"Contig {contig} | rank={rank}: {len(tied_candidates)}-way tie among "
                                 f"{[t[0] for t in tied_candidates]}, leaving unassigned"
                             )
                             contig_lineage.append("")
                         else:
                             best_under = sorted_under[0]
-                            logging.debug(
+                            logger.debug(
                                 f"Contig {contig} | rank={rank}: all below threshold, best candidate is '{best_under[0]}'"
                             )
                             contig_lineage.append(best_under[0])
@@ -252,7 +253,7 @@ def contig_tax(
                         ]
                         for taxon in sorted_over_thres:
                             if (
-                                taxon in taxon_factor_dict.keys()
+                                taxon in taxon_factor_dict
                                 and total_prot
                                 <= taxon_factor_dict[taxon].get("avg_cds")
                                 + 2 * taxon_factor_dict[taxon].get("std_cds")
@@ -271,13 +272,13 @@ def contig_tax(
                                         1 : output_taxa_order.index(rank) + 1
                                     ]
                                 ]
-                                logging.info(
+                                logger.info(
                                     f"Contig {contig} assigned at rank '{rank}' via taxon '{taxon}'"
                                 )
                                 contig_assigned = True
                                 break
                         else:
-                            logging.debug(
+                            logger.debug(
                                 f"Contig {contig} | rank={rank}: candidates {sorted_over_thres} all failed CDS size filter"
                             )
                             contig_lineage.append("")
@@ -290,7 +291,7 @@ def contig_tax(
                 if contig_assigned:
                     assigned += 1
                 else:
-                    logging.debug(
+                    logger.debug(
                         f"Contig {contig}: had hits but could not be assigned (below threshold or no valid lineage)"
                     )
                     unassigned_below_thres += 1
@@ -299,7 +300,7 @@ def contig_tax(
         yield contig_lineage
 
     total = len(contig_set)
-    logging.info(
+    logger.info(
         f"Summary: {assigned}/{total} contigs assigned | {unassigned_no_hits} no ViPhOG hits | {unassigned_below_thres} hits but unassigned"
     )
 
