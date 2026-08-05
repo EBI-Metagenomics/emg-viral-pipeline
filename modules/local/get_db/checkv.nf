@@ -1,8 +1,8 @@
 process checkVGetDB {
     label 'process_low'
-    container { workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
+    container "${ workflow.containerEngine == 'singularity'
         ? 'https://depot.galaxyproject.org/singularity/checkv:1.0.1--pyhdfd78af_0'
-        : 'biocontainers/checkv:1.0.1--pyhdfd78af_0' }
+        : 'biocontainers/checkv:1.0.1--pyhdfd78af_0' }"
 
     publishDir "${params.databases}", mode: params.cloudProcess ? 'copy' : 'symlink'
 
