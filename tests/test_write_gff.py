@@ -343,7 +343,7 @@ def test_partial_checkv_results_warns(tmp_path):
     )
     sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
 
-    with patch("logging.warning") as mock_warn:
+    with patch("bin.write_viral_gff.logger.warning") as mock_warn:
         checkv_dict = get_checkv_results([str(checkv)], sequence_regions)
         taxonomy_dict = get_taxonomy_results([str(taxonomy)])
         write_gff(
@@ -396,7 +396,7 @@ def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
     # Passing a full path as sample_prefix directs the output GFF into tmp_path
     sample_prefix = str(tmp_path / "test_missing_contig")
 
-    with patch("logging.warning") as mock_warn:
+    with patch("bin.write_viral_gff.logger.warning") as mock_warn:
         sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
         checkv_dict = get_checkv_results([str(checkv_tsv)], sequence_regions)
         taxonomy_dict = get_taxonomy_results([str(taxonomy_tsv)])

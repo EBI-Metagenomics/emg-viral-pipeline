@@ -12,5 +12,7 @@ repos:
     rev: 'v6.0.0'
     hooks:
       - id: trailing-whitespace
+        exclude: ^tests/contig_taxonomic_assign/expected_assignment_taxonomy\.tsv$
       - id: end-of-file-fixer
+        exclude: ^tests/contig_taxonomic_assign/expected_assignment_taxonomy\.tsv$
       - id: check-yaml

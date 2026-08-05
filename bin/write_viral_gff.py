@@ -343,6 +343,8 @@ def empty_if_number(string: str) -> str:
     :param string: Taxonomy rank value from the assignment table.
     :return: Empty string for numeric values, original string otherwise.
     """
+    if string is None:
+        return ""
     try:
         float(string)
         return ""
