@@ -2,7 +2,7 @@ name: nf-test for subworkflows
 
 on:
   push:
-    branches: ["master", "fix/github-actions"]
+    branches: ["master"]
   pull_request:
     branches: ["master"]
 
