@@ -56,4 +56,3 @@ workflow PROTEINS_COMPATIBILITY {
     renamed_records = renamed_records
     not_matched_proteins_report = not_matched_proteins_report
 }
-    

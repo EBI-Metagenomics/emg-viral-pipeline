@@ -30,7 +30,7 @@ include { HMMER_PREDICTION            } from './hmmer_processing'
 workflow ANNOTATE {
 
     take:
-    category_input     // (meta, set_name, fasta, faa, gff) 
+    category_input     // (meta, set_name, fasta, faa, gff)
     assembly_fasta      // (meta, fasta) — full assembly per sample, used only for GFF output
 
     // reference databases and aux files //
@@ -47,7 +47,7 @@ workflow ANNOTATE {
     mashmap_ref_ch
 
     main:
-    
+
     input = category_input
         .multiMap{ meta, set_name, fasta, faa, gff ->
             category_fasta: [meta, set_name, fasta]

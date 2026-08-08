@@ -1,5 +1,5 @@
 FROM quay.io/microbiome-informatics/miniconda:4.12.0
-ENV VERSION 2.9.0 
+ENV VERSION 2.9.0
 ENV TOOL blast
 
 LABEL base_image="microbiome-informatics/miniconda:4.12.0"

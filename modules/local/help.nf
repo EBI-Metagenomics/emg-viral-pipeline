@@ -1,4 +1,4 @@
-/*************  
+/*************
 * --help
 *************/
 def helpMSG() {
@@ -9,17 +9,17 @@ def helpMSG() {
     def c_dim = "\033[2m";
     log.info """
     ____________________________________________________________________________________________
-    
+
     VIRify
-    
+
     ${c_yellow}Usage example:${c_reset}
-    nextflow run virify.nf --fasta 'assembly.fasta' 
+    nextflow run virify.nf --fasta 'assembly.fasta'
 
     ${c_yellow}Input:${c_reset}
     ${c_green} --fasta ${c_reset}             '*.fasta'                   -> one fasta file, no assembly produced (if you need to process more than one assembly use --samplesheet option)
     ${c_green} --samplesheet ${c_reset}       '*.csv'                     -> use to provide multiple assemblies/sets of raw reads
     ${c_green} --assemble ${c_reset}          'true/false'                -> should be provided with samplesheet containing raw reads if you need to assemble reads first (experimental feature that performs SPAdes assembly)
-    ${c_dim}  ..change above input to csv:${c_reset} ${c_green}--list ${c_reset}            
+    ${c_dim}  ..change above input to csv:${c_reset} ${c_green}--list ${c_reset}
 
     ${c_yellow}Options:${c_reset}
     --cores             max cores per process for local use [default: $params.cores]
@@ -64,7 +64,7 @@ def helpMSG() {
 
     ${c_yellow}Parameters:${c_reset}
     --use_virsorter_v1  Use VirSorter_v1 instead of default VirSorter2
-    --publish_all       Publish expanded output folder 
+    --publish_all       Publish expanded output folder
     --evalue            E-value used to filter ViPhOG hits in the ratio_evalue step [default: $params.evalue]
     --prop              Minimum proportion of proteins with ViPhOG annotations to provide a taxonomic assignment [default: $params.prop]
     --taxthres          Minimum proportion of annotated genes required for taxonomic assignment [default: $params.taxthres]
@@ -86,7 +86,7 @@ def helpMSG() {
                         v2: --cut_ga, min score used as sequence-specific GA, 3 bit trimmed for domain-specific GA
                         v3: --cut_ga, like v2 but seq-specific GA trimmed by 3 bits if second best score is 'nan' (current default)
     --meta_version      define the metadata table version to be used [default: $params.meta_version]
-                        v1: older version of the meta data table using an outdated NCBI virus taxonomy, for reproducibility 
+                        v1: older version of the meta data table using an outdated NCBI virus taxonomy, for reproducibility
                         v2: 2020 version of NCBI virus taxonomy
                         v3: 2022 version of NCBI virus taxonomy
                         v4: 2022 version of NCBI virus taxonomy
@@ -102,7 +102,7 @@ def helpMSG() {
 
     ${c_yellow}Profiles: Execution/Engine:${c_reset}
      VIRify supports profiles to run via different ${c_green}Executers${c_reset} and ${c_blue}Engines${c_reset} e.g.:
-         -profile ${c_green}local${c_reset},${c_blue}docker${c_reset} 
+         -profile ${c_green}local${c_reset},${c_blue}docker${c_reset}
 
       ${c_green}Executer${c_reset} (choose one):
         local

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # Copyright 2024-2026 EMBL - European Bioinformatics Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +24,7 @@ from constants import PRODIGAL_RENAMED_ID_REGEXP
 from utils import parse_attrs
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 MATCHED = "matched"
 REQUIRE_RENAME = "require_rename"
@@ -120,7 +120,7 @@ def read_gff_cds(gff: str) -> list[tuple[str, str]]:
             attrs, _ = parse_attrs(fields[8])
             protein_id = attrs.get("ID")
             if not protein_id:
-                logging.warning("No ID in: %s", "\t".join(fields))
+                logger.warning("No ID in: %s", "\t".join(fields))
                 continue
             entries.append((fields[0], protein_id))
     return entries
@@ -149,7 +149,7 @@ def check_compatibility(fasta: str, proteins_faa: str, proteins_gff: str) -> str
     gff_contig_ids = {contig_id for contig_id, _ in gff_entries}
 
     if not contig_ids or not faa_headers or not gff_entries:
-        logging.warning("One of fasta/faa/gff is empty")
+        logger.warning("One of fasta/faa/gff is empty")
         return NOT_MATCHED
 
     if is_short_format(faa_protein_ids) and is_short_format(gff_ids):
@@ -180,5 +180,5 @@ def write_status(output_dir: str, status: str) -> None:
 if __name__ == "__main__":
     args = parse_args(sys.argv[1:])
     result = check_compatibility(args.fasta, args.proteins_faa, args.proteins_gff)
-    logging.info("Compatibility check result: %s", result)
+    logger.info("Compatibility check result: %s", result)
     write_status(args.output_dir, result)

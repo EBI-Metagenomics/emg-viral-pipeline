@@ -22,4 +22,3 @@ process PPRMETA {
   ./PPR_Meta ${fasta} ${meta.id}.${fasta.baseName}_pprmeta.csv
   """
 }
-

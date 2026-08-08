@@ -252,7 +252,7 @@ FEATURES             Location/Qualifiers
                      EVHPKPVDFSRESDRVGLLTIEFDVFKGYAESRGTSLDPMTFEVDLWQMGMNLSNRDD
                      LFYVFRENTFRVYNAGSDRVNPLMRHELDIAMTANGTPTIHNLTTGESFEYRKELQKT
                      DVLLLNNIYPLVNNRRVGKDTNHGIITLEKGWNDFEIKGVTDVTIAFNFPFIYR"
-ORIGIN      
+ORIGIN
         1 aatggatgcg caaaataaaa ggtaactaga atctctagtt accttttttc tataaagctt
        61 gcaacatatc aaactgtgat tgatataaat tatagtaata gccgtgctgt gccatcagtt
       121 cttcgtgact gccagcttct tgaatgcggc cattatcaat gtagaagatg cgcgaactgt
@@ -1290,7 +1290,7 @@ FEATURES             Location/Qualifiers
                      IAPPDIPASHIAIFDAETGTWSLHEDHRGETVYDTTTGNQVYISAPGPLPENVTSVSP
                      DGEYQKWDGKAWVKDEAAETAARLREAEGTKSRLLQMASEKIAPLQDAVDLDEATDKE
                      KASLLAWRKYRVQVN"
-ORIGIN      
+ORIGIN
         1 tgatggacac agaatcttcc gttctgatgg acacatgcag ggataaatca tggctatttc
        61 agatagttat ctaaagtcgt gcctcgggcg cgaacgcgat aaagttgagg agaaggcaga
       121 ccgggacggt ctgtgggtgc gcatttccaa aaagggcgcc gtcacttttt tctaccgatt

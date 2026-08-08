@@ -809,7 +809,7 @@ FEATURES             Location/Qualifiers
                      LTSTPYPALVMDDMTTSAQFLMSNGFVPPAPLDGAMSMASFQQGLLETLVAYKDYTVS
                      GDEFIVTSGQFVSGNLEVLVSYEDYTVSGNENIQSNGQFRSGTMVIQNINRDLVESTR
                      PSAQFISGVLV"
-ORIGIN      
+ORIGIN
         1 caaggcaacc tcctgggatg tcgatgacga ctccagggtc agcagtcacg atgacagggc
        61 ctcccttctg cgcaatgctg aagtggctac ccgcacccat cttgacttct gcatccccca
       121 ccgcagggat agcgttgact cgtacttcgc acccagcctc gttggtgcat cggatgaatc
@@ -2350,7 +2350,7 @@ FEATURES             Location/Qualifiers
                      IHGFNSGEVEAIIKQTNPGFIIFDMIDNITFTGGMTNGGQRTDQMLEAMYQAARNWCV
                      KYDAVGVATSQISVEGEGIQYPPQSALKDSKTGKQGACDFIIMGGKLNDPAMERFRYI
                      GTPKNKLHRAGGKRDVREEVMMDADRARFYQEAA"
-ORIGIN      
+ORIGIN
         1 ttccactgca cgatcttgct gaccgcagtg gtggcaagct ccaactcaag cagcttctcg
        61 atcattcctt gagcagcttc gggcggaacc ttgtcccgca tctgcttcag cagtaccttc
       121 agcaaagact tcttgtcttc gggctgcgtc ttcactttga attcgagaag ccacccctcg
@@ -3936,7 +3936,7 @@ FEATURES             Location/Qualifiers
                      /translation="MSFALDVSRFVEKAKKNPEKVIRQVSIKLFSAIIKASPVDTGRF
                      RMNWMASNGTPADGTTDATDKSGTTATKKATSFVLNSADWKAFTLTNNLPYAQRLEYG
                      WSQQAPQGMVRTNVSRFQQ"
-ORIGIN      
+ORIGIN
         1 ttattaaatg aagaagcctc taaggtgaaa taatggcaac atattttgag gacttaacga
        61 aagcattcga cacggcactg gcggcatttg gcaccgacaa cgacatcatg gttgcgttag
       121 agaacataga cgcacctacg tctacagata ccccatatct tgcgagttat atgctgttgt

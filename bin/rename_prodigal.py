@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # Copyright 2024-2026 EMBL - European Bioinformatics Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,14 +15,15 @@
 import argparse
 import gzip
 import logging
-import sys
 import re
+import sys
 from typing import IO
 
 from constants import PRODIGAL_RENAMED_ID_REGEXP
 from utils import parse_attrs
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
@@ -80,12 +80,12 @@ def read_faa(proteins: str) -> set[str]:
 def rename_proteins_in_gff(gff: str, protein_names: set[str], output: str) -> None:
     """
     Function renames ID in prodigal gff from digit_digit to protein name in prodigal header in faa file
-    Example, 
+    Example,
     gff: ID=1_1;partial=00;start_type=ATG...
     faa: >MGYG000495417_3|prophage-23410:59937_1 # 1 # 498 # -1 # ID=1_1;partial=00
     output gff: ID=MGYG000495417_3|prophage-23410:59937_1;partial=00;start_type=ATG ...
     :param gff: prodigal gff
-    :param protein_names: list of unique protein headers from prodigal faa 
+    :param protein_names: list of unique protein headers from prodigal faa
     :param output: output corrected gff
     :return: -
     """
@@ -107,7 +107,7 @@ def rename_proteins_in_gff(gff: str, protein_names: set[str], output: str) -> No
             attrs, _ = parse_attrs(fields[8])
             protein_id = attrs.get("ID")
             if not protein_id:
-                logging.warning("No ID in: %s", "\t".join(fields))
+                logger.warning("No ID in: %s", "\t".join(fields))
                 file_out.write("\t".join(fields) + "\n")
                 continue
             if not re.fullmatch(PRODIGAL_RENAMED_ID_REGEXP, protein_id):
@@ -118,7 +118,7 @@ def rename_proteins_in_gff(gff: str, protein_names: set[str], output: str) -> No
             protein_suffix = protein_id.rsplit("_", 1)[-1]
             new_protein = f"{contig_id}_{protein_suffix}"
             if new_protein not in protein_names:
-                logging.warning("%s was not found in FAA", new_protein)
+                logger.warning("%s was not found in FAA", new_protein)
                 file_out.write("\t".join(fields) + "\n")
                 continue
             new_attr = fields[8].replace(f"ID={protein_id}", f"ID={new_protein}")

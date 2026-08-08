@@ -16,7 +16,7 @@ df.virify <- df.virify %>% mutate(row = group_indices(df.virify, .dots=c('name')
 
 # define order of columns in the plot, sort df.virify
 order <- c("order", "family", "subfamily", "genus")
-df.virify <- df.virify %>% 
+df.virify <- df.virify %>%
     mutate(rank =  factor(rank, levels = order)) %>%
     arrange(rank)
 
@@ -24,7 +24,7 @@ df.virify <- df.virify %>% unite(rank, variable, col = "col_order", remove = F)
 col_levels <- unique(df.virify$col_order)
 
 # ask trice if something is unclear ;D
-df.virify <- df.virify %>% 
+df.virify <- df.virify %>%
     mutate(col_order = factor(col_order, levels = col_levels)) %>%
     mutate(col = group_indices(., col_order))
 

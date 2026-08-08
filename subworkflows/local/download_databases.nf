@@ -2,7 +2,7 @@
 * DATABASES
 **************************/
 
-/* 
+/*
 The Database Section is designed to "auto-get" pre prepared databases.
 It is written for local use and cloud use.*/
 

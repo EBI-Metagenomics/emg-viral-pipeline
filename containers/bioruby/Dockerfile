@@ -1,4 +1,4 @@
-  
+
 FROM ruby:2.6-slim
 
 ENV VERSION 2.0.1

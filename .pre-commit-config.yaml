@@ -1,0 +1,18 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: 'v0.16.1'
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+  - repo: https://github.com/psf/black
+    rev: '26.5.1'
+    hooks:
+      - id: black
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 'v6.0.0'
+    hooks:
+      - id: trailing-whitespace
+        exclude: ^tests/contig_taxonomic_assign/expected_assignment_taxonomy\.tsv$
+      - id: end-of-file-fixer
+        exclude: ^tests/contig_taxonomic_assign/expected_assignment_taxonomy\.tsv$
+      - id: check-yaml

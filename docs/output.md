@@ -68,11 +68,11 @@ In order to have expanded output with more files use `--publish_all` option in p
     ├── 02-prodigal
     │   ├── high_confidence_viral_contigs_prodigal.faa
     │   └── low_confidence_viral_contigs_prodigal.faa
-    │   └── prophages_prodigal.faa  
+    │   └── prophages_prodigal.faa
     ├── 03-hmmer
     │   ├── high_confidence_viral_contigs_modified.tsv
     │   ├── low_confidence_viral_contigs_modified.tsv
-    │   ├── prophages_modified.tsv 
+    │   ├── prophages_modified.tsv
     │   ├── ratio_evalue_tables
     │   │   ├── high_confidence_viral_contigs_modified_informative.tsv
     │   │   ├── low_confidence_viral_contigs_modified_informative.tsv
