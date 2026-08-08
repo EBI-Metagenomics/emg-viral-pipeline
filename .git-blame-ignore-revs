@@ -1,2 +1,6 @@
 # Code formatting - VSCode extension of nextflow
 c9c1f1834fb9ff01c9970dd83b0af0e3c591edef
+# Linting action added
+27ef6251fac3bbbd0eebeda0526208f09ce22c27
+# Fixing ruff found issues with Claude
+c706d407109fe62f0e06dea21180569fa7ab6700
