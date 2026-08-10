@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - [2026-08]
+
+### Removed
+- Mode `--assemble`. Pipeline now accepts only FASTA file as main input, no reads support anymore.
+- Mode `--onlyannotate`. Detection step has become mandatory.
+- Flag `--use_proteins`. There is no need to specify that flag anymore. Proteins can be provided in input `--samplesheet`. If nothing was provided per record - pipeline will run protein prediction step.
+- Argument `--fasta`. Input contigs should be provided only with `--samplesheet`.
+- `FILTER_PROTEINS_IN_CONTIGS` step
+- environment variable `CONTIGS` and `contig_number`
+- viral identifier from proteins headers. Now only contigs have `|viral_sequence` or `|prophage` identifiers
+
+### Replaced
+- `Prodigal` replaced with `pyrodigal`
+
+### Fixed
+- Download databases process. Separated each database input.
+- Changed protein-related steps to make protein-contig linkage from GFF file (ex. split_proteins, annotate, assign)
+- Bug in `write_gff` not publishing all proteins related to viral/prophage record.
+- Bug in `write_gff` not processing data if all inputs (quality, annotation and assignment) were not provided.
+
+### Added
+- `proteins_faa` and `proteins_gff` fields to input samplesheet. Now if user wants to provide already predicted proteins - those should be provided in `faa` **and** `gff` files.
+- **Proteins compatibility** step: checks validity of protein files + tests.
+- **Rename prodigal** step. Prodigal sometimes renamed proteins into `digit_digit` format in `ID=` field in GFF. Those records are renamed back to original protein name.
+- **GitHub actions**: linting, pytest, nf-test for subworkflow
+- **Docs**: development, output and usage. Simplified README, changed pipeline schema, added schema `.svg`
+- More unit tests
+- `requrements.txt`
+
 ## [3.3.2] - [2026-06-09]
 
 ### Added

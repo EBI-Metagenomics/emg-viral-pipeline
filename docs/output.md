@@ -73,7 +73,7 @@ In order to have expanded output with more files use `--publish_all` option in p
     │       ├── final-viral-combined.fa
     │       ├── final-viral-score.tsv
     │       └── virsorter_metadata.tsv
-    ├── 02-protein-prediction
+    ├── 02-protein-prediction [if proteins_faa and proteins_gff were not provided as input]
     │   ├── ACCESSION.faa.gz
     │   └── ACCESSION.gff.gz
     │   └── ACCESSION.fna.gz
