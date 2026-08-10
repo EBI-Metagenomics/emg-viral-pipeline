@@ -52,14 +52,13 @@ workflow VIRIFY {
     ch_multiqc_logo = params.multiqc_logo ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.fromPath("${projectDir}/assets/mgnify_logo.png")
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
 
-    samplesheet = Channel.fromList(samplesheetToList(params.samplesheet, "./assets/schema_input.json"))
-    samplesheet
-        .map { id, assembly, proteins_gff, proteins_faa ->
-            tuple(
+    groupInputs = { id, assembly, proteins_gff, proteins_faa ->
+        if (params.use_proteins && proteins_gff && proteins_faa) {
+            return tuple(
                 ["id": id],
                 assembly,
-                proteins_gff ?: null,
-                proteins_faa ?: null
+                proteins_gff,
+                proteins_faa
             )
         }
         .set { input_assembly_proteins_ch }
@@ -97,6 +96,15 @@ workflow VIRIFY {
     )
 
     /**************************************************************/
+
+    proteins_ch = Channel.empty()
+
+    if (params.use_proteins) {
+        assembly_ch = input_ch.map { meta, assembly, _proteins_gff, _proteins_faa -> tuple(meta, assembly) }
+    }
+    else {
+        assembly_ch = input_ch
+    }
 
     // ----------- length filtering + rename fasta ------------------ //
     PREPROCESS(input_assembly_proteins_ch.map{ meta, assembly, _gff, _faa -> [meta, assembly] })
@@ -161,7 +169,10 @@ workflow VIRIFY {
 
     SPLIT_PROTEINS(category_fasta.groupTuple().join(protein_files_ch).transpose())
 
-    proteins_ch = SPLIT_PROTEINS.out.fasta_proteins_gff  // [meta, category_name, category_fasta, category_faa, category_gff]
+        SPLIT_PROTEINS(category_fasta.groupTuple().join(faa).transpose())
+
+        proteins_ch = SPLIT_PROTEINS.out.fasta_proteins_gff
+    }
 
     // ----------- ANNOTATE
     // category_fastas is already per-category: (meta, set_name, fasta, faa, gff)
