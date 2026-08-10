@@ -2,6 +2,7 @@ import gzip
 import os
 import tempfile
 import unittest
+from pathlib import Path
 
 from bin.check_proteins_compatibility import (
     MATCHED,
@@ -114,6 +115,28 @@ class TestCheckCompatibility(unittest.TestCase):
         self.assertEqual(
             check_compatibility(fasta_path, faa_path, gff_path), NOT_MATCHED
         )
+
+    def test_mag_with_genome_wide_protein_numbering_is_matched(self):
+        """Regression test for a real MAG (MGYG000495417) with pre-annotated,
+        already long-format proteins.
+
+        Unlike the small hand-written fixtures above, this genome has multiple
+        contigs (MGYG000495417_1, MGYG000495417_2, ...) and protein IDs that
+        are numbered sequentially across the whole genome rather than per
+        contig (MGYG000495417_00001, MGYG000495417_00002, ...), so a protein
+        ID does not embed its contig's ID as a prefix.
+
+        The original implementation compared contig_ids against faa_headers
+        (instead of gff_contig_ids against contig_ids), which happened to
+        work for the single-contig "contig_N_M" style fixtures above but
+        returned NOT_MATCHED for this genome, since no fasta contig ID is a
+        substring of any protein header.
+        """
+        fixtures = Path(__file__).parent / "test_data"
+        fasta_path = str(fixtures / "MGYG000495417.fna")
+        faa_path = str(fixtures / "MGYG000495417.faa")
+        gff_path = str(fixtures / "MGYG000495417.gff")
+        self.assertEqual(check_compatibility(fasta_path, faa_path, gff_path), MATCHED)
 
     def test_gzipped_inputs_are_supported(self):
         fasta = ">contig_1 description\nACGTACGTACGT\n"

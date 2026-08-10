@@ -160,7 +160,7 @@ def check_compatibility(fasta: str, proteins_faa: str, proteins_gff: str) -> str
         return NOT_MATCHED
 
     contigs_included = all(
-        any(contig_id in header for header in faa_headers) for contig_id in contig_ids
+        any(contig_id in header for header in contig_ids) for contig_id in gff_contig_ids
     )
     gff_ids_included = all(
         any(protein_id in header for header in faa_headers) for protein_id in gff_ids
