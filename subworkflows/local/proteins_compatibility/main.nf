@@ -18,7 +18,7 @@ workflow PROTEINS_COMPATIBILITY {
             def resultsList = results instanceof List ? results : [results]
             tuple(meta, resultsList[0].name)
         }
-    // Check whether a user-supplied fasta/faa/gff triplet is 
+    // Check whether a user-supplied fasta/faa/gff triplet is
     // internally consistent (marked matched or not_matched)
     // and whether the faa/gff still use prodigal's short-format protein IDs and therefore need renaming (marked require_rename)
     checked_records = records_with_proteins

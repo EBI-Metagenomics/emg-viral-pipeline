@@ -322,11 +322,11 @@
                     "default": "01-predictions",
                     "description": "output directory for detected viruses step"
                 },
-                "prodigaldir": {
+                "proteindir": {
                     "type": "string",
                     "format": "directory-path",
-                    "default": "02-prodigal",
-                    "description": "output directory for prodigal step"
+                    "default": "02-protein-prediction",
+                    "description": "output directory for protein prediction step"
                 },
                 "hmmerdir": {
                     "type": "string",
