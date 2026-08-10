@@ -1,7 +1,7 @@
 FROM quay.io/microbiome-informatics/miniconda:4.12.0
 
 LABEL base_image="microbiome-informatics/miniconda:4.12.0"
-LABEL version="1" 
+LABEL version="1"
 LABEL about.summary="MashMap implements a fast and approximate algorithm for computing local alignment boundaries between long DNA sequences"
 LABEL about.license="https://github.com/marbl/MashMap/blob/master/LICENSE.txt"
 LABEL about.tags="alignment"

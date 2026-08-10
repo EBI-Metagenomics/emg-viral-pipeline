@@ -1,5 +1,5 @@
-/* 
- * Run virus detection tools and parse the predictions according to defined filters. 
+/*
+ * Run virus detection tools and parse the predictions according to defined filters.
 */
 
 include { VIRSORTER                                                  } from '../../modules/local/virsorter'
@@ -23,7 +23,7 @@ workflow DETECT {
   pprmeta_git
 
   main:
-  
+
   // chunk fasta by default by 500Mb
   chunked_ch = renamed_assembly.flatMap { meta, fasta ->
      def chunks = fasta.splitFasta(file: true, size: params.chunk_fasta_size)
@@ -31,7 +31,7 @@ workflow DETECT {
         return tuple(meta, chunk)
      }
   }
-  
+
   // virus detection --> VirSorter/VirSorter2, VirFinder and PPR-Meta
 
   virsorter_output = Channel.empty()

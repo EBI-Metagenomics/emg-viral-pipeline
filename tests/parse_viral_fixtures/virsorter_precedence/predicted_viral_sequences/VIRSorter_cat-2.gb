@@ -1386,7 +1386,7 @@ FEATURES             Location/Qualifiers
                      /transl_table=11
                      /translation="MARIKITGYFTPEPEEADLFSPTGLTEEAYLNLISGEDGKPLDL
                      TDLTEVEVELQ"
-ORIGIN      
+ORIGIN
         1 tgcccctgtc gcatgaggcc ccccgctcgc tcggattcgt caagaaggcc gatgtggcga
        61 agattgttcg ggaactggac cccgaatcgg tcgaaagtgc ggatacccca cgggctggag
       121 tcgaagaaag ttcggttgag gggcctgcgc cgtcgaagaa acgtcggcca aggggcggta
@@ -3768,7 +3768,7 @@ FEATURES             Location/Qualifiers
                      /transl_table=11
                      /translation="VRGQPLRGACDCGEGVPGAEKPRCSYPQELSRVGFELFFAHRGL
                      LAPSLKHPELNMRKAPPSAKRWSLPWHV"
-ORIGIN      
+ORIGIN
         1 ccccagcatc gagcgagggc acccgctcgc tgggattcgt ccagccatcg gattcgtcga
        61 agattgttcg gcaagacggc ccagaatcag tcgaaagtgc gacaccccca ccgggtggag
       121 tcgaagaatc ttcggaagag gccccggcgg agaagaagaa acgtcggccg aggggcggtg
@@ -5748,7 +5748,7 @@ FEATURES             Location/Qualifiers
                      /translation="MITIERHDIKKLEDYIKNIERYRRELKVREYELLENHEPENVGA
                      GKSNIPGNPIERESIKKLSDNRYNNLRNIVKGVDKLIYESDEDTQDLMRLRYWECPIG
                      CSEWEDIAEYFGTSKTSILRRRDAMINRLAEFIGYV"
-ORIGIN      
+ORIGIN
         1 tacaacacgg cttccgatac gatgatatga atacttgaca tgtaattttt ctcctacctt
        61 aattagttat ccgtgagaac acacgggtaa cttattttta tgtattgatg tgacatagag
       121 atgtgacatg agtacataaa ctcaaataaa taacaaaaca taatcattag gcactgttta

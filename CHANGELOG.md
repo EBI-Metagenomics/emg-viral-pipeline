@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- [nf-schema](https://github.com/nextflow-io/nf-schema) plugin was missing from the pipeline dependencies, which broke the pipeline if the plugin was missing from the env. 
+- [nf-schema](https://github.com/nextflow-io/nf-schema) plugin was missing from the pipeline dependencies, which broke the pipeline if the plugin was missing from the env.
   It also caused the pipeline to randomly fail at times (the error was during the validation of the parameters) [#169](https://github.com/EBI-Metagenomics/emg-viral-pipeline/pull/169)
 
 ## [3.3.0] - [2026-03-04]

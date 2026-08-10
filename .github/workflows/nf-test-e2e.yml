@@ -1,0 +1,48 @@
+name: End to end test
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Nextflow 
+        uses: nf-core/setup-nextflow@v1
+        with:
+          version: "25.10.0"
+
+      - name: Setup nf-test
+        uses: nf-core/setup-nf-test@v1.3.6
+        with:
+          install-pdiff: true
+
+      - name: Free up disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: false
+
+      - name: Run Tests
+        run: nf-test test --verbose --profile docker,test_full,local --tag pipeline
+
+      - name: Move .nf-test output to non-hidden folder for artifact upload
+        if: always()
+        run: |
+          echo "changing name of .nf-test dir"
+          mv .nf-test nf-test-output
+
+      - name: Store the nf-test results if nf-test failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nf-test-out
+          include-hidden-files: true
+          path: |
+            ${{ github.workspace }}/nf-test-output

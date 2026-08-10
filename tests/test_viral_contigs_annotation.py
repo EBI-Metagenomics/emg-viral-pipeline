@@ -1,9 +1,6 @@
-#!/bin/env python3
-
 import os
 
 import pandas as pd
-import pytest
 
 from bin.viral_contigs_annotation import extract_annotations, parse_gff
 
@@ -66,8 +63,14 @@ class TestParseGff:
     def test_prophage_seqid_preserved(self):
         gff_data = parse_gff(fixture("prophage.gff"))
 
-        assert gff_data["contig1|prophage-1000:2000_5"]["contig"] == "contig1|prophage-1000:2000"
-        assert gff_data["contig1|prophage-1000:2000_6"]["contig"] == "contig1|prophage-1000:2000"
+        assert (
+            gff_data["contig1|prophage-1000:2000_5"]["contig"]
+            == "contig1|prophage-1000:2000"
+        )
+        assert (
+            gff_data["contig1|prophage-1000:2000_6"]["contig"]
+            == "contig1|prophage-1000:2000"
+        )
         assert gff_data["MGYG000495417_00791"]["contig"] == "contig3|prophage-2:220"
 
 
@@ -75,8 +78,16 @@ class TestExtractAnnotations:
     def _to_df(self, annotations):
         return pd.DataFrame(
             annotations,
-            columns=["Contig", "CDS_ID", "Start", "End", "Direction",
-                     "Best_hit", "Abs_Evalue_exp", "Label"],
+            columns=[
+                "Contig",
+                "CDS_ID",
+                "Start",
+                "End",
+                "Direction",
+                "Best_hit",
+                "Abs_Evalue_exp",
+                "Label",
+            ],
         )
 
     def test_basic_all_hits(self):
@@ -101,7 +112,9 @@ class TestExtractAnnotations:
 
     def test_no_hit_proteins_included(self):
         gff_data = parse_gff(fixture("test.gff"))
-        annotations = extract_annotations(fixture("test_ratio_evalue_mixed.tsv"), gff_data)
+        annotations = extract_annotations(
+            fixture("test_ratio_evalue_mixed.tsv"), gff_data
+        )
         df = self._to_df(annotations)
 
         # all 4 proteins appear regardless of hit status
@@ -127,7 +140,9 @@ class TestExtractAnnotations:
 
     def test_contig_id_comes_from_gff_seqid(self):
         gff_data = parse_gff(fixture("contig_id_extraction.gff"))
-        annotations = extract_annotations(fixture("contig_id_extraction_ratio.tsv"), gff_data)
+        annotations = extract_annotations(
+            fixture("contig_id_extraction_ratio.tsv"), gff_data
+        )
         df = self._to_df(annotations)
 
         assert len(df) == 3

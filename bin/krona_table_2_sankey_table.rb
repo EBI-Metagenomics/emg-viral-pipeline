@@ -35,7 +35,7 @@ output.close
 #50	unclassified
 #4	Caudovirales	Podoviridae	Autographivirinae	T7likevirus
 #2	Caudovirales	Podoviridae	unclassified	P22likevirus
-#2	unclassified	Microviridae	unclassified	Microvirus	
+#2	unclassified	Microviridae	unclassified	Microvirus
 #1	Caudovirales	Siphoviridae
 #1	Caudovirales	Myoviridae	Peduovirinae
 
@@ -43,6 +43,6 @@ output.close
 #50	root	Viruses	undefined
 #4	root	Viruses	Caudovirales	Podoviridae	Autographivirinae	Tlikevirus
 #2	root	Viruses	Caudovirales	Podoviridae	undefined Podoviridae	P22likevirus
-#2	root	Viruses	undefined	Microviridae	undefined Microviridae	Microvirus	
+#2	root	Viruses	undefined	Microviridae	undefined Microviridae	Microvirus
 #1	root	Viruses	Caudovirales	Siphoviridae
 #1	root	Viruses	Caudovirales	Myoviridae	Peduovirinae

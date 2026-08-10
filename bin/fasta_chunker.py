@@ -7,10 +7,18 @@ from Bio import SeqIO
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Split to chunks")
-    parser.add_argument("-i", "--input", dest="input", help="Input fasta file", required=True)
+    parser.add_argument(
+        "-i", "--input", dest="input", help="Input fasta file", required=True
+    )
     parser.add_argument("-s", "--size", dest="size", type=int, help="Chunk size")
-    parser.add_argument("-f", "--file_format", dest="file_format", required=False,
-                        choices=("fasta", "fastq"), default="fasta")
+    parser.add_argument(
+        "-f",
+        "--file_format",
+        dest="file_format",
+        required=False,
+        choices=("fasta", "fastq"),
+        default="fasta",
+    )
 
     args = parser.parse_args()
     file_format = args.file_format

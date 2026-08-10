@@ -2,8 +2,6 @@
 
 import argparse
 import csv
-import os
-import re
 import sys
 
 
@@ -33,21 +31,20 @@ def restore(args):
         for m in csv.DictReader(map_tsv, delimiter="\t"):
             mapping[m["renamed"]] = m["original"]
 
-    with open(args.input, "r") as fasta_in:
-        with open(args.output, "w") as fasta_out:
-            for line in fasta_in:
-                if line.startswith(">"):
-                    mod, metadata = _parse_name(line)
-                    original = mapping.get(mod, None)
-                    if not original:
-                        print(
-                            f"Missing sequence in mapping for {mod}. Header: {line}",
-                            file=sys.stderr,
-                        )
-                        original = mod
-                    fasta_out.write(f">VirSorter_{original}-{metadata}\n")
-                else:
-                    fasta_out.write(line)
+    with open(args.input, "r") as fasta_in, open(args.output, "w") as fasta_out:
+        for line in fasta_in:
+            if line.startswith(">"):
+                mod, metadata = _parse_name(line)
+                original = mapping.get(mod, None)
+                if not original:
+                    print(
+                        f"Missing sequence in mapping for {mod}. Header: {line}",
+                        file=sys.stderr,
+                    )
+                    original = mod
+                fasta_out.write(f">VirSorter_{original}-{metadata}\n")
+            else:
+                fasta_out.write(line)
 
 
 def main():

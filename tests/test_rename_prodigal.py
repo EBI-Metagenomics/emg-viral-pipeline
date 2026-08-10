@@ -1,5 +1,3 @@
-#!/bin/env python3
-
 import gzip
 import os
 import re
@@ -8,16 +6,14 @@ import unittest
 
 from bin.rename_prodigal import parse_attrs, read_faa, rename_proteins_in_gff
 
-
 TEST_DATA = os.path.join(os.path.dirname(__file__), "rename_prodigal")
 
 _GFF_COLS = "contig\tsource\tCDS\t1\t100\t.\t+\t0\t"
 
 
 def _write_tmp(content: str) -> str:
-    tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".gff", delete=False)
-    tmp.write(content)
-    tmp.close()
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".gff", delete=False) as tmp:
+        tmp.write(content)
     return tmp.name
 
 
@@ -64,7 +60,8 @@ class TestReadFaa(unittest.TestCase):
         with open(faa) as f:
             content = f.read()
 
-        gz_path = tempfile.NamedTemporaryFile(suffix=".faa.gz", delete=False).name
+        with tempfile.NamedTemporaryFile(suffix=".faa.gz", delete=False) as f:
+            gz_path = f.name
         try:
             with gzip.open(gz_path, "wt") as f:
                 f.write(content)
@@ -100,8 +97,10 @@ class TestRenameProteinsInGff(unittest.TestCase):
         with open(faa) as f:
             faa_content = f.read()
 
-        gff_gz_path = tempfile.NamedTemporaryFile(suffix=".gff.gz", delete=False).name
-        faa_gz_path = tempfile.NamedTemporaryFile(suffix=".faa.gz", delete=False).name
+        with tempfile.NamedTemporaryFile(suffix=".gff.gz", delete=False) as f:
+            gff_gz_path = f.name
+        with tempfile.NamedTemporaryFile(suffix=".faa.gz", delete=False) as f:
+            faa_gz_path = f.name
         output_path = _write_tmp("")
         try:
             with gzip.open(gff_gz_path, "wt") as f:

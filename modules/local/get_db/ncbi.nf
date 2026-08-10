@@ -1,7 +1,7 @@
 process ncbiGetDB {
-  label 'process_low'    
+  label 'process_low'
   container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'
-  
+
   publishDir "${params.databases}", pattern: "ete3_ncbi_tax.sqlite", mode: params.cloudProcess ? 'copy' : 'symlink'
 
   input:

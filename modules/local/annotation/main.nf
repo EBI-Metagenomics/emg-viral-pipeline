@@ -1,6 +1,6 @@
 process ANNOTATION {
     /*
-     * Generate tabular file with ViPhOG annotation results for 
+     * Generate tabular file with ViPhOG annotation results for
      * proteins predicted in viral contigs
     */
     tag "${meta.id} ${set_name}"

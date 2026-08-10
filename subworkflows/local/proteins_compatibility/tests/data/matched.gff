@@ -1,0 +1,3 @@
+##gff-version 3
+contig_1	Prodigal	CDS	1	100	.	+	0	ID=contig_1_1;partial=00
+contig_1	Prodigal	CDS	101	200	.	+	0	ID=contig_1_2;partial=00

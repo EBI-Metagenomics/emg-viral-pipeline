@@ -14,8 +14,8 @@ LABEL maintainer="MGnify team <https://www.ebi.ac.uk/support/metagenomics>"
 
 # install dependencies for virsorter
 RUN Rscript -e "install.packages('gapminder', repos = 'http://cran.us.r-project.org')" && \
-    Rscript -e "install.packages('glmnet', repos = 'http://cran.us.r-project.org')" && \ 
-    Rscript -e "install.packages('Rcpp', repos = 'http://cran.us.r-project.org')" && \ 
+    Rscript -e "install.packages('glmnet', repos = 'http://cran.us.r-project.org')" && \
+    Rscript -e "install.packages('Rcpp', repos = 'http://cran.us.r-project.org')" && \
     Rscript -e "install.packages('purrr', version = '0.3.2', repos = 'http://cran.us.r-project.org')" && \
     install2.r --error BiocManager \
     && Rscript -e 'requireNamespace("BiocManager"); BiocManager::install();' \

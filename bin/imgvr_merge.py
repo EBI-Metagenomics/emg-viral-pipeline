@@ -4,28 +4,33 @@ import argparse
 import csv
 import sys
 
-
 if __name__ == "__main__":
-    """Combine the filtered blast results with meta information from the IMG/VR database.
-    """
+    """Combine the filtered blast results with meta information from the IMG/VR database."""
     parser = argparse.ArgumentParser(
         description="Combine the filtered blast results with meta information "
-        "from the IMG/VR database.")
-    parser.add_argument("-f", "--filtered",
-                        help="Filtered blast hits", required=True)
-    parser.add_argument("-d", "--db",
-                        help="Path to IMG_VR_2018-07-01_4/IMGVR_all_Sequence_information.tsv",
-                        required=True)
-    parser.add_argument("-o", "--outfile", dest="outfile",
-                        help="TSV output",
-                        default="imgvd_hits_metadata.tsv")
+        "from the IMG/VR database."
+    )
+    parser.add_argument("-f", "--filtered", help="Filtered blast hits", required=True)
+    parser.add_argument(
+        "-d",
+        "--db",
+        help="Path to IMG_VR_2018-07-01_4/IMGVR_all_Sequence_information.tsv",
+        required=True,
+    )
+    parser.add_argument(
+        "-o",
+        "--outfile",
+        dest="outfile",
+        help="TSV output",
+        default="imgvd_hits_metadata.tsv",
+    )
     args = parser.parse_args()
 
     # ignore empty files
     if "empty" in args.filtered:
         print("Empty file, ignoring and creating empty tsv")
         open(args.outfile, "w").close()
-        exit(0)
+        sys.exit(0)
 
     db = {}
     db_headers = []
@@ -37,8 +42,7 @@ if __name__ == "__main__":
 
     print(f"Loaded {len(db)} entries from the db tsv file")
 
-    with open(args.filtered, "r") as filtered_file, \
-         open(args.outfile, "w") as out_file:
+    with open(args.filtered, "r") as filtered_file, open(args.outfile, "w") as out_file:
 
         out_writer = csv.writer(out_file, delimiter="\t")
         filtered_reader = csv.reader(filtered_file, delimiter="\t")

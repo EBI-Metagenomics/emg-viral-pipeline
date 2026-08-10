@@ -1,0 +1,31 @@
+nextflow_process {
+
+    name "Test protein calling and rename"
+    script "../main.nf"
+    process "PREDICT_PROTEINS"
+
+    tag "subworkflows"
+    tag "predict_proteins"
+
+    test("Predict proteins for long headers") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ],
+                    file('${projectDir}/subworkflows/local/protein_prediction/tests/data/long_headers.fna', checkIfExists: true),
+                ]
+                """
+            }
+        }
+        then {
+            assert process.success
+
+            assertAll(
+                { assert snapshot(
+                    process.out.predicted_proteins
+                ).match() }
+            )
+        }
+    }
+}

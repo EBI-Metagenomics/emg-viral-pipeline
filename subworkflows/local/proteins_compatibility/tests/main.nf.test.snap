@@ -1,0 +1,59 @@
+{
+    "Proteins compatibility": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "matched"
+                        },
+                        "matched.fna:md5,31b70b6e0101c8f72912a23151a144b0",
+                        "matched.gff:md5,92c48a3f3ad33b67feb81719c004ce97",
+                        "matched.faa:md5,5f3b542e7e3e7e3177fb428b842e5da4"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "require_rename"
+                        },
+                        "require_rename.fna:md5,31b70b6e0101c8f72912a23151a144b0",
+                        "require_rename_renamed.gff:md5,1d7f145fb6d30dc38c80b6c954d29aa6",
+                        "require_rename.faa:md5,79544c1e91f074d8990c882ef2cf3dcc"
+                    ]
+                ],
+                "2": [
+                    "not_matched_proteins_report.tsv:md5,cdfeba398b0df8c49ed0e0d91a1dd1f6"
+                ],
+                "matched_records": [
+                    [
+                        {
+                            "id": "matched"
+                        },
+                        "matched.fna:md5,31b70b6e0101c8f72912a23151a144b0",
+                        "matched.gff:md5,92c48a3f3ad33b67feb81719c004ce97",
+                        "matched.faa:md5,5f3b542e7e3e7e3177fb428b842e5da4"
+                    ]
+                ],
+                "not_matched_proteins_report": [
+                    "not_matched_proteins_report.tsv:md5,cdfeba398b0df8c49ed0e0d91a1dd1f6"
+                ],
+                "renamed_records": [
+                    [
+                        {
+                            "id": "require_rename"
+                        },
+                        "require_rename.fna:md5,31b70b6e0101c8f72912a23151a144b0",
+                        "require_rename_renamed.gff:md5,1d7f145fb6d30dc38c80b6c954d29aa6",
+                        "require_rename.faa:md5,79544c1e91f074d8990c882ef2cf3dcc"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-08-04T16:04:15.350907",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
+    }
+}
