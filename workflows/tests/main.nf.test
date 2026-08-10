@@ -1,0 +1,25 @@
+nextflow_pipeline {
+
+    name "Full pipeline test"
+
+    tag "pipeline"
+    tag "virify"
+
+    script "../../main.nf"
+
+    test("Run full pipeline with test_full profile") {
+        when {
+            params {
+                samplesheet = "${projectDir}/tests/test_data/MGYG000495417_samplesheet.csv"
+                output = "results"
+            }
+        }
+        then {
+            assert workflow.success
+
+            snapshot(
+                path("results")
+            ).match()
+        }
+    }
+}

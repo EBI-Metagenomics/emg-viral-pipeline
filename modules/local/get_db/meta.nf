@@ -1,7 +1,7 @@
 process metaGetDB {
-    label 'process_low'    
+    label 'process_low'
     container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'
-  
+
     publishDir "${params.databases}", pattern: "additional_data_vpHMMs_${params.meta_version}.tsv", mode: params.cloudProcess ? 'copy' : 'symlink'
 
     input:

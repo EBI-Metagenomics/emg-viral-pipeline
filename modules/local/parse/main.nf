@@ -17,7 +17,7 @@
   -o OUTDIR, --outdir OUTDIR
                         Absolute or relative path of directory where output
                         viral prediction files should be stored (default: cwd)
-                        
+
   NOTE: only outputs .fna files if some low confidence or high confidence viral seqs were identified, otherwise outputs nothing.
 */
 

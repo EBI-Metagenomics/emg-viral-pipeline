@@ -1,5 +1,4 @@
-#!/bin/env python3
-
+import gzip
 import os
 import re
 import tempfile
@@ -7,16 +6,14 @@ import unittest
 
 from bin.rename_prodigal import parse_attrs, read_faa, rename_proteins_in_gff
 
-
 TEST_DATA = os.path.join(os.path.dirname(__file__), "rename_prodigal")
 
 _GFF_COLS = "contig\tsource\tCDS\t1\t100\t.\t+\t0\t"
 
 
 def _write_tmp(content: str) -> str:
-    tmp = tempfile.NamedTemporaryFile(mode="w", suffix=".gff", delete=False)
-    tmp.write(content)
-    tmp.close()
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".gff", delete=False) as tmp:
+        tmp.write(content)
     return tmp.name
 
 
@@ -58,6 +55,22 @@ class TestReadFaa(unittest.TestCase):
         for name in names:
             self.assertFalse(name.startswith(">"))
 
+    def test_reads_gzipped_faa(self):
+        faa = os.path.join(TEST_DATA, "prophages_prodigal.faa")
+        with open(faa) as f:
+            content = f.read()
+
+        with tempfile.NamedTemporaryFile(suffix=".faa.gz", delete=False) as f:
+            gz_path = f.name
+        try:
+            with gzip.open(gz_path, "wt") as f:
+                f.write(content)
+            names = read_faa(gz_path)
+            self.assertIn("MGYG000495417_3|prophage-23410:59937_1", names)
+            self.assertIn("MGYG000495417_4|prophage-587472:685913_1", names)
+        finally:
+            os.unlink(gz_path)
+
 
 class TestRenameProteinsInGff(unittest.TestCase):
     def test_output_matches_expected(self):
@@ -73,6 +86,35 @@ class TestRenameProteinsInGff(unittest.TestCase):
                 self.assertEqual(got.read(), exp.read())
         finally:
             os.unlink(output_path)
+
+    def test_output_matches_expected_with_gzipped_inputs(self):
+        gff = os.path.join(TEST_DATA, "prophages_prodigal.gff")
+        faa = os.path.join(TEST_DATA, "prophages_prodigal.faa")
+        expected_gff = os.path.join(TEST_DATA, "expected", "renamed.gff")
+
+        with open(gff) as f:
+            gff_content = f.read()
+        with open(faa) as f:
+            faa_content = f.read()
+
+        with tempfile.NamedTemporaryFile(suffix=".gff.gz", delete=False) as f:
+            gff_gz_path = f.name
+        with tempfile.NamedTemporaryFile(suffix=".faa.gz", delete=False) as f:
+            faa_gz_path = f.name
+        output_path = _write_tmp("")
+        try:
+            with gzip.open(gff_gz_path, "wt") as f:
+                f.write(gff_content)
+            with gzip.open(faa_gz_path, "wt") as f:
+                f.write(faa_content)
+
+            protein_names = read_faa(faa_gz_path)
+            rename_proteins_in_gff(gff_gz_path, protein_names, output_path)
+            with open(output_path) as got, open(expected_gff) as exp:
+                self.assertEqual(got.read(), exp.read())
+        finally:
+            for p in (gff_gz_path, faa_gz_path, output_path):
+                os.unlink(p)
 
     def test_comment_lines_pass_through(self):
         gff = os.path.join(TEST_DATA, "prophages_prodigal.gff")

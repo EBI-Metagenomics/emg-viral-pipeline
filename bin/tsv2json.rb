@@ -18,9 +18,9 @@ taxa_count = 0
 TSV.each do |line|
     split = line.chomp.split("\t")
     count = split[0].to_i
-   
+
     #next if count < cutoff
-    
+
     # nodes
     lineage = split[2,split.size]
 

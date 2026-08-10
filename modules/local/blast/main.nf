@@ -1,16 +1,16 @@
 process BLAST {
 
     label 'process_high'
-    tag "${meta.id} ${confidence_set_name}"      
+    tag "${meta.id} ${confidence_set_name}"
     container 'quay.io/microbiome-informatics/blast:2.9.0'
 
     input:
       tuple val(meta), val(confidence_set_name), path(fasta)
       tuple val(meta_db), path(db)
-    
+
     output:
       tuple val(meta), val(confidence_set_name), path("${confidence_set_name}.blast"), path("${confidence_set_name}.filtered.blast")
-    
+
     script:
     if (task.attempt.toString() == '1')
     """

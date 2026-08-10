@@ -2,7 +2,7 @@ process HMMER {
   tag "${meta.id} ${faa.baseName}"
   label 'process_high'
 
-  container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+  container "${ workflow.containerEngine == 'singularity' ?
       'https://depot.galaxyproject.org/singularity/hmmer:3.4--hdbdd923_1' :
       'biocontainers/hmmer:3.4--hdbdd923_1' }"
 

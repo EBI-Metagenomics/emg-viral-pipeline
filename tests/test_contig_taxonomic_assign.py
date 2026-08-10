@@ -1,14 +1,12 @@
-#!/bin/env python3
-
 import os
 import unittest
-from pathlib import Path
 from collections import namedtuple
+from pathlib import Path
 
 import pandas as pd
 
-from bin.contig_taxonomic_assign import main as contig_taxonomic_assign_main
 from bin.contig_taxonomic_assign import contig_tax
+from bin.contig_taxonomic_assign import main as contig_taxonomic_assign_main
 
 
 class TestContigTaxonomicAssignation(unittest.TestCase):
@@ -54,7 +52,7 @@ class TestContigTaxonomicAssignation(unittest.TestCase):
 
         self.assertListEqual(expected_file_content, output_file_content)
 
-        Path(self._fixtures_folder / "input_taxonomic_assignment_taxonomy.tsv").unlink
+        Path(self._fixtures_folder / "input_taxonomic_assignment_taxonomy.tsv").unlink()
 
     def test_50_50_tie_leaves_subfamily_unassigned(self):
         """A perfect 50/50 tie between two subfamilies must leave the rank empty.

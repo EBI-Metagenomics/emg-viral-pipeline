@@ -1,8 +1,8 @@
 process pvogsGetDB {
 
-  label 'process_low'    
-  container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'    
-  
+  label 'process_low'
+  container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'
+
   publishDir "${params.databases}", mode: params.cloudProcess ? 'copy' : 'symlink'
 
   input:

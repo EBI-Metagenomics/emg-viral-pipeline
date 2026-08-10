@@ -22,8 +22,8 @@ contigs.each do |line|
     s = line.split("\t")
     id = s[0]
     length = s[2].to_f
-    if length > filter 
-        contigs_h[id] = length    
+    if length > filter
+        contigs_h[id] = length
     end
 end
 contigs.close
@@ -40,12 +40,12 @@ puts shortest_contig
 longest_contig = contigs_h.values[contigs_h.values.length-1]
 puts longest_contig
 ratio = shortest_contig / longest_contig
-while (ratio < 0.015) 
+while (ratio < 0.015)
     longest_contig_id = contigs_h.keys[contigs_h.values.length-1]
     contigs_h.delete(longest_contig_id)
     shortest_contig  = contigs_h.values[0]
     longest_contig = contigs_h.values[contigs_h.values.length-1]
-    ratio = shortest_contig / longest_contig    
+    ratio = shortest_contig / longest_contig
 end
 contigs.close
 
@@ -76,7 +76,7 @@ end
 no = []
 hc = []
 lc = []
-annotations.each do |line|  
+annotations.each do |line|
     s = line.split("\t")
 
     contig = s[0]
@@ -89,9 +89,9 @@ annotations.each do |line|
     taxa = s[7]
 
     if hit == 'No hit'
-        no.push("#{cds}\t#{contig}\t#{start}\t#{stop}\tNo hit\n") 
+        no.push("#{cds}\t#{contig}\t#{start}\t#{stop}\tNo hit\n")
     else
-        if score < 10 
+        if score < 10
             lc.push("#{cds}\t#{contig}\t#{start}\t#{stop}\tLow confidence\n")
         else
             hc.push("#{cds}\t#{contig}\t#{start}\t#{stop}\tHigh confidence\n")

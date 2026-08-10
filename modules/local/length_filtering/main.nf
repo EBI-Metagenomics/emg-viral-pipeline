@@ -7,7 +7,9 @@ process LENGTH_FILTERING {
     label 'process_single'
     tag "${meta.id}"
 
-    container 'quay.io/biocontainers/biopython:1.75'
+    container "${ workflow.containerEngine == 'singularity' ?
+        'https://depot.galaxyproject.org/singularity/biopython:1.84' :
+        'quay.io/biocontainers/biopython:1.84' }"
 
     input:
     tuple val(meta), path(fasta)

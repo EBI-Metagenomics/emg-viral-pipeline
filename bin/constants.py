@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 # Copyright 2024-2026 EMBL - European Bioinformatics Institute
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PRODIGAL_RENAMED_ID_REGEXP = r"\d+_\d+"  # prodigal renames IDs in gff attributes to shorter format like 1_1
+PRODIGAL_RENAMED_ID_REGEXP = (
+    r"\d+_\d+"  # prodigal renames IDs in gff attributes to shorter format like 1_1
+)
 
 # used in split_proteins step to decide whether a protein sufficiently overlaps a prophage interval
-PROPHAGE_COVERAGE_CUTOFF = 0.9   
+PROPHAGE_COVERAGE_CUTOFF = 0.9
 PROTEIN_COVERAGE_CUTOFF = 0.9

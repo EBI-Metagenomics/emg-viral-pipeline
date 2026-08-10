@@ -3,7 +3,7 @@
 # emg-viral-pipeline CWL specific
 
 while getopts "if:o:" opt; do
-  case $opt in 
+  case $opt in
     i)
         echo "singularity ignored."
         ;;
