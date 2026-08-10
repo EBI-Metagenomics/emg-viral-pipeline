@@ -160,11 +160,8 @@ workflow VIRIFY {
         }
 
     SPLIT_PROTEINS(category_fasta.groupTuple().join(protein_files_ch).transpose())
-
-        SPLIT_PROTEINS(category_fasta.groupTuple().join(faa).transpose())
-
-        proteins_ch = SPLIT_PROTEINS.out.fasta_proteins_gff
-    }
+    
+    proteins_ch = SPLIT_PROTEINS.out.fasta_proteins_gff
 
     // ----------- ANNOTATE
     // category_fastas is already per-category: (meta, set_name, fasta, faa, gff)
