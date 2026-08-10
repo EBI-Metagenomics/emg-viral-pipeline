@@ -52,13 +52,14 @@ workflow VIRIFY {
     ch_multiqc_logo = params.multiqc_logo ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.fromPath("${projectDir}/assets/mgnify_logo.png")
     ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
 
-    groupInputs = { id, assembly, proteins_gff, proteins_faa ->
-        if (params.use_proteins && proteins_gff && proteins_faa) {
-            return tuple(
+    samplesheet = Channel.fromList(samplesheetToList(params.samplesheet, "./assets/schema_input.json"))
+    samplesheet
+        .map { id, assembly, proteins_gff, proteins_faa ->
+            tuple(
                 ["id": id],
                 assembly,
-                proteins_gff,
-                proteins_faa
+                proteins_gff ?: null,
+                proteins_faa ?: null
             )
         }
         .set { input_assembly_proteins_ch }
@@ -96,15 +97,6 @@ workflow VIRIFY {
     )
 
     /**************************************************************/
-
-    proteins_ch = Channel.empty()
-
-    if (params.use_proteins) {
-        assembly_ch = input_ch.map { meta, assembly, _proteins_gff, _proteins_faa -> tuple(meta, assembly) }
-    }
-    else {
-        assembly_ch = input_ch
-    }
 
     // ----------- length filtering + rename fasta ------------------ //
     PREPROCESS(input_assembly_proteins_ch.map{ meta, assembly, _gff, _faa -> [meta, assembly] })
