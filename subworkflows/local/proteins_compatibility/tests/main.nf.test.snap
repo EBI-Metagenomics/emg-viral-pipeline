@@ -25,7 +25,7 @@
                 "2": [
                     "not_matched_proteins_report.tsv:md5,cdfeba398b0df8c49ed0e0d91a1dd1f6"
                 ],
-                "checked_records": [
+                "matched_records": [
                     [
                         {
                             "id": "matched"

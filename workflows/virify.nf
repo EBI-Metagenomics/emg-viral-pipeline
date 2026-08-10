@@ -128,7 +128,7 @@ workflow VIRIFY {
     // check proteins compatibility and return only records with correct format
     PROTEINS_COMPATIBILITY(records_with_proteins)
 
-    full_input = PROTEINS_COMPATIBILITY.out.checked_records
+    full_input = PROTEINS_COMPATIBILITY.out.matched_records
                  .mix(PROTEINS_COMPATIBILITY.out.renamed_records)
                  .mix(newly_predicted)
 

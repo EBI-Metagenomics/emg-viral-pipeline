@@ -4,7 +4,7 @@ include { RENAME_PRODIGAL                   } from '../../../modules/local/renam
 
 workflow PROTEINS_COMPATIBILITY {
     take:
-    records_with_proteins // [meta, fasta, gff, faa]
+    records_with_proteins // [meta, fna, gff, faa]
 
     main:
     // check proteins compatibility with pipeline expectations
@@ -18,7 +18,9 @@ workflow PROTEINS_COMPATIBILITY {
             def resultsList = results instanceof List ? results : [results]
             tuple(meta, resultsList[0].name)
         }
-
+    // Check whether a user-supplied fasta/faa/gff triplet is 
+    // internally consistent (marked matched or not_matched)
+    // and whether the faa/gff still use prodigal's short-format protein IDs and therefore need renaming (marked require_rename)
     checked_records = records_with_proteins
         .join(compatibility_status)
         .branch { meta, fasta, proteins_gff, proteins_faa, status ->
@@ -52,7 +54,7 @@ workflow PROTEINS_COMPATIBILITY {
         .map { meta, fasta, proteins_faa, renamed_gff -> tuple(meta, fasta, renamed_gff, proteins_faa) }
 
     emit:
-    checked_records = checked_records.matched
+    matched_records = checked_records.matched
     renamed_records = renamed_records
     not_matched_proteins_report = not_matched_proteins_report
 }

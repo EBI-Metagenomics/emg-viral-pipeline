@@ -12,7 +12,8 @@ workflow PREDICT_PROTEINS {
             input_fastas,
             "gff"
         )
-
+        // That process was used for Prodigal process and left after we switched to pyrodigal
+        // it renames ID in prodigal gff from digit_digit to protein name in prodigal header in faa file
         RENAME_PRODIGAL(
              PYRODIGAL.out.annotations.join(PYRODIGAL.out.faa)
         )
