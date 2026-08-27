@@ -169,18 +169,21 @@ class SplitProteins(unittest.TestCase):
 
         # should rely only on protein identifiers ignoring annotation like hypothetical protein
         assert "prophage" not in content
-        # doesn't fit in prophage coords
+        # doesn't fit in prophage coords (between the two prophage regions on the same contig)
         assert "MGYG000495417_00791" not in content
-        # does fit in prophage coords
+        assert "MGYG000495417_00792" not in content
+        # does fit in prophage coords (first prophage region: 23410-59937)
         assert "MGYG000495417_00789" in content
         assert "MGYG000495417_00790" in content
+        # does fit in prophage coords (second prophage region on the same contig: 70000-80000)
+        assert "MGYG000495417_00793" in content
         # doesn't belong to contig MGYG000495417_3
         assert "MGYG000495417_00001" not in content
         # line count
-        assert len(content.splitlines()) == 14
+        assert len(content.splitlines()) == 21
         # FASTA sequence count
-        assert content.count(">") == 2
-        assert md5sum(output) == "a18fa79872eb0ddd371b9f9570c28d0c"
+        assert content.count(">") == 3
+        assert md5sum(output) == "506f1159b743ebaa187595b40cdadda7"
 
 
 if __name__ == "__main__":
