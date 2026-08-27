@@ -424,13 +424,15 @@ def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
 
 
 def test_missing_annotation_file(tmp_path):
-    """Contigs with no viral genes detected by CheckV are excluded; contigs with no
+    """Contigs with no viral genes detected by CheckV are still included (CheckV values
+    are surfaced as attributes for the user to judge, not used to filter contigs, so
+    novel viral sequences aren't discarded due to CheckV database bias); contigs with no
     annotation TSV get unclassified taxonomy; protein count in output matches input.
 
     ERZ27225067_9986 has viral_genes=0 and checkv_quality=Not-determined, so it must
-    be absent from the final GFF.  ERZ27225067_9983 is HC with no annotation TSV, so
-    it must appear with taxonomy=unclassified.  For every contig that does appear in
-    the output, all CDS records from the input GFF files must be present.
+    still appear in the final GFF with checkv_quality=Not-determined.
+    ERZ27225067_9983 is HC with no annotation TSV, so it must appear with
+    taxonomy=unclassified.  Every CDS record from the input GFF files must be present.
     """
     fixtures = Path(__file__).parent / "write_viral_gff/missing_annotation_file"
     assembly = fixtures / "ERZ27225067_subseq_renamed_original.fasta"
@@ -482,8 +484,17 @@ def test_missing_annotation_file(tmp_path):
 
     content = (tmp_path / "ERZ27225067_virify.gff").read_text()
 
-    # 9986 must be absent: CheckV found no viral genes, so it is filtered
-    assert "ERZ27225067_9986" not in content
+    # 9986 must still be present, carrying its CheckV Not-determined attributes
+    assert "ERZ27225067_9986" in content
+    mobile_element_lines_9986 = [
+        line
+        for line in content.splitlines()
+        if line.startswith("ERZ27225067_9986") and "viral_sequence" in line
+    ]
+    assert mobile_element_lines_9986, "9986 mobile-element record missing from output"
+    assert any(
+        "checkv_quality=Not-determined" in line for line in mobile_element_lines_9986
+    )
 
     # 9983 has no annotation TSV → taxonomy falls back to unclassified
     assert "ERZ27225067_9983" in content
@@ -495,13 +506,9 @@ def test_missing_annotation_file(tmp_path):
     assert mobile_element_lines_9983, "9983 mobile-element record missing from output"
     assert any("taxonomy=unclassified" in line for line in mobile_element_lines_9983)
 
-    # Protein count: every CDS from an included contig must appear in the output
+    # Protein count: every CDS from the input GFF files must appear in the output
     output_cds = content.count("\tCDS\t")
-    expected_cds = sum(
-        count
-        for contig, count in input_cds_per_contig.items()
-        if "ERZ27225067_9986" not in contig
-    )
+    expected_cds = sum(input_cds_per_contig.values())
     assert output_cds == expected_cds, (
         f"CDS count mismatch: output has {output_cds}, expected {expected_cds} "
         f"(input counts per contig: {input_cds_per_contig})"
