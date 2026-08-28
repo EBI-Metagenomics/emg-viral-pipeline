@@ -281,7 +281,7 @@ def get_checkv_results(
     :return: Dictionary mapping clean contig name to a semicolon-joined CheckV attribute string.
     """
     checkv_dict: dict[str, str] = {}
-    not_determined = set()
+    not_determined = 0
     for checkv_file in checkv_files:
         with open(checkv_file, "r") as file_handle:
             csv_reader = csv.DictReader(file_handle, delimiter="\t")
@@ -294,18 +294,20 @@ def get_checkv_results(
                     int(viral_genes_count) == 0
                     and row["checkv_quality"] == "Not-determined"
                 ):
-                    not_determined.add(contig_id)
-                    checkv_info = "no_viral_genes"
-                else:
-                    checkv_info = ";".join(
-                        [
-                            f"checkv_provirus={row['provirus']}",
-                            f"checkv_quality={row['checkv_quality']}",
-                            f"checkv_miuvig_quality={row['miuvig_quality']}",
-                            f"checkv_kmer_freq={row['kmer_freq']}",
-                            f"checkv_viral_genes={row['viral_genes']}",
-                        ]
-                    )
+                    # CheckV values are appended to the attributes for the user to
+                    # judge; we deliberately do NOT filter on them, to avoid
+                    # discarding novel viral sequences due to CheckV database bias.
+                    not_determined += 1
+
+                checkv_info = ";".join(
+                    [
+                        f"checkv_provirus={row['provirus']}",
+                        f"checkv_quality={row['checkv_quality']}",
+                        f"checkv_miuvig_quality={row['miuvig_quality']}",
+                        f"checkv_kmer_freq={row['kmer_freq']}",
+                        f"checkv_viral_genes={row['viral_genes']}",
+                    ]
+                )
                 checkv_dict[Record.remove_prophage_from_contig(contig_id)] = checkv_info
 
     gff_contig_names = {name for name, _ in sequence_regions}
@@ -328,8 +330,7 @@ def get_checkv_results(
 
     if not_determined:
         logger.warning(
-            f"{len(list(not_determined))} viral contigs have no viral genes detected by CheckV. "
-            f"These contigs would be skipped in GFF: {','.join(list(not_determined))}"
+            f"{not_determined} viral contigs have no viral genes detected by CheckV."
         )
 
     return checkv_dict
@@ -566,7 +567,6 @@ def write_gff(
         output_filename = f"{sample_prefix}_virify.gff"
 
     all_records: list[tuple[str, int, str]] = []
-    skipped_contigs = set()
 
     for contig_name, viral_sequence_types in viral_sequences.items():
         clean_contig_name = Record.remove_prophage_from_contig(contig_name)
@@ -591,13 +591,6 @@ def write_gff(
                     id_ = id_.replace("prophage-0:", "prophage-1:")
                 element_category = "prophage"
                 mobile_element_type = "prophage"
-
-            if (
-                checkv_dict.get(clean_contig_name)
-                and checkv_dict.get(clean_contig_name) == "no_viral_genes"
-            ):
-                skipped_contigs.add(clean_contig_name)
-                continue
 
             mobile_element_attributes = [
                 id_,
@@ -633,8 +626,6 @@ def write_gff(
             all_records.append((clean_contig_name, start, mobile_elements_line))
 
     for contig_name, contig_cds in cds_annotations.items():
-        if contig_name in list(skipped_contigs):
-            continue
         for cds_data in contig_cds:
             (
                 cds_id,
@@ -681,8 +672,6 @@ def write_gff(
     with open(output_filename, "w") as gff:
         print("##gff-version 3", file=gff)
         for contig_name, contig_length in sequence_regions:
-            if contig_name in list(skipped_contigs):
-                continue
             print(
                 f"##sequence-region\t{contig_name}\t1\t{contig_length}",
                 file=gff,
