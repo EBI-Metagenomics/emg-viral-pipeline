@@ -107,9 +107,9 @@ In order to have expanded output with more files use `--publish_all` option in p
     │       ├── prophages.sankey.filtered-25.json
     │       └── prophages.sankey.tsv
     ├── 06-taxonomy
-    │   ├── high_confidence_viral_contigs_prodigal_annotation_taxonomy.tsv
-    │   ├── low_confidence_viral_contigs_prodigal_annotation_taxonomy.tsv
-    │   └── prophages_prodigal_annotation_taxonomy.tsv
+    │   ├── high_confidence_viral_contigs_annotation_taxonomy.tsv
+    │   ├── low_confidence_viral_contigs_annotation_taxonomy.tsv
+    │   └── prophages_annotation_taxonomy.tsv
     ├── 07-checkv
     │   ├── high_confidence_viral_contigs_quality_summary.tsv
     │   ├── low_confidence_viral_contigs_quality_summary.tsv
