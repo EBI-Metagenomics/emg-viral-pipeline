@@ -979,7 +979,7 @@ FEATURES             Location/Qualifiers
                      /transl_table=11
                      /translation="MKEISKTLKTLEIKEFENILEFFLFADVPLIFACFYDVLCHFYD
                      VFSLLK"
-ORIGIN      
+ORIGIN
         1 taatatgtgt tgatatacag ccattctaag ctaattgtca taaaaattgt cataaatatc
        61 gtttataata ttcgtatata tcatgtaaaa ttaaatcatc ttttactatt tttttgcata
       121 ataaattaat atccttgtta gctattagat tagaaaacaa cttttctaca gctttcttct
@@ -1930,7 +1930,7 @@ FEATURES             Location/Qualifiers
                      /translation="MGFPSPASDYVETRISLDQQLISQPAATYFMRASRSHFREGIIQ
                      GALLVVDASLSACDGSLLICAIDGEFRIKRYRTHPQPHLINLENGRKEALPEDGDGYN
                      SSHAIFGVITYIINDARNAEFDDCPVM"
-ORIGIN      
+ORIGIN
         1 ggcaacctga gccgaagagg ccgcgaaacg ggccgaggat atcgcagacg tgatttccct
        61 ggaagatgca agcctgacga aaaaaggtat cgttaaatta agcagtgcca cggacagtga
       121 cagcgaagcg ctggcggcca caccaaaggc ggtaaaaacc gttatgggtg aggtacggac
@@ -2913,7 +2913,7 @@ FEATURES             Location/Qualifiers
                      /transl_table=11
                      /translation="MFLAIDNEISSIVKPCIIRVNSTTFTYLSYMKLGVTTITENIKL
                      LVLLTAPVD"
-ORIGIN      
+ORIGIN
         1 ttgccataat cgcaataatg atacagcatt attcaatatt gagaaccaat cattcaattt
        61 caagatcatc aatctttact tcaagctcca tgctggtcgt aaatccatta tccgggctga
       121 cagaatgcgt cagggtggta atggtccatt ctgcatcatc aatcggctgc ttaaatcccg

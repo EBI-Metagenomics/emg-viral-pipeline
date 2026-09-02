@@ -9,21 +9,8 @@
             "title": "Inputs",
             "type": "object",
             "fa_icon": "fas fa-dna",
-            "description": "Files required for the workflow (reads or assemblies).",
+            "description": "Files required for the workflow.",
             "properties": {
-                "fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA file, no assembly produced by pipeline",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
-                },
-                "assemble": {
-                    "type": "boolean",
-                    "description": "file pairs, experimental feature that performs SPAdes assembly first"
-                },
                 "samplesheet": {
                     "type": "string",
                     "format": "file-path",
@@ -31,26 +18,9 @@
                     "pattern": "^\\S+\\.csv$",
                     "schema": "assets/schema_input.json",
                     "description": "Path to comma-separated file containing information about inputs to be used.",
-                    "help_text": "You will need to create a design file with information about the assembly/raw_reads running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a minimum of 2 columns for assembly (ID, fasta) or 3 columns for raw reads (ID, fastq1, fastq2), and a header row.",
+                    "help_text": "You will need to create a design file with information about the assembly running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with a minimum of 2 columns for assembly (ID, fasta) and a header row.",
                     "fa_icon": "fas fa-file-csv"
                 }
-            },
-            "oneOf": [
-                {
-                    "required": [
-                        "fasta"
-                    ],
-                    "description": "An assembly file must be provided"
-                },
-                {
-                    "required": [
-                        "samplesheet"
-                    ],
-                    "description": "Assembly or raw reads should be provided in samplesheet"
-                }
-            ],
-            "errorMessage": {
-                "oneOf": "You must specify either an assembly file or samplesheet input."
             }
         },
         "options": {
@@ -152,6 +122,92 @@
                 }
             }
         },
+        "database_download_links": {
+            "title": "Database download links",
+            "type": "object",
+            "fa_icon": "fas fa-download",
+            "description": "URLs used to auto-download each database when the corresponding path above is not provided.",
+            "properties": {
+                "virsorter_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virsorter-data-v2.tar.gz",
+                    "description": "download link for the VirSorter database",
+                    "hidden": true
+                },
+                "virsorter2_download_link": {
+                    "type": "string",
+                    "default": "https://osf.io/v46sc/download",
+                    "description": "download link for the VirSorter2 database",
+                    "hidden": true
+                },
+                "virfinder_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/virfinder/VF.modEPV_k8.rda",
+                    "description": "download link for the VirFinder model",
+                    "hidden": true
+                },
+                "viphog_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vpHMM_database_v3.tar.gz",
+                    "description": "download link for the ViPhOG database",
+                    "hidden": true
+                },
+                "ncbi_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/2022-11-01_ete3_ncbi_tax.sqlite.gz",
+                    "description": "download link for the NCBI taxonomy database",
+                    "hidden": true
+                },
+                "checkv_download_link": {
+                    "type": "string",
+                    "default": "https://portal.nersc.gov/CheckV/checkv-db-v1.5.tar.gz",
+                    "description": "download link for the CheckV database",
+                    "hidden": true
+                },
+                "rvdb_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/rvdb.tar.gz",
+                    "description": "download link for the RVDB",
+                    "hidden": true
+                },
+                "pvogs_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/pvogs.tar.gz",
+                    "description": "download link for the pVOGS",
+                    "hidden": true
+                },
+                "vogdb_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vogdb.tar.gz",
+                    "description": "download link for the VOGDB",
+                    "hidden": true
+                },
+                "vpf_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/hmmer_databases/vpf.tar.gz",
+                    "description": "download link for the VPF from IMG/VR",
+                    "hidden": true
+                },
+                "imgvr_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/IMG_VR_2018-07-01_4.tar.gz",
+                    "description": "download link for the IMG/VR database",
+                    "hidden": true
+                },
+                "pprmeta_download_link": {
+                    "type": "string",
+                    "default": "https://github.com/zhenchengfang/PPR-Meta/archive/refs/tags/v1.1.tar.gz",
+                    "description": "download link for the PPR-Meta github archive",
+                    "hidden": true
+                },
+                "meta_download_link": {
+                    "type": "string",
+                    "default": "ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/additional_data_vpHMMs_v4.tsv",
+                    "description": "download link for the ViPhOG metadata tsv",
+                    "hidden": true
+                }
+            }
+        },
         "parameters": {
             "title": "Parameters",
             "type": "object",
@@ -170,17 +226,9 @@
                     "type": "boolean",
                     "description": "feature to activate balloon plot"
                 },
-                "onlyannotate": {
-                    "type": "boolean",
-                    "description": "Only annotate the input FASTA (no virus prediction, only contig length filtering)"
-                },
                 "use_virsorter_v1": {
                     "type": "boolean",
                     "description": "Use VirSorter instead of VirSorter2"
-                },
-                "use_proteins": {
-                    "type": "boolean",
-                    "description": "Use already predicted proteins instead of running Prodigal"
                 },
                 "publish_all": {
                     "type": "boolean",
@@ -222,10 +270,10 @@
                     "default": 25,
                     "description": "select the x taxa with highest count for sankey plot, try and error and use '-resume' to change plot"
                 },
-                "chunk": {
-                    "type": "integer",
-                    "default": 10,
-                    "description": "WIP: chunk FASTA files into smaller pieces for parallel calculation"
+                "chunk_fasta_size": {
+                    "type": "string",
+                    "default": "500.MB",
+                    "description": "Chunk FASTA files into smaller pieces for parallel calculation"
                 },
                 "length": {
                     "type": "number",
@@ -268,24 +316,17 @@
             "fa_icon": "fas fa-dna",
             "description": "Output folders",
             "properties": {
-                "assemblydir": {
-                    "type": "string",
-                    "format": "directory-path",
-                    "default": "00-assembly",
-                    "description": "output directory for assembly step",
-                    "fa_icon": "far fa-file-code"
-                },
                 "virusdir": {
                     "type": "string",
                     "format": "directory-path",
                     "default": "01-predictions",
                     "description": "output directory for detected viruses step"
                 },
-                "prodigaldir": {
+                "proteindir": {
                     "type": "string",
                     "format": "directory-path",
-                    "default": "02-prodigal",
-                    "description": "output directory for prodigal step"
+                    "default": "02-protein-prediction",
+                    "description": "output directory for protein prediction step"
                 },
                 "hmmerdir": {
                     "type": "string",
@@ -335,16 +376,6 @@
                     "type": "string",
                     "default": "nextflow-autodownload-databases",
                     "description": "directory path to databases"
-                },
-                "workdir": {
-                    "type": "string",
-                    "default": "work",
-                    "description": "working directory"
-                },
-                "singularity_cachedir": {
-                    "type": "string",
-                    "default": "singularity",
-                    "description": "singularity folder"
                 },
                 "cloudProcess": {
                     "type": "boolean",
@@ -425,6 +456,9 @@
         },
         {
             "$ref": "#/$defs/databases"
+        },
+        {
+            "$ref": "#/$defs/database_download_links"
         },
         {
             "$ref": "#/$defs/parameters"

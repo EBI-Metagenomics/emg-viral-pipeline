@@ -1,5 +1,3 @@
-#!/bin/env python3
-
 import os
 import unittest
 from collections import namedtuple
@@ -18,9 +16,13 @@ class RenameTests(unittest.TestCase):
         mapfile = self._build_path("/rename_fixtures/map.tsv")
 
         input_args_rename = namedtuple("input_args", "prefix input output map")
-        input_args_restore = namedtuple("input_args", "prefix input output map from_restore to_restore")
+        input_args_restore = namedtuple(
+            "input_args", "prefix input output map from_restore to_restore"
+        )
 
-        rename(input_args_rename(prefix="test.", input=fasta, output=renamed, map=mapfile))
+        rename(
+            input_args_rename(prefix="test.", input=fasta, output=renamed, map=mapfile)
+        )
 
         obtained = []
         with open(renamed, "r") as output_file:
@@ -39,12 +41,12 @@ class RenameTests(unittest.TestCase):
 
         restore(
             input_args_restore(
-                prefix="not-used", 
-                input=renamed, 
-                output=output_restored, 
-                map=mapfile, 
-                from_restore="temporary", 
-                to_restore="original"
+                prefix="not-used",
+                input=renamed,
+                output=output_restored,
+                map=mapfile,
+                from_restore="temporary",
+                to_restore="original",
             )
         )
 
@@ -79,16 +81,18 @@ class RenameTests(unittest.TestCase):
 
         output_restored = self._build_path("/rename_fixtures/restored.fasta")
 
-        input_args = namedtuple("input_args", "prefix input output map from_restore to_restore")
+        input_args = namedtuple(
+            "input_args", "prefix input output map from_restore to_restore"
+        )
 
         restore(
             input_args(
-                prefix="not-used", 
-                input=renamed, 
-                output=output_restored, 
-                map=mapfile, 
-                from_restore="temporary", 
-                to_restore="short"
+                prefix="not-used",
+                input=renamed,
+                output=output_restored,
+                map=mapfile,
+                from_restore="temporary",
+                to_restore="short",
             )
         )
 

@@ -15,8 +15,8 @@ RUN apt update && apt install -y procps && \
 RUN R -e "options(repos = \
   list(CRAN = 'http://mran.revolutionanalytics.com/snapshot/2019-01-06/')); \
   install.packages('ggplot2'); \
-  install.packages('optparse'); \ 
-  install.packages('gggenes'); \ 
+  install.packages('optparse'); \
+  install.packages('gggenes'); \
   install.packages('RColorBrewer'); \
 "
 # ADD Make_viral_contig_map.R /

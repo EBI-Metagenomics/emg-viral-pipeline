@@ -13,20 +13,21 @@ include { validateParameters ; paramsHelp ; paramsSummaryLog } from 'plugin/nf-s
 
 include { VIRIFY                 } from './workflows/virify'
 
+
 workflow {
 
-  if (params.help) {
-    helpMSG()
-    exit(0)
-  }
+    if (params.help) {
+      helpMSG()
+      exit(0)
+    }
 
-  validateParameters()
+    validateParameters()
 
-  log.info(paramsSummaryLog(workflow))
+    log.info(paramsSummaryLog(workflow))
 
-  if (params.meta_version == "v4") {
-    printMetadataV4Warning()
-  }
+    if (params.meta_version == "v4") {
+      printMetadataV4Warning()
+    }
 
-  VIRIFY()
+    VIRIFY()
 }

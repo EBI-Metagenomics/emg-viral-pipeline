@@ -1,0 +1,7 @@
+query	ViPhOG	Abs_Evalue_exp	Taxon
+contig1|prophage-1000:2000_5	VPHOG_0010	1e-08	Caudo
+contig1|prophage-1000:2000_6	VPHOG_0011	1e-07	Caudovir
+contig2|prophage-1:2000_1	VPHOG_0012	1e-08	Caudour
+contig2|prophage-1:2000_2	VPHOG_0013	1e-09	Caudox
+MGYG000495417_00791	VPHOG_0017	1e-08	Tax1
+MGYG000495417_00792	VPHOG_0018	1e-09	Tax2

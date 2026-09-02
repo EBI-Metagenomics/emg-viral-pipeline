@@ -5,47 +5,70 @@ import operator
 import re
 from pathlib import Path
 
-from Bio import SeqIO
-
 import pandas as pd
+from constants import PRODIGAL_RENAMED_ID_REGEXP
+from utils import parse_attrs
 
 
-def extract_annotations(protein_file: str, ratio_evalue_file: str) -> list:
+def parse_gff(gff_file: str) -> dict:
+    """Parse a GFF3 file and return CDS metadata keyed by protein ID.
+
+    :param gff_file: Path to GFF3 file containing CDS features with ID attributes
+    :return: Dict mapping protein ID to {contig, start, end, strand}
+    """
+    cds_info = {}
+    with open(gff_file) as fh:
+        for line in fh:
+            if line.startswith("#"):
+                continue
+            cols = line.strip().split("\t")
+            if len(cols) != 9 or cols[2] != "CDS":
+                continue
+            attrs, _ = parse_attrs(cols[8])
+            protein_id = attrs.get("ID", "").strip()
+            if protein_id:
+                seqid = cols[0]
+                # Prodigal can use <contigNumber_proteinNumber> like 1_1
+                # and do not apply _proteinNumber to real contig name
+                if "|prophage-" in seqid and re.fullmatch(
+                    PRODIGAL_RENAMED_ID_REGEXP, protein_id
+                ):
+                    # if GFF ID has pattern <contigNumber_proteinNumber>
+                    protein_suffix = protein_id.rsplit("_", 1)[-1]
+                    protein_id = f"{seqid}_{protein_suffix}"
+                cds_info[protein_id] = {
+                    "contig": seqid,
+                    "start": cols[3],
+                    "end": cols[4],
+                    "strand": cols[6],
+                }
+    return cds_info
+
+
+def extract_annotations(ratio_evalue_file: str, gff_data: dict) -> list:
     """
     Generate annotation list for viral proteins using ViPhOG database results.
 
-    :param protein_file: Path to FASTA file containing predicted viral proteins
     :param ratio_evalue_file: Path to tabular file with ViPhOG hmmscan results
+    :param gff_data: Dict from parse_gff() mapping protein ID to CDS coordinates
     :return: List of annotation rows, where each row contains:
              [Contig, CDS_ID, Start, End, Direction, Best_hit, Abs_Evalue_exp, Label]
-    :raises: None (returns empty list for invalid/missing files)
-
-    .. note::
-        Only processes proteins with '#' delimiter in description (Prodigal format).
-        Returns empty list if protein file doesn't exist or contains no proteins.
     """
+    annotation_list = []
+
+    if Path(ratio_evalue_file).stat().st_size == 0:
+        return annotation_list
 
     ratio_evalue_df = pd.read_csv(ratio_evalue_file, sep="\t")
 
-    # Parse proteins and build annotation list
-    annotation_list = []
+    for protein_id, info in gff_data.items():
+        contig_id = info["contig"]
+        protein_prop = [protein_id, info["start"], info["end"], info["strand"]]
 
-    for protein in SeqIO.parse(protein_file, "fasta"):
-        # Extract contig ID by removing protein number suffix
-        contig_id = re.split(r"_\d+$", protein.id)[0]
+        ratio_lookup_key = protein_id
 
-        # Parse protein properties (Prodigal format: "start_end # direction")
-        # Skip if protein description doesn't contain expected format
-        protein_prop = protein.description.split(" # ")[:-1]
-
-        # Skip proteins that don't have Prodigal format (e.g., frageneScan proteins)
-        if not protein_prop:
-            continue
-
-        # Find matching ViPhOG results
-        query_id = protein_prop[0]
-        if query_id in ratio_evalue_df["query"].values:
-            filtered_df = ratio_evalue_df[ratio_evalue_df["query"] == query_id]
+        if ratio_lookup_key in ratio_evalue_df["query"].values:
+            filtered_df = ratio_evalue_df[ratio_evalue_df["query"] == ratio_lookup_key]
 
             # Handle multiple hits - select best by Abs_Evalue_exp
             if len(filtered_df) > 1:
@@ -64,7 +87,6 @@ def extract_annotations(protein_file: str, ratio_evalue_file: str) -> list:
 
             protein_prop.extend(hit_data)
         else:
-            # No ViPhOG hit found
             protein_prop.extend(["No hit", "NA", ""])
 
         annotation_list.append([contig_id] + protein_prop)
@@ -76,13 +98,6 @@ def main():
     """Main function to parse arguments and generate viral contig annotations."""
     parser = argparse.ArgumentParser(
         description="Generate tabular file with ViPhOG annotation results for proteins predicted in viral contigs"
-    )
-    parser.add_argument(
-        "-p",
-        "--proteins",
-        dest="proteins_fasta",
-        help="Path to protein FASTA file of predicted viral contigs",
-        required=True,
     )
     parser.add_argument(
         "-t",
@@ -98,28 +113,32 @@ def main():
         help="Output directory path (default: current working directory)",
         default=".",
     )
+    parser.add_argument(
+        "-g",
+        "--gff",
+        dest="gff_file",
+        help="GFF3 file with CDS features; protein IDs and coordinates are read from here",
+        required=True,
+    )
 
     args = parser.parse_args()
 
-    # Validate input files
-    prot_path = Path(args.proteins_fasta)
+    gff_path = Path(args.gff_file)
     ratio_path = Path(args.ratio_file_table)
     output_dir = Path(args.output_dir)
 
-    if not prot_path.exists():
-        raise FileNotFoundError(f"Protein file not found: {args.proteins_fasta}")
+    if not gff_path.exists():
+        raise FileNotFoundError(f"GFF file not found: {args.gff_file}")
     if not ratio_path.exists():
         raise FileNotFoundError(f"Ratio evalue file not found: {args.ratio_file_table}")
 
-    # Ensure output directory exists
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Generate output filename
-    output_name = prot_path.stem
+    output_name = gff_path.stem
     csv_output = output_dir / f"{output_name}_annotation.tsv"
 
-    # Process and save results
-    annotations = extract_annotations(str(prot_path), str(ratio_path))
+    gff_data = parse_gff(str(gff_path))
+    annotations = extract_annotations(str(ratio_path), gff_data)
 
     dataframe = pd.DataFrame(
         annotations,

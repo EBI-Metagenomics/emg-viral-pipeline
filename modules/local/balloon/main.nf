@@ -1,15 +1,15 @@
 process BALLOON {
     tag "${meta.id}"
     label 'process_single'
-    
+
     container 'microbiome-informatics/r_balloon:3.1.2'
-    
+
     input:
       tuple val(meta), val(set_name), path(tbl)
-    
+
     output:
       path("*.{pdf,svg}"), optional: true
-    
+
     script:
     """
     if [[ "${set_name}" == "all" ]]; then
@@ -34,7 +34,7 @@ process BALLOON {
     grep -v contig_ID tmp.tsv | awk -v SAMPLE="${meta.id}" 'BEGIN{FS="\\t"};{if(\$5!="" && \$5 !~ /^0/){print SAMPLE"\\torder\\t"\$5}}' | sort | uniq -c | awk '{printf \$2"\\t"\$3"\\t"\$4"\\t"\$1"\\n"}' >> \$NAME"_summary.tsv"
 
     if [ -s \$NAME"_summary.tsv" ]; then
-      balloon.R "\${NAME}_summary.tsv" "\${NAME}_balloon.svg" 10 8 
+      balloon.R "\${NAME}_summary.tsv" "\${NAME}_balloon.svg" 10 8
     fi
     """
 }

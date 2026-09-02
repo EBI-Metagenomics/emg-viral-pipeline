@@ -31,10 +31,10 @@ We explain here the containers metadata, their meaning and use in BioContainers:
 | LABEL about.home            | The original software website.                       | **Mandatory** | about.home="http://comet-ms.sourceforge.net/"  |
 | LABEL about.documentation   | URL(s) containing information about software         | _Optional_  | about.documentation="http://comet-ms.sourceforge.net/"     |
 | LABEL about.license         | SPDX license specification. If not in the SPDX list, specify URL in license_file> | **Mandatory** | about.license="SPDX:Apache-2.0"          |
-| LABEL about.license_file    | License path location in the container or url (according to license requirements) | _Optional_ |         |  
+| LABEL about.license_file    | License path location in the container or url (according to license requirements) | _Optional_ |         |
 | LABEL about.tags            | Tags about the software that enable to find and classify the software tool.| _Optional_ | about.tags="proteomics, mass spectrometry, biocontainers"       |
 | MAINTAINER | The developer in charge of the container/software | **Mandatory** | MAINTAINER Yasset Perez-Riverol <yperez@ebi.ac.uk> |
-| LABEL extra.identifiers  | Extra identifiers are external identifiers in other resources that will allow to pull metadata, an external information from other resources (e.g biotools). In order to be compatible with Docker specification the domain (database) of the identifiers should be specified in the name of the label. | _Optional_ | extra.identifiers.biotools=abyss |  
+| LABEL extra.identifiers  | Extra identifiers are external identifiers in other resources that will allow to pull metadata, an external information from other resources (e.g biotools). In order to be compatible with Docker specification the domain (database) of the identifiers should be specified in the name of the label. | _Optional_ | extra.identifiers.biotools=abyss |
 
 
 ### Dockerfile example (Single lines LABEL):

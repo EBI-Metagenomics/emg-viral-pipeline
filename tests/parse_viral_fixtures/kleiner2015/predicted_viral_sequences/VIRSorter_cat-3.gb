@@ -90,7 +90,7 @@ FEATURES             Location/Qualifiers
                      /transl_table=11
                      /translation="MVRKLKNVENETLTLYDQEYGEKHSKTWKMRNAQCRTWNMARIL
                      ENVKIEKRTL"
-ORIGIN      
+ORIGIN
         1 tcggacttgg aatatggcga gaatactgga aaacgtgaaa attgagaaaa ggacactgta
        61 aatacatgga atatggcgtg aaaaatgaaa aacgtggaaa atgagaaaca cacactgtag
       121 gttatgaata tggctagaaa tgctgaaaaa cgtgaaaaat gagaaaggta cattgtggga
@@ -227,7 +227,7 @@ FEATURES             Location/Qualifiers
                      /product="hypothetical protein"
                      /transl_table=11
                      /translation="DTTVNTVTQQWSTVTPQCCTVTEQ"
-ORIGIN      
+ORIGIN
         1 cacagtgctg cactgtggtg acagaactaa actgtggtgt cactgtgctc caaggttgtg
        61 tcaaggtact ccactttaat gtcacagtgc tccactgggc tgtcacattt ctgcactggt
       121 gtatcacagt tctccactgt ggtgtcacaa tgctctttgt ggtgtcacag tgctccactg
@@ -361,7 +361,7 @@ FEATURES             Location/Qualifiers
                      /product="hypothetical protein"
                      /transl_table=11
                      /translation="ETHSISPGICQETVKNVNNEKYTL"
-ORIGIN      
+ORIGIN
         1 cactgtttct cggcatattc caggtcttat agtgtgagtt tctctttttg cacgtttttt
        61 agttttcttg ccataatcca gataaaacag tttttgtttc tcattttcca cacttttcag
       121 ttctactcaa aatattccag gtcatacagt gtttgtgttt catcttccac gtttttcagt

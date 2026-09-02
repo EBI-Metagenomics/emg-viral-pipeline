@@ -1,0 +1,4 @@
+contig_id	contig_length	provirus	proviral_length	gene_count	viral_genes	host_genes	checkv_quality	miuvig_quality	completeness	completeness_method	contamination	kmer_freq	warnings
+ERZ27225067_985	19942	No	NA	28	20	0	Low-quality	Genome-fragment	10.39	AAI-based (high-confidence)	0.0	1.0
+ERZ27225067_9986	5003	No	NA	3	0	3	Not-determined	Genome-fragment	NA	NA	0.0	1.0	no viral genes detected
+ERZ27225067_9989	5002	Yes	2026	7	2	1	Low-quality	Genome-fragment	0.16	HMM-based (lower-bound)	59.5	1.0

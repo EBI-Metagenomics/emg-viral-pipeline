@@ -1,20 +1,19 @@
 process ncbiGetDB {
-  label 'process_low'    
+  label 'process_low'
   container 'quay.io/biocontainers/gnu-wget:1.18--hb829ee6_10'
-  
-  if (params.cloudProcess) { 
-    publishDir "${params.databases}/ncbi/", mode: 'copy', pattern: "ete3_ncbi_tax.sqlite" 
-  }
-  else { 
-    storeDir "${params.databases}/ncbi/" 
-  }  
+
+  publishDir "${params.databases}", pattern: "ete3_ncbi_tax.sqlite", mode: params.cloudProcess ? 'copy' : 'symlink'
+
+  input:
+  tuple val(meta), val(db_link)
 
   output:
-    path("ete3_ncbi_tax.sqlite")
+    tuple val(meta), path("ete3_ncbi_tax.sqlite"), emit: database_dir
 
   script:
     """
-    wget -nH ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/viral-pipeline/2022-11-01_ete3_ncbi_tax.sqlite.gz && gunzip -f 2022-11-01_ete3_ncbi_tax.sqlite.gz
-    cp 2022-11-01_ete3_ncbi_tax.sqlite ete3_ncbi_tax.sqlite
+    wget -nH ${db_link} -O ncbi_tax.sqlite.gz
+    gunzip -f ncbi_tax.sqlite.gz
+    mv ncbi_tax.sqlite ete3_ncbi_tax.sqlite
     """
 }

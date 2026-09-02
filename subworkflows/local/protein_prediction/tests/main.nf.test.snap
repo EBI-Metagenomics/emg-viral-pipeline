@@ -1,0 +1,20 @@
+{
+    "Predict proteins for long headers": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test_renamed.gff:md5,642ad9bf8953877b3736fce5d493a577",
+                    "test.faa.gz:md5,d9550e1b36d0b44483fd98f4faa5dfa2"
+                ]
+            ]
+        ],
+        "timestamp": "2026-08-04T00:10:51.949601",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.0"
+        }
+    }
+}

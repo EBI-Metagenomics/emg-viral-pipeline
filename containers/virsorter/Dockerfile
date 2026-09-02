@@ -11,7 +11,7 @@ LABEL software.version="1.0.6_edfeb8c5e72"
 
 ENV VERSION 1.0.6_edfeb8c5e72
 
-RUN conda create -n virsorter python=3.6 --yes 
+RUN conda create -n virsorter python=3.6 --yes
 
 ENV CONDA_DEFAULT_ENV virsorter
 

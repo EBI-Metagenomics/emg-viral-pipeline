@@ -30,6 +30,11 @@
                         "git_sha": "90aef30f432332bdf0ce9f4b9004aa5d5c4960bb",
                         "installed_by": ["modules"]
                     },
+                    "pyrodigal": {
+                        "branch": "master",
+                        "git_sha": "0ca6ca6c6e068635d01f979d0aed2f59c5d7cec4",
+                        "installed_by": ["modules"]
+                    },
                     "seqkit/split2": {
                         "branch": "master",
                         "git_sha": "e745e167c1020928ef20ea1397b6b4d230681b4d",

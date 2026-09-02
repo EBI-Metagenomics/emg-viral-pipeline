@@ -2,215 +2,199 @@
 
 include { samplesheetToList                 } from 'plugin/nf-schema'
 
-/************************** 
+/**************************
 * MODULES
 **************************/
 include { RESTORE as RESTORE_CATEGORY_FASTA } from '../modules/local/restore'
 include { RESTORE as RESTORE_FILTERED_FASTA } from '../modules/local/restore'
-include { MULTIQC                           } from '../modules/nf-core/multiqc'
-include { FILTER_PROTEINS_IN_CONTIGS        } from '../modules/local/filter_proteins_in_contigs'
+include { SPLIT_PROTEINS                    } from '../modules/local/split_proteins'
 
-/************************** 
+include { MULTIQC                           } from '../modules/nf-core/multiqc'
+
+/**************************
 * SUB WORKFLOWS
 **************************/
 
-include { ASSEMBLE_ILLUMINA                 } from '../subworkflows/local/assemble_illumina'
 include { ANNOTATE                          } from '../subworkflows/local/annotate'
 include { DETECT                            } from '../subworkflows/local/detect'
 include { DOWNLOAD_DATABASES                } from '../subworkflows/local/download_databases'
 include { PLOT                              } from '../subworkflows/local/plot'
 include { PREPROCESS                        } from '../subworkflows/local/preprocess'
-include { SPLIT_PROTEINS                    } from '../modules/local/split_proteins'
+include { PREDICT_PROTEINS                  } from '../subworkflows/local/protein_prediction/main'
+include { PROTEINS_COMPATIBILITY            } from '../subworkflows/local/proteins_compatibility/main'
 
-/************************** 
+/**************************
 * WORKFLOW ENTRY POINT
 **************************/
 
-/* 
-Here the main workflow starts and runs the defined sub workflows. 
-*/
-
 workflow VIRIFY {
 
-    /************************** 
-    * INPUT CHANNELS 
+    /**************************
+    * INPUT CHANNELS
     **************************/
 
-    input_ch = Channel.empty()
-    mashmap_ref_ch = Channel.empty()
-    factor_file = Channel.empty()
-    ch_multiqc_config = Channel.fromPath("${projectDir}/assets/multiqc_config.yml", checkIfExists: true)
-    ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config, checkIfExists: true) : Channel.empty()
-    ch_multiqc_logo = params.multiqc_logo ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.fromPath("${projectDir}/assets/mgnify_logo.png")
-    ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
-
-    if (params.samplesheet) {
-        groupInputs = { id, assembly, fq1, fq2, proteins ->
-            if (fq1 == []) {
-                if (params.use_proteins && proteins) {
-                    return tuple(
-                        ["id": id],
-                        assembly,
-                        proteins,
-                    )
-                }
-                else {
-                    return tuple(
-                        ["id": id],
-                        assembly,
-                    )
-                }
-            }
-            else {
-                if (params.assemble) {
-                    return tuple(
-                        ["id": id],
-                        [fq1, fq2],
-                    )
-                }
-                else {
-                    exit(1, "input missing, use [--assemble] flag with raw reads")
-                }
-            }
-        }
-        samplesheet = Channel.fromList(samplesheetToList(params.samplesheet, "./assets/schema_input.json"))
-        input_ch = samplesheet.map(groupInputs)
-    }
-
-    // one sample of assembly
-    if (params.fasta) {
-        input_ch = Channel
-            .fromPath(params.fasta, checkIfExists: true)
-            .map { file -> tuple(["id": file.simpleName], file) }
-    }
-
     // mashmap input
+    mashmap_ref_ch = Channel.empty()
     if (params.mashmap) {
         mashmap_ref_ch = Channel.fromPath(params.mashmap, checkIfExists: true)
     }
 
     // factor file input
+    factor_file = Channel.empty()
     if (params.factor) {
         factor_file = file(params.factor, checkIfExists: true)
     }
 
+    // multiqc inputs
+    ch_multiqc_files = Channel.empty()
+    ch_multiqc_config = Channel.fromPath("${projectDir}/assets/multiqc_config.yml", checkIfExists: true)
+    ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multiqc_config, checkIfExists: true) : Channel.empty()
+    ch_multiqc_logo = params.multiqc_logo ? Channel.fromPath(params.multiqc_logo, checkIfExists: true) : Channel.fromPath("${projectDir}/assets/mgnify_logo.png")
+    ch_multiqc_custom_methods_description = params.multiqc_methods_description ? file(params.multiqc_methods_description, checkIfExists: true) : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
+
+    samplesheet = Channel.fromList(samplesheetToList(params.samplesheet, "./assets/schema_input.json"))
+    samplesheet
+        .map { id, assembly, proteins_gff, proteins_faa ->
+            tuple(
+                ["id": id],
+                assembly,
+                proteins_gff ?: null,
+                proteins_faa ?: null
+            )
+        }
+        .set { input_assembly_proteins_ch }
+
     /**************************************************************/
     // check/ download all databases
 
-    DOWNLOAD_DATABASES()
+    DOWNLOAD_DATABASES(
+       params.pprmeta,
+       params.pprmeta_download_link,
+       params.virsorter,
+       params.virsorter_download_link,
+       params.virsorter2,
+       params.virsorter2_download_link,
+       params.virfinder,
+       params.virfinder_download_link,
+       params.viphog,
+       params.viphog_download_link,
+       params.ncbi,
+       params.ncbi_download_link,
+       params.checkv,
+       params.checkv_download_link,
+       params.rvdb,
+       params.rvdb_download_link,
+       params.pvogs,
+       params.pvogs_download_link,
+       params.vogdb,
+       params.vogdb_download_link,
+       params.vpf,
+       params.vpf_download_link,
+       params.imgvr,
+       params.imgvr_download_link,
+       params.meta,
+       params.meta_download_link
+    )
 
     /**************************************************************/
 
-    assembly_ch = Channel.empty()
-    proteins_ch = Channel.empty()
-
-    // ----------- if --assemble specified - assemble reads first
-    if (params.assemble) {
-        ASSEMBLE_ILLUMINA(input_ch)
-        assembly_ch = ASSEMBLE_ILLUMINA.out.assembly
-    }
-    else {
-        if (params.use_proteins) {
-            assembly_ch = input_ch.map { meta, assembly, _proteins -> tuple(meta, assembly) }
-        }
-        else {
-            assembly_ch = input_ch
-        }
-    }
-
     // ----------- length filtering + rename fasta ------------------ //
-    PREPROCESS(assembly_ch)
+    PREPROCESS(input_assembly_proteins_ch.map{ meta, assembly, _gff, _faa -> [meta, assembly] })
 
-    mapfile = PREPROCESS.out.mapfile
+    mapfile = PREPROCESS.out.mapfile  // [meta, map.txt]
 
     filtered_and_renamed_assembly = PREPROCESS.out.filtered_and_renamed_contigs_fasta
 
     // Rename contigs to names before space for original assembly
-    RESTORE_FILTERED_FASTA(filtered_and_renamed_assembly.map { meta, fasta, _contigs_count -> [meta, fasta] }.join(mapfile), "temporary", "short")
+    RESTORE_FILTERED_FASTA(filtered_and_renamed_assembly.join(mapfile), "temporary", "short")
 
     assembly_with_short_contignames = RESTORE_FILTERED_FASTA.out.map { meta, _name, fasta -> [meta, fasta] }
 
-    // ----------- if --onlyannotate - skip DETECT step
-    if (params.onlyannotate) {
-        // use filtered fasta with short names
-        category_fasta = RESTORE_FILTERED_FASTA.out
-    }
-    else {
-        DETECT(
-            filtered_and_renamed_assembly,
-            DOWNLOAD_DATABASES.out.virsorter_db,
-            DOWNLOAD_DATABASES.out.virfinder_db,
-            DOWNLOAD_DATABASES.out.pprmeta_git,
-        )
-        // output: (meta, fasta)
+    // ----------- call proteins where not provided as input
+    records_without_proteins = assembly_with_short_contignames
+       .join(input_assembly_proteins_ch)
+       .filter{ meta, name, fasta, gff, faa -> gff == null }
+       .map{meta, name, fasta, gff, faa -> [meta, fasta] }
 
-        // ----------- restore fasta files for each category fasta
-        files_to_restore = DETECT.out.detect_output
-            .join(mapfile)
-            .map { meta, files, mapping_file ->
-                // Ensure files is always a list
-                def filesList = files instanceof List ? files : [files]
-                [meta, filesList, mapping_file]
-            }
-            .transpose(by: 1)
-        RESTORE_CATEGORY_FASTA(files_to_restore, "temporary", "short")
-        category_fasta = RESTORE_CATEGORY_FASTA.out
-    }
+    PREDICT_PROTEINS(records_without_proteins)
+    newly_predicted = records_without_proteins.join(PREDICT_PROTEINS.out.predicted_proteins)  // [meta, fasta, gff, faa]
 
-    // ----------- split proteins into HC/LC/PP - if provided
-    if (params.use_proteins) {
+    // join into one channel with all records having proteins predicted
+    records_with_proteins = assembly_with_short_contignames
+       .join(input_assembly_proteins_ch)
+       .filter{ meta, name, fasta, gff, faa -> gff != null }
+       .map{ meta, name, fasta, gff, faa -> [meta, fasta, gff, faa] }
 
-        faa = input_ch.map { meta, _assembly, proteins -> tuple(meta, proteins) }
+    // check proteins compatibility and return only records with correct format
+    PROTEINS_COMPATIBILITY(records_with_proteins)
 
-        // Remove proteins belonging to contigs that did not pass length filtering
-        // and the ones that do not have a Prodigal/Pyrodigal header
-        FILTER_PROTEINS_IN_CONTIGS(
-            faa.join(assembly_with_short_contignames)
-        )
+    full_input = PROTEINS_COMPATIBILITY.out.matched_records
+                 .mix(PROTEINS_COMPATIBILITY.out.renamed_records)
+                 .mix(newly_predicted)
 
-        SPLIT_PROTEINS(category_fasta.groupTuple().join(FILTER_PROTEINS_IN_CONTIGS.out).transpose())
+    // ----------- define HC/LC/PP groups
+    DETECT(
+        filtered_and_renamed_assembly,
+        DOWNLOAD_DATABASES.out.virsorter_downloaded_db,
+        DOWNLOAD_DATABASES.out.virfinder_downloaded_db,
+        DOWNLOAD_DATABASES.out.pprmeta_downloaded_db,
+    )
+    // output: (meta, fasta)
 
-        proteins_ch = SPLIT_PROTEINS.out
-    }
+    // ----------- restore fasta files for each category fasta
+    files_to_restore = DETECT.out.detect_output
+        .join(mapfile)
+        .map { meta, files, mapping_file ->
+            // Ensure files is always a list
+            def filesList = files instanceof List ? files : [files]
+            [meta, filesList, mapping_file]
+        }
+        .transpose(by: 1)
+    RESTORE_CATEGORY_FASTA(files_to_restore, "temporary", "short")
+    category_fasta = RESTORE_CATEGORY_FASTA.out  // [meta, category_name, category_fasta]
+
+    // ----------- split proteins into HC/LC/PP
+    protein_files_ch = full_input
+        .map { meta, _assembly, proteins_gff, proteins_faa ->
+            tuple(meta, proteins_gff, proteins_faa)
+        }
+
+    SPLIT_PROTEINS(category_fasta.groupTuple().join(protein_files_ch).transpose())
+
+    proteins_ch = SPLIT_PROTEINS.out.fasta_proteins_gff
 
     // ----------- ANNOTATE
-    // category_fastas is already per-category: (meta, set_name, fasta) or (meta, set_name, fasta, faa)
+    // category_fastas is already per-category: (meta, set_name, fasta, faa, gff)
     // assembly_with_short_contignames is passed separately as a per-sample channel
-    annotate_input = params.use_proteins ? proteins_ch : category_fasta
 
     ANNOTATE(
-        annotate_input,
+        proteins_ch,
         assembly_with_short_contignames,
-        DOWNLOAD_DATABASES.out.viphog_db,
-        DOWNLOAD_DATABASES.out.ncbi_db,
-        DOWNLOAD_DATABASES.out.rvdb_db,
-        DOWNLOAD_DATABASES.out.pvogs_db,
-        DOWNLOAD_DATABASES.out.vogdb_db,
-        DOWNLOAD_DATABASES.out.vpf_db,
-        DOWNLOAD_DATABASES.out.imgvr_db,
-        DOWNLOAD_DATABASES.out.additional_model_data,
-        DOWNLOAD_DATABASES.out.checkv_db,
+        DOWNLOAD_DATABASES.out.viphog_downloaded_db,
+        DOWNLOAD_DATABASES.out.ncbi_downloaded_db,
+        DOWNLOAD_DATABASES.out.rvdb_downloaded_db,
+        DOWNLOAD_DATABASES.out.pvogs_downloaded_db,
+        DOWNLOAD_DATABASES.out.vogdb_downloaded_db,
+        DOWNLOAD_DATABASES.out.vpf_downloaded_db,
+        DOWNLOAD_DATABASES.out.imgvr_downloaded_db,
+        DOWNLOAD_DATABASES.out.meta_downloaded_db,
+        DOWNLOAD_DATABASES.out.checkv_downloaded_db,
         factor_file,
         mashmap_ref_ch,
     )
 
-    // ----------- PLOT 
+    // ----------- PLOT
     PLOT(
         ANNOTATE.out.assign_output,
         ANNOTATE.out.chromomap,
     )
 
-    if (params.assemble) {
-
-        ch_multiqc_files = ASSEMBLE_ILLUMINA.out.ch_multiqc_files
-
-        MULTIQC(
-            ch_multiqc_files.collect(),
-            ch_multiqc_config.toList(),
-            ch_multiqc_custom_config.toList(),
-            ch_multiqc_logo.toList(),
-            false,
-            false,
-        )
-    }
+    MULTIQC(
+        ch_multiqc_files.collect(),
+        ch_multiqc_config.toList(),
+        ch_multiqc_custom_config.toList(),
+        ch_multiqc_logo.toList(),
+        false,
+        false,
+    )
 }

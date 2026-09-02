@@ -2,20 +2,20 @@ process TAXONOMY_COUNTS_TABLE {
     label 'process_single'
     tag "${meta.id} ${set_name}"
     container 'quay.io/microbiome-informatics/virify-python3:1.2'
-    
+
     input:
       tuple val(meta), val(set_name), path(tbl)
-    
+
     output:
       tuple val(meta), val(set_name), path("*.counts.tsv"), emit: tsv
-    
+
     script:
     """
     export accession="${meta.id}"
     if [ "${set_name}" != "all" ]; then
       export accession="${set_name}"
     fi
-      
+
     generate_counts_table.py -f ${tbl} -o \${accession}.counts.tsv
     """
 }

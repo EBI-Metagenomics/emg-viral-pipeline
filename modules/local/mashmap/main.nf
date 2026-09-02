@@ -4,12 +4,12 @@ process MASHMAP {
     container 'quay.io/microbiome-informatics/mashmap:2.0'
 
     input:
-      tuple val(meta), val(confidence_set_name), path(fasta) 
+      tuple val(meta), val(confidence_set_name), path(fasta)
       path(reference)
-    
+
     output:
       path("${confidence_set_name}_mashmap_hits.tsv")
-    
+
     script:
     """
     sed -i "s/ /|/" ${fasta}

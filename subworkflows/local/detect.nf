@@ -1,5 +1,5 @@
-/* 
- * Run virus detection tools and parse the predictions according to defined filters. 
+/*
+ * Run virus detection tools and parse the predictions according to defined filters.
 */
 
 include { VIRSORTER                                                  } from '../../modules/local/virsorter'
@@ -17,17 +17,18 @@ include { CSVTK_CONCAT as CSVTK_CONCAT_PPRMETA                       } from '../
 
 workflow DETECT {
   take:
-  renamed_assembly_and_contigs_count
+  renamed_assembly
   virsorter_db
   virfinder_db
   pprmeta_git
 
   main:
-  // chunk fasta by 500Mb
-  chunked_ch = renamed_assembly_and_contigs_count.flatMap { meta, fasta, contigs_count ->
-     def chunks = fasta.splitFasta(file: true, size: 500.MB)
+
+  // chunk fasta by default by 500Mb
+  chunked_ch = renamed_assembly.flatMap { meta, fasta ->
+     def chunks = fasta.splitFasta(file: true, size: params.chunk_fasta_size)
      chunks.collect { chunk ->
-        return tuple(meta, chunk, contigs_count)
+        return tuple(meta, chunk)
      }
   }
 
@@ -37,7 +38,7 @@ workflow DETECT {
 
   if (params.use_virsorter_v1) {
 
-    VIRSORTER(renamed_assembly_and_contigs_count, virsorter_db)
+    VIRSORTER(renamed_assembly, virsorter_db)
 
     virsorter_output = VIRSORTER.out
   }
@@ -90,7 +91,7 @@ workflow DETECT {
   pprmeta_output = CSVTK_CONCAT_PPRMETA.out.csv
 
   // parsing predictions
-  PARSE(renamed_assembly_and_contigs_count.join(virfinder_output).join(virsorter_output).join(pprmeta_output))
+  PARSE(renamed_assembly.join(virfinder_output).join(virsorter_output).join(pprmeta_output))
 
   emit:
   detect_output = PARSE.out.map { meta, fasta, _vs_meta, _log -> tuple(meta, fasta) }

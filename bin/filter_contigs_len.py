@@ -42,7 +42,9 @@ def filter_contigs(contig_file, length, out_dir, run_id):
     with file_opener(contig_file, "rt") as handle:
         seq_records = SeqIO.parse(handle, "fasta")
         if run_id is None:
-            final_records = (record for record in seq_records if len(record.seq) >= threshold)
+            final_records = (
+                record for record in seq_records if len(record.seq) >= threshold
+            )
         else:
             final_records = _filter_and_rename(seq_records, threshold, run_id)
         SeqIO.write(final_records, os.path.join(out_dir, out_name), "fasta")
