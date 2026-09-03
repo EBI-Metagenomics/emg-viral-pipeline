@@ -11,6 +11,7 @@ virify.code-workspace
 wip/
 .nextflow/
 .nextflow.*
+.nf-test/
 
 # BlueJ files
 *.ctxt

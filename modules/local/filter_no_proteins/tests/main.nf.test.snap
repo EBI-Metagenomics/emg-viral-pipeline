@@ -1,0 +1,45 @@
+{
+    "Contigs without CDS are discarded and reported": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "no_proteins"
+                        },
+                        "no_proteins_with_proteins.fasta:md5,abbe3faf48959e72cdf0f313e51d81a8"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "no_proteins"
+                        },
+                        "no_proteins_no_proteins.tsv:md5,a44e0e83dc22e780cb6fae3fbae599ed"
+                    ]
+                ],
+                "dropped_report": [
+                    [
+                        {
+                            "id": "no_proteins"
+                        },
+                        "no_proteins_no_proteins.tsv:md5,a44e0e83dc22e780cb6fae3fbae599ed"
+                    ]
+                ],
+                "filtered_fasta": [
+                    [
+                        {
+                            "id": "no_proteins"
+                        },
+                        "no_proteins_with_proteins.fasta:md5,abbe3faf48959e72cdf0f313e51d81a8"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2026-09-03T11:24:24.999014"
+    }
+}
