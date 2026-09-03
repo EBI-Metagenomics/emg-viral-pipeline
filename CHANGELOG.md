@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Pipeline no longer fails when a predicted viral contig has no proteins. `split_proteins` now always
+  writes its per-category GFF, instead of skipping it when nothing matched and leaving `SPLIT_PROTEINS`
+  without a declared output.
+- Viral contigs with no proteins are no longer silently lost. They are discarded deliberately and
+  listed in a per-step `*_no_proteins.tsv` report.
+
+### Added
+- **Filter contigs without proteins** step: contigs with no CDS in the proteins GFF are dropped before
+  the viral prediction tools run. As a side effect, samples whose supplied proteins do not match their
+  assembly no longer run the detection tools before being discarded.
+- Categories left with no proteins after prophage coordinate filtering are dropped before annotation.
+  A prophage interval can contain no CDS even on a protein-rich contig, and neither `seqkit split2`
+  nor `hmmsearch` tolerates an empty protein FASTA.
+- A warning when every viral category of a sample loses all of its proteins, since such a sample
+  produces no final GFF.
+- nf-test coverage for `SPLIT_PROTEINS` and the new `FILTER_NO_PROTEINS` module, and unit tests for the
+  `--output-gff` output, which was previously untested.
+
 ## [4.0.0] - [2026-08]
 
 ### Removed

@@ -1,0 +1,136 @@
+{
+    "Category whose contigs have no proteins still emits every declared output": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "no_cds_contig"
+                        },
+                        "low_confidence_viral_contigs",
+                        "no_cds_contig.fna:md5,f7ba8663e0b0126238b9320522c14b30",
+                        "low_confidence_viral_contigs_split.faa:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "low_confidence_viral_contigs_split.gff:md5,df19e1b84ba6f691d20c72b397c88abf"
+                    ],
+                    [
+                        {
+                            "id": "prophage_no_cds"
+                        },
+                        "prophages",
+                        "prophage_no_cds.fna:md5,1a7fa863c14b7be86fab77141440c009",
+                        "prophages_split.faa:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "prophages_split.gff:md5,df19e1b84ba6f691d20c72b397c88abf"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "no_cds_contig"
+                        },
+                        "low_confidence_viral_contigs",
+                        "low_confidence_viral_contigs_no_proteins.tsv:md5,dacdeb8c0898a927dbbe68f95c39ec63"
+                    ],
+                    [
+                        {
+                            "id": "prophage_no_cds"
+                        },
+                        "prophages",
+                        "prophages_no_proteins.tsv:md5,bf6faf1d148a709e397c21d53dee1f88"
+                    ]
+                ],
+                "dropped_report": [
+                    [
+                        {
+                            "id": "no_cds_contig"
+                        },
+                        "low_confidence_viral_contigs",
+                        "low_confidence_viral_contigs_no_proteins.tsv:md5,dacdeb8c0898a927dbbe68f95c39ec63"
+                    ],
+                    [
+                        {
+                            "id": "prophage_no_cds"
+                        },
+                        "prophages",
+                        "prophages_no_proteins.tsv:md5,bf6faf1d148a709e397c21d53dee1f88"
+                    ]
+                ],
+                "fasta_proteins_gff": [
+                    [
+                        {
+                            "id": "no_cds_contig"
+                        },
+                        "low_confidence_viral_contigs",
+                        "no_cds_contig.fna:md5,f7ba8663e0b0126238b9320522c14b30",
+                        "low_confidence_viral_contigs_split.faa:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "low_confidence_viral_contigs_split.gff:md5,df19e1b84ba6f691d20c72b397c88abf"
+                    ],
+                    [
+                        {
+                            "id": "prophage_no_cds"
+                        },
+                        "prophages",
+                        "prophage_no_cds.fna:md5,1a7fa863c14b7be86fab77141440c009",
+                        "prophages_split.faa:md5,d41d8cd98f00b204e9800998ecf8427e",
+                        "prophages_split.gff:md5,df19e1b84ba6f691d20c72b397c88abf"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2026-09-03T11:24:54.68354"
+    },
+    "Category with proteins": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "mag"
+                        },
+                        "prophages",
+                        "mag.fasta:md5,3ae0b767a061e570673d877257d6846f",
+                        "prophages_split.faa:md5,506f1159b743ebaa187595b40cdadda7",
+                        "prophages_split.gff:md5,1d80d975808e8fc145df47b65559f5a4"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "mag"
+                        },
+                        "prophages",
+                        "prophages_no_proteins.tsv:md5,46f8f2e63ff82b4b702940051b7327f6"
+                    ]
+                ],
+                "dropped_report": [
+                    [
+                        {
+                            "id": "mag"
+                        },
+                        "prophages",
+                        "prophages_no_proteins.tsv:md5,46f8f2e63ff82b4b702940051b7327f6"
+                    ]
+                ],
+                "fasta_proteins_gff": [
+                    [
+                        {
+                            "id": "mag"
+                        },
+                        "prophages",
+                        "mag.fasta:md5,3ae0b767a061e570673d877257d6846f",
+                        "prophages_split.faa:md5,506f1159b743ebaa187595b40cdadda7",
+                        "prophages_split.gff:md5,1d80d975808e8fc145df47b65559f5a4"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2026-09-03T11:24:48.892397"
+    }
+}

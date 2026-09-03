@@ -64,6 +64,7 @@ In order to have expanded output with more files use `--publish_all` option in p
 
     ├── 01-predictions
     │   ├── ACCESSION_virus_predictions.stats
+    │   ├── ACCESSION_no_proteins.tsv
     │   ├── pprmeta
     │   │   └── ACCESSION*pprmeta.csv
     │   ├── virfinder
@@ -75,8 +76,11 @@ In order to have expanded output with more files use `--publish_all` option in p
     │       └── virsorter_metadata.tsv
     ├── 02-protein-prediction [if proteins_faa and proteins_gff were not provided as input]
     │   ├── ACCESSION.faa.gz
-    │   └── ACCESSION.gff.gz
-    │   └── ACCESSION.fna.gz
+    │   ├── ACCESSION.gff.gz
+    │   ├── ACCESSION.fna.gz
+    │   ├── high_confidence_viral_contigs_no_proteins.tsv
+    │   ├── low_confidence_viral_contigs_no_proteins.tsv
+    │   └── prophages_no_proteins.tsv
     ├── 03-hmmer
     │   ├── high_confidence_viral_contigs_modified.tsv
     │   ├── low_confidence_viral_contigs_modified.tsv
@@ -153,6 +157,23 @@ In order to have expanded output with more files use `--publish_all` option in p
             └── prophages.sankey.html
 </details>
 
+### Contigs without proteins
+
+VIRify annotates viral contigs through their proteins, so a contig with no coding sequence cannot be
+annotated and is discarded. The `*_no_proteins.tsv` files record every contig dropped this way, so a
+contig missing from the final GFF can always be accounted for. They are written at the two points
+where the situation can arise:
+
+| File | Stage | Contents |
+|---|---|---|
+| `01-predictions/ACCESSION_no_proteins.tsv` | before the prediction tools | contigs with no CDS in the proteins GFF, dropped before detection runs |
+| `02-protein-prediction/<category>_no_proteins.tsv` | after prophage prediction | contigs of that category that kept no proteins, either because the contig has no CDS or because none of its CDS fall inside the predicted prophage interval |
+
+The second case only arises for prophages: a prophage interval can contain no CDS even on a contig
+that is otherwise protein-rich, and the interval is not known until the predictions have been parsed.
+
+If every category of a sample loses all of its proteins, the sample produces no final GFF and a
+warning naming it is printed to the Nextflow log.
 
 ### GFF output files
 
