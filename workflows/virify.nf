@@ -5,6 +5,7 @@ include { samplesheetToList                 } from 'plugin/nf-schema'
 /**************************
 * MODULES
 **************************/
+include { FILTER_NO_PROTEINS                } from '../modules/local/filter_no_proteins'
 include { RESTORE as RESTORE_CATEGORY_FASTA } from '../modules/local/restore'
 include { RESTORE as RESTORE_FILTERED_FASTA } from '../modules/local/restore'
 include { SPLIT_PROTEINS                    } from '../modules/local/split_proteins'
@@ -132,9 +133,20 @@ workflow VIRIFY {
                  .mix(PROTEINS_COMPATIBILITY.out.renamed_records)
                  .mix(newly_predicted)
 
+    // ----------- checkpoint 1: drop contigs with no proteins before the prediction tools
+    // The assembly DETECT consumes uses temporary contig names while the proteins GFF uses
+    // short names, so the rename mapping is passed in to relate the two.
+    FILTER_NO_PROTEINS(
+        filtered_and_renamed_assembly
+            .join(mapfile)
+            .join(full_input.map { meta, _assembly, proteins_gff, _proteins_faa -> [meta, proteins_gff] })
+    )
+
+    assembly_with_proteins = FILTER_NO_PROTEINS.out.filtered_fasta
+
     // ----------- define HC/LC/PP groups
     DETECT(
-        filtered_and_renamed_assembly,
+        assembly_with_proteins,
         DOWNLOAD_DATABASES.out.virsorter_downloaded_db,
         DOWNLOAD_DATABASES.out.virfinder_downloaded_db,
         DOWNLOAD_DATABASES.out.pprmeta_downloaded_db,
@@ -161,7 +173,23 @@ workflow VIRIFY {
 
     SPLIT_PROTEINS(category_fasta.groupTuple().join(protein_files_ch).transpose())
 
+    // ----------- checkpoint 2: drop categories left with no proteins
+    // Prophage intervals only exist downstream of PARSE, so a prophage region containing no
+    // CDS cannot be caught by checkpoint 1 and surfaces here instead. Dropping the emptied
+    // categories keeps an empty .faa out of SEQKIT_SPLIT2 and hmmsearch, neither of which
+    // tolerates one.
     proteins_ch = SPLIT_PROTEINS.out.fasta_proteins_gff
+        .filter { _meta, _set_name, _fasta, faa, _gff -> faa.size() > 0 }
+
+    // A sample that loses every category reaches neither ANNOTATE nor WRITE_GFF, and the
+    // chained joins there would drop it without a word. Warn instead of failing silently.
+    SPLIT_PROTEINS.out.fasta_proteins_gff
+        .map { meta, _set_name, _fasta, faa, _gff -> [meta, faa.size() > 0] }
+        .groupTuple()
+        .filter { _meta, kept -> kept.every { !it } }
+        .subscribe { meta, _kept ->
+            log.warn("${meta.id}: every viral category lost all proteins, no final GFF will be written")
+        }
 
     // ----------- ANNOTATE
     // category_fastas is already per-category: (meta, set_name, fasta, faa, gff)

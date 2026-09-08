@@ -1,0 +1,6 @@
+##gff-version 3
+##sequence-region contig_one 1 50
+##sequence-region contig_two 1 50
+##sequence-region contig_three 1 50
+contig_one	Prodigal	CDS	1	30	.	+	0	ID=contig_one_1
+contig_three	Prodigal	CDS	5	40	.	-	0	ID=contig_three_1

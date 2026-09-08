@@ -1,0 +1,35 @@
+nextflow_process {
+
+    name "Test discarding contigs with no proteins"
+    script "../main.nf"
+    process "FILTER_NO_PROTEINS"
+
+    tag "subworkflows"
+    tag "filter_no_proteins"
+
+    test("Contigs without CDS are discarded and reported") {
+        when {
+            process {
+                """
+                input[0] = channel.of(
+                    [
+                        [ id:'no_proteins' ],
+                        file('${projectDir}/tests/filter_no_proteins/assembly.fasta', checkIfExists: true),
+                        file('${projectDir}/tests/filter_no_proteins/map.tsv', checkIfExists: true),
+                        file('${projectDir}/tests/filter_no_proteins/proteins.gff', checkIfExists: true),
+                    ]
+                )
+                """
+            }
+        }
+        then {
+            assert process.success
+
+            assertAll(
+                { assert snapshot(
+                    process.out
+                ).match() },
+            )
+        }
+    }
+}

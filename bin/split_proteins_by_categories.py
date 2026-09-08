@@ -19,6 +19,7 @@ import logging
 import sys
 from collections import defaultdict
 from collections.abc import Iterable
+from pathlib import Path
 
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
@@ -102,6 +103,12 @@ class SplitProteins:
         self.output_file = output_file
         self.verbose = verbose
         self.output_gff = output_gff
+        # Derived from the output file so that the reports of the confidence categories,
+        # which run as sibling tasks, cannot overwrite each other.
+        output_path = Path(output_file)
+        self.dropped_report = output_path.with_name(
+            f"{output_path.stem}_no_proteins.tsv"
+        )
         self.setup_logging()
         self.logger = logging.getLogger(__name__)
 
@@ -271,6 +278,24 @@ class SplitProteins:
 
         self.logger.info(f"Finished writing GFF to {self.output_gff}")
 
+    def _write_dropped_report(self, dropped_contigs: list[tuple[str, str]]) -> None:
+        """Write a TSV listing input contigs that retained no proteins.
+
+        Only called when at least one contig was dropped, so the file is absent from a
+        run where every contig kept proteins.
+
+        :param dropped_contigs: List of (full contig ID, reason) pairs.
+        """
+        with open(self.dropped_report, "w") as report_out:
+            print("contig\treason", file=report_out)
+            for contig_id, reason in dropped_contigs:
+                print(f"{contig_id}\t{reason}", file=report_out)
+
+        self.logger.warning(
+            f"{len(dropped_contigs)} contigs retained no proteins and were reported "
+            f"in {self.dropped_report}"
+        )
+
     def grep_proteins(self) -> None:
         """Write proteins that belong to input contigs, with optional prophage filtering.
 
@@ -295,6 +320,7 @@ class SplitProteins:
         already_added_protein_ids = set()
         written_records = 0
         gff_by_contig: dict[str, list[list[str]]] = defaultdict(list)
+        dropped_contigs: list[tuple[str, str]] = []
 
         with open(self.output_file, "w") as out_file:
             for contig_record in contig_records:
@@ -304,6 +330,7 @@ class SplitProteins:
                 if not matching_proteins:
                     self.logger.info(f"No proteins found for {contig_name}")
 
+                kept_for_contig = 0
                 for protein_record in matching_proteins:
                     protein_id = protein_record.id
 
@@ -322,6 +349,7 @@ class SplitProteins:
                     SeqIO.write(protein_record, out_file, "fasta")
                     already_added_protein_ids.add(protein_id)
                     written_records += 1
+                    kept_for_contig += 1
 
                     if self.output_gff:
                         # Key by full contig ID (may include |prophage-START:END suffix)
@@ -330,8 +358,25 @@ class SplitProteins:
                             protein_stats[protein_id]["gff_line"]
                         )
 
-        if self.output_gff and gff_by_contig:
+                if not kept_for_contig:
+                    # Distinguish the two ways a contig ends up with no proteins: either the
+                    # gene caller found none on it at all, or it has genes but none of them
+                    # fall inside the predicted prophage interval.
+                    reason = (
+                        "no CDS within prophage interval"
+                        if matching_proteins
+                        else "no CDS on contig"
+                    )
+                    dropped_contigs.append((contig_record.id, reason))
+
+        # Always write the GFF when asked for one. A category whose contigs carry no proteins
+        # still has to produce the file the SPLIT_PROTEINS process declares as an output;
+        # the empty category is dropped from the channel afterwards, not here.
+        if self.output_gff:
             self._write_gff(gff_by_contig, contig_lengths)
+
+        if dropped_contigs:
+            self._write_dropped_report(dropped_contigs)
 
         if written_records == 0:
             self.logger.warning(

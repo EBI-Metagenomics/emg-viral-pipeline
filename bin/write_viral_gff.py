@@ -394,18 +394,26 @@ def get_taxonomy_results(taxonomy_files: list[str]) -> dict[str, str]:
 
 def get_proteins_from_gff(
     gff_files: list[str], contigs_len_dict: dict[str, int], cds_best_hits
-) -> dict[str, set[str]]:
-    """Supplement viral_sequences with contigs from per-category GFF files that have no proteins.
+) -> tuple[dict[str, set[str]], dict[str, list[list]]]:
+    """Collect viral contigs and their CDS records from the per-category GFF files.
 
-    Some viral contigs may produce no annotated proteins (no ViPhOG HMM hits) and
-    therefore appear in the per-category GFF but not in any annotation TSV.  This
-    function adds those contigs to viral_sequences so they still appear in the final GFF.
+    Only CDS records are read, so a contig is registered here if and only if it has at
+    least one CDS.  A contig with no CDS does not reach the final GFF: it cannot be
+    annotated without proteins, and it is discarded and reported upstream by
+    split_proteins_by_categories.py (or by filter_contigs_no_proteins.py, before the
+    prediction tools run).
 
-    :param viral_sequences: Mapping of full contig ID to set of viral sequence type strings,
-                            populated from the annotation TSVs.
+    A contig that has CDS records but no ViPhOG HMM hits is still included; its CDS
+    simply carry an empty annotation, which is logged per contig.
+
     :param gff_files: Per-category GFF3 files produced by split_proteins or prodigal.
     :param contigs_len_dict: Mapping of base contig name to sequence length.
-    :return: Updated viral_sequences including any previously missing contigs.
+    :param cds_best_hits: Mapping of full contig ID to {CDS ID: best ViPhOG annotation},
+                          used to attach annotations to the CDS records.
+    :return: Tuple of (viral_sequences, cds_annotations) where:
+             - viral_sequences maps full contig ID to its set of viral sequence types.
+             - cds_annotations maps base contig name to a list of
+               [cds_id, start, end, direction, annotation, contig_id, genecaller].
     """
     viral_sequences = {}
     cds_annotations = {}

@@ -75,7 +75,7 @@ In order to have expanded output with more files use `--publish_all` option in p
     │       └── virsorter_metadata.tsv
     ├── 02-protein-prediction [if proteins_faa and proteins_gff were not provided as input]
     │   ├── ACCESSION.faa.gz
-    │   └── ACCESSION.gff.gz
+    │   ├── ACCESSION.gff.gz
     │   └── ACCESSION.fna.gz
     ├── 03-hmmer
     │   ├── high_confidence_viral_contigs_modified.tsv
@@ -137,6 +137,10 @@ In order to have expanded output with more files use `--publish_all` option in p
         │   ├── low_confidence_viral_contigs_original.fasta
         │   └── prophages_original.fasta
         ├── chromomap [optional step]
+        ├── ACCESSION_no_proteins.tsv [only if contigs were dropped]
+        ├── high_confidence_viral_contigs_no_proteins.tsv [only if contigs were dropped]
+        ├── low_confidence_viral_contigs_no_proteins.tsv [only if contigs were dropped]
+        ├── prophages_no_proteins.tsv [only if contigs were dropped]
         ├── gff
         │   ├── ACCESSION_virify.gff.gz
         │   ├── ACCESSION_virify.gff.gz.csi
@@ -153,6 +157,24 @@ In order to have expanded output with more files use `--publish_all` option in p
             └── prophages.sankey.html
 </details>
 
+### Contigs without proteins
+
+VIRify annotates viral contigs through their proteins, so a contig with no coding sequence cannot be
+annotated and is discarded. The `*_no_proteins.tsv` files record every contig dropped this way, so a
+contig missing from the final GFF can always be accounted for. They are written at the two points
+where the situation can arise, and only when that step actually dropped something: a run where every
+contig kept its proteins produces no such file.
+
+| File (with `--publish_all`) | Stage | Contents |
+|---|---|---|
+| `08-final/ACCESSION_no_proteins.tsv` | before the prediction tools | contigs with no CDS in the proteins GFF, dropped before detection runs |
+| `08-final/<category>_no_proteins.tsv` | after prophage prediction | contigs of that category that kept no proteins, either because the contig has no CDS or because none of its CDS fall inside the predicted prophage interval |
+
+The second case only arises for prophages: a prophage interval can contain no CDS even on a contig
+that is otherwise protein-rich, and the interval is not known until the predictions have been parsed.
+
+If every category of a sample loses all of its proteins, the sample produces no final GFF and a
+warning naming it is printed to the Nextflow log.
 
 ### GFF output files
 

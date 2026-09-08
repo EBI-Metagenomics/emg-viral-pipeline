@@ -1,0 +1,73 @@
+nextflow_process {
+
+    name "Test splitting proteins per confidence category"
+    script "../main.nf"
+    process "SPLIT_PROTEINS"
+
+    tag "subworkflows"
+    tag "split_proteins"
+
+    test("Category with proteins") {
+        when {
+            process {
+                """
+                input[0] = channel.of(
+                    [
+                        [ id:'mag' ],
+                        'prophages',
+                        file('${projectDir}/tests/split_proteins/mag.fasta', checkIfExists: true),
+                        file('${projectDir}/tests/split_proteins/mag.gff', checkIfExists: true),
+                        file('${projectDir}/tests/split_proteins/mag.faa', checkIfExists: true),
+                    ]
+                )
+                """
+            }
+        }
+        then {
+            assert process.success
+
+            assertAll(
+                { assert snapshot(
+                    process.out
+                ).match() },
+            )
+        }
+    }
+
+    test("Category whose contigs have no proteins still emits every declared output") {
+        // Regression: the GFF was only written when at least one protein matched, so the
+        // process failed with a missing output file. Both triggers are covered here:
+        // a contig with no CDS at all, and a prophage interval containing no CDS.
+        when {
+            process {
+                """
+                input[0] = channel.of(
+                    [
+                        [ id:'no_cds_contig' ],
+                        'low_confidence_viral_contigs',
+                        file('${projectDir}/tests/split_proteins/no_cds_contig.fna', checkIfExists: true),
+                        file('${projectDir}/tests/split_proteins/mag.gff', checkIfExists: true),
+                        file('${projectDir}/tests/split_proteins/mag.faa', checkIfExists: true),
+                    ],
+                    [
+                        [ id:'prophage_no_cds' ],
+                        'prophages',
+                        file('${projectDir}/tests/split_proteins/prophage_no_cds.fna', checkIfExists: true),
+                        file('${projectDir}/tests/split_proteins/mag.gff', checkIfExists: true),
+                        file('${projectDir}/tests/split_proteins/mag.faa', checkIfExists: true),
+                    ]
+                )
+                """
+            }
+        }
+        then {
+            assert process.success
+
+            assertAll(
+                { assert snapshot(
+                    process.out
+                ).match() },
+            )
+        }
+    }
+}
