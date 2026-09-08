@@ -18,6 +18,7 @@ import argparse
 import csv
 import logging
 import sys
+from pathlib import Path
 
 from Bio import SeqIO
 
@@ -59,13 +60,6 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         required=True,
     )
     parser.add_argument(
-        "--dropped-report",
-        dest="dropped_report",
-        help="Output TSV listing the discarded contigs",
-        required=False,
-        default=None,
-    )
-    parser.add_argument(
         "-v",
         "--verbose",
         dest="verbose",
@@ -84,7 +78,6 @@ class FilterContigsNoProteins:
         proteins_gff: str,
         output_file: str,
         verbose: bool,
-        dropped_report: str | None = None,
     ) -> None:
         """Initialise the FilterContigsNoProteins instance.
 
@@ -93,14 +86,17 @@ class FilterContigsNoProteins:
         :param proteins_gff: Path to the GFF3 file with CDS features for all assembly proteins.
         :param output_file: Path for the filtered FASTA output.
         :param verbose: Enable DEBUG-level logging when True.
-        :param dropped_report: Optional path for the TSV report of discarded contigs.
         """
         self.input_file = input_file
         self.mapfile = mapfile
         self.proteins_gff = proteins_gff
         self.output_file = output_file
         self.verbose = verbose
-        self.dropped_report = dropped_report
+        # Derived from the output file, so the report is named after what produced it.
+        output_path = Path(output_file)
+        self.dropped_report = output_path.with_name(
+            f"{output_path.stem}_no_proteins.tsv"
+        )
         self.setup_logging()
         self.logger = logging.getLogger(__name__)
 
@@ -150,8 +146,8 @@ class FilterContigsNoProteins:
     def _write_dropped_report(self, dropped_contigs: list[str]) -> None:
         """Write a TSV listing the discarded contigs, using their original names.
 
-        The file is always created, empty apart from its header when nothing was
-        dropped, so the calling process can declare it as a non-optional output.
+        Only called when at least one contig was dropped, so the file is absent from a
+        run where every contig has proteins.
 
         :param dropped_contigs: Original names of the contigs that were discarded.
         """
@@ -189,12 +185,11 @@ class FilterContigsNoProteins:
                 SeqIO.write(record, out_file, "fasta")
                 kept += 1
 
-        if self.dropped_report:
-            self._write_dropped_report(dropped_contigs)
-
         if dropped_contigs:
+            self._write_dropped_report(dropped_contigs)
             self.logger.warning(
-                f"Discarded {len(dropped_contigs)} contigs with no proteins"
+                f"Discarded {len(dropped_contigs)} contigs with no proteins, "
+                f"reported in {self.dropped_report}"
             )
         if kept == 0:
             self.logger.warning(
@@ -212,7 +207,6 @@ def main() -> None:
         proteins_gff=args.proteins_gff,
         output_file=args.output,
         verbose=args.verbose,
-        dropped_report=args.dropped_report,
     )
     contig_filter.filter_contigs()
 

@@ -28,14 +28,14 @@
                             "id": "no_cds_contig"
                         },
                         "low_confidence_viral_contigs",
-                        "low_confidence_viral_contigs_no_proteins.tsv:md5,dacdeb8c0898a927dbbe68f95c39ec63"
+                        "low_confidence_viral_contigs_split_no_proteins.tsv:md5,dacdeb8c0898a927dbbe68f95c39ec63"
                     ],
                     [
                         {
                             "id": "prophage_no_cds"
                         },
                         "prophages",
-                        "prophages_no_proteins.tsv:md5,bf6faf1d148a709e397c21d53dee1f88"
+                        "prophages_split_no_proteins.tsv:md5,bf6faf1d148a709e397c21d53dee1f88"
                     ]
                 ],
                 "dropped_report": [
@@ -44,14 +44,14 @@
                             "id": "no_cds_contig"
                         },
                         "low_confidence_viral_contigs",
-                        "low_confidence_viral_contigs_no_proteins.tsv:md5,dacdeb8c0898a927dbbe68f95c39ec63"
+                        "low_confidence_viral_contigs_split_no_proteins.tsv:md5,dacdeb8c0898a927dbbe68f95c39ec63"
                     ],
                     [
                         {
                             "id": "prophage_no_cds"
                         },
                         "prophages",
-                        "prophages_no_proteins.tsv:md5,bf6faf1d148a709e397c21d53dee1f88"
+                        "prophages_split_no_proteins.tsv:md5,bf6faf1d148a709e397c21d53dee1f88"
                     ]
                 ],
                 "fasta_proteins_gff": [
@@ -80,7 +80,7 @@
             "nf-test": "0.9.3",
             "nextflow": "25.10.0"
         },
-        "timestamp": "2026-09-03T11:24:54.68354"
+        "timestamp": "2026-09-08T10:27:23.716255"
     },
     "Category with proteins": {
         "content": [
@@ -97,22 +97,10 @@
                     ]
                 ],
                 "1": [
-                    [
-                        {
-                            "id": "mag"
-                        },
-                        "prophages",
-                        "prophages_no_proteins.tsv:md5,46f8f2e63ff82b4b702940051b7327f6"
-                    ]
+
                 ],
                 "dropped_report": [
-                    [
-                        {
-                            "id": "mag"
-                        },
-                        "prophages",
-                        "prophages_no_proteins.tsv:md5,46f8f2e63ff82b4b702940051b7327f6"
-                    ]
+
                 ],
                 "fasta_proteins_gff": [
                     [
@@ -131,6 +119,6 @@
             "nf-test": "0.9.3",
             "nextflow": "25.10.0"
         },
-        "timestamp": "2026-09-03T11:24:48.892397"
+        "timestamp": "2026-09-08T10:27:17.673734"
     }
 }

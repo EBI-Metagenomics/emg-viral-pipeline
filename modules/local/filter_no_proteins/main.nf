@@ -20,7 +20,7 @@ process FILTER_NO_PROTEINS {
 
     output:
     tuple val(meta), path("${meta.id}_with_proteins.fasta"), emit: filtered_fasta
-    tuple val(meta), path("${meta.id}_no_proteins.tsv")    , emit: dropped_report
+    tuple val(meta), path("${meta.id}_with_proteins_no_proteins.tsv"), emit: dropped_report, optional: true
 
     script:
     def proteins_file_gff = proteins_gff.name.endsWith('.gz') ? proteins_gff.baseName : proteins_gff.name
@@ -33,7 +33,6 @@ process FILTER_NO_PROTEINS {
         -i ${fasta} \\
         -m ${mapfile} \\
         -g ${proteins_file_gff} \\
-        -o ${meta.id}_with_proteins.fasta \\
-        --dropped-report ${meta.id}_no_proteins.tsv
+        -o ${meta.id}_with_proteins.fasta
     """
 }

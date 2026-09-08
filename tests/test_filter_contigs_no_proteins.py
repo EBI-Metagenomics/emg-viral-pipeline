@@ -12,7 +12,7 @@ SUBPROCESS_ENV = {**os.environ, "PYTHONPATH": os.path.join(os.getcwd(), "bin")}
 FIXTURES = "tests/filter_no_proteins"
 
 
-def run_filter(output, report=None, proteins_gff=f"{FIXTURES}/proteins.gff"):
+def run_filter(output, proteins_gff=f"{FIXTURES}/proteins.gff"):
     cmd = [
         "python",
         "-m",
@@ -26,8 +26,6 @@ def run_filter(output, report=None, proteins_gff=f"{FIXTURES}/proteins.gff"):
         "-o",
         str(output),
     ]
-    if report:
-        cmd += ["--dropped-report", str(report)]
     return subprocess.run(
         cmd, capture_output=True, text=True, env=SUBPROCESS_ENV, check=False
     )
@@ -42,9 +40,8 @@ class FilterContigsNoProteins(unittest.TestCase):
         """
         test_dir = Path(tempfile.mkdtemp())
         output = test_dir / "filtered.fasta"
-        report = test_dir / "no_proteins.tsv"
 
-        result = run_filter(output, report)
+        result = run_filter(output)
 
         assert result.returncode == 0, result.stderr
         content = output.read_text()
@@ -59,9 +56,10 @@ class FilterContigsNoProteins(unittest.TestCase):
         """The report is for humans, so it names contigs as they appear in the input."""
         test_dir = Path(tempfile.mkdtemp())
         output = test_dir / "filtered.fasta"
-        report = test_dir / "no_proteins.tsv"
+        # the report name is derived from the output name, not passed in
+        report = test_dir / "filtered_no_proteins.tsv"
 
-        result = run_filter(output, report)
+        result = run_filter(output)
 
         assert result.returncode == 0, result.stderr
         report_lines = report.read_text().splitlines()
@@ -69,11 +67,11 @@ class FilterContigsNoProteins(unittest.TestCase):
         assert report_lines[1] == "contig_two some description\tno CDS on contig"
         assert len(report_lines) == 2
 
-    def test_report_written_when_nothing_is_dropped(self):
-        """The report is a declared process output, so it exists even when empty."""
+    def test_no_report_when_nothing_is_dropped(self):
+        """Nothing dropped means no report: the process output is optional."""
         test_dir = Path(tempfile.mkdtemp())
         output = test_dir / "filtered.fasta"
-        report = test_dir / "no_proteins.tsv"
+        report = test_dir / "filtered_no_proteins.tsv"
         gff = test_dir / "all_with_cds.gff"
         gff.write_text(
             "##gff-version 3\n"
@@ -82,11 +80,11 @@ class FilterContigsNoProteins(unittest.TestCase):
             "contig_three\tProdigal\tCDS\t5\t40\t.\t-\t0\tID=contig_three_1\n"
         )
 
-        result = run_filter(output, report, proteins_gff=str(gff))
+        result = run_filter(output, proteins_gff=str(gff))
 
         assert result.returncode == 0, result.stderr
         assert output.read_text().count(">") == 3
-        assert report.read_text() == "contig\treason\n"
+        assert not report.exists()
 
     def test_comment_only_gff_entry_does_not_count_as_proteins(self):
         """Pyrodigal announces gene-less contigs with a comment, not a CDS record.

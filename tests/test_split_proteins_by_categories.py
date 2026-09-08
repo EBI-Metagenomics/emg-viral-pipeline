@@ -50,6 +50,8 @@ class SplitProteins(unittest.TestCase):
         # FASTA sequence count
         assert content.count(">") == 3
         assert md5sum(output) == "0a97d555d64f08537679df9de1ebd5f3"
+        # every contig kept proteins, so no report is written at all
+        assert not (Path(test_dir) / "simple_no_proteins.tsv").exists()
 
     def test_split_proteins_by_categories_prophages(self):
         test_dir = tempfile.mkdtemp()
@@ -228,7 +230,8 @@ class SplitProteins(unittest.TestCase):
         test_dir = Path(tempfile.mkdtemp())
         output = test_dir / "no_cds_contig.faa"
         output_gff = test_dir / "no_cds_contig.gff"
-        report = test_dir / "no_cds_contig_report.tsv"
+        # the report name is derived from the output name, not passed in
+        report = test_dir / "no_cds_contig_no_proteins.tsv"
 
         cmd = [
             "python",
@@ -244,8 +247,6 @@ class SplitProteins(unittest.TestCase):
             str(output),
             "--output-gff",
             str(output_gff),
-            "--dropped-report",
-            str(report),
         ]
 
         result = subprocess.run(
@@ -275,7 +276,8 @@ class SplitProteins(unittest.TestCase):
         test_dir = Path(tempfile.mkdtemp())
         output = test_dir / "prophage_no_cds.faa"
         output_gff = test_dir / "prophage_no_cds.gff"
-        report = test_dir / "prophage_no_cds_report.tsv"
+        # the report name is derived from the output name, not passed in
+        report = test_dir / "prophage_no_cds_no_proteins.tsv"
 
         cmd = [
             "python",
@@ -291,8 +293,6 @@ class SplitProteins(unittest.TestCase):
             str(output),
             "--output-gff",
             str(output_gff),
-            "--dropped-report",
-            str(report),
         ]
 
         result = subprocess.run(

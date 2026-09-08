@@ -19,6 +19,7 @@ import logging
 import sys
 from collections import defaultdict
 from collections.abc import Iterable
+from pathlib import Path
 
 from Bio import SeqIO
 from Bio.SeqRecord import SeqRecord
@@ -67,13 +68,6 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default=None,
     )
     parser.add_argument(
-        "--dropped-report",
-        dest="dropped_report",
-        help="Output TSV listing input contigs that retained no proteins",
-        required=False,
-        default=None,
-    )
-    parser.add_argument(
         "-v",
         "--verbose",
         dest="verbose",
@@ -93,7 +87,6 @@ class SplitProteins:
         output_file: str,
         verbose: bool,
         output_gff: str | None = None,
-        dropped_report: str | None = None,
     ) -> None:
         """Initialise the SplitProteins instance.
 
@@ -103,7 +96,6 @@ class SplitProteins:
         :param output_file: Path for the filtered proteins FASTA output.
         :param verbose: Enable DEBUG-level logging when True.
         :param output_gff: Optional path for the per-category GFF3 output.
-        :param dropped_report: Optional path for the TSV report of contigs with no proteins.
         """
         self.input_file = input_file
         self.proteins_faa = proteins_faa
@@ -111,7 +103,12 @@ class SplitProteins:
         self.output_file = output_file
         self.verbose = verbose
         self.output_gff = output_gff
-        self.dropped_report = dropped_report
+        # Derived from the output file so that the reports of the confidence categories,
+        # which run as sibling tasks, cannot overwrite each other.
+        output_path = Path(output_file)
+        self.dropped_report = output_path.with_name(
+            f"{output_path.stem}_no_proteins.tsv"
+        )
         self.setup_logging()
         self.logger = logging.getLogger(__name__)
 
@@ -284,8 +281,8 @@ class SplitProteins:
     def _write_dropped_report(self, dropped_contigs: list[tuple[str, str]]) -> None:
         """Write a TSV listing input contigs that retained no proteins.
 
-        The file is always created, empty apart from its header when nothing was dropped,
-        so the calling process can declare it as a non-optional output.
+        Only called when at least one contig was dropped, so the file is absent from a
+        run where every contig kept proteins.
 
         :param dropped_contigs: List of (full contig ID, reason) pairs.
         """
@@ -294,11 +291,10 @@ class SplitProteins:
             for contig_id, reason in dropped_contigs:
                 print(f"{contig_id}\t{reason}", file=report_out)
 
-        if dropped_contigs:
-            self.logger.warning(
-                f"{len(dropped_contigs)} contigs retained no proteins and were reported "
-                f"in {self.dropped_report}"
-            )
+        self.logger.warning(
+            f"{len(dropped_contigs)} contigs retained no proteins and were reported "
+            f"in {self.dropped_report}"
+        )
 
     def grep_proteins(self) -> None:
         """Write proteins that belong to input contigs, with optional prophage filtering.
@@ -379,7 +375,7 @@ class SplitProteins:
         if self.output_gff:
             self._write_gff(gff_by_contig, contig_lengths)
 
-        if self.dropped_report:
+        if dropped_contigs:
             self._write_dropped_report(dropped_contigs)
 
         if written_records == 0:
@@ -402,7 +398,6 @@ def main() -> None:
         output_file=args.output,
         verbose=args.verbose,
         output_gff=args.output_gff,
-        dropped_report=args.dropped_report,
     )
     splitter.grep_proteins()
 

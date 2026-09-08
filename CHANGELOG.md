@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   writes its per-category GFF, instead of skipping it when nothing matched and leaving `SPLIT_PROTEINS`
   without a declared output.
 - Viral contigs with no proteins are no longer silently lost. They are discarded deliberately and
-  listed in a per-step `*_no_proteins.tsv` report.
+  listed in a per-step `*_no_proteins.tsv` report, published to `08-final` with `--publish_all` and
+  only written when that step actually dropped a contig.
 
 ### Added
 - **Filter contigs without proteins** step: contigs with no CDS in the proteins GFF are dropped before

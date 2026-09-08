@@ -15,7 +15,7 @@
                         {
                             "id": "no_proteins"
                         },
-                        "no_proteins_no_proteins.tsv:md5,a44e0e83dc22e780cb6fae3fbae599ed"
+                        "no_proteins_with_proteins_no_proteins.tsv:md5,a44e0e83dc22e780cb6fae3fbae599ed"
                     ]
                 ],
                 "dropped_report": [
@@ -23,7 +23,7 @@
                         {
                             "id": "no_proteins"
                         },
-                        "no_proteins_no_proteins.tsv:md5,a44e0e83dc22e780cb6fae3fbae599ed"
+                        "no_proteins_with_proteins_no_proteins.tsv:md5,a44e0e83dc22e780cb6fae3fbae599ed"
                     ]
                 ],
                 "filtered_fasta": [
@@ -40,6 +40,6 @@
             "nf-test": "0.9.3",
             "nextflow": "25.10.0"
         },
-        "timestamp": "2026-09-03T11:24:24.999014"
+        "timestamp": "2026-09-08T10:26:49.741968"
     }
 }

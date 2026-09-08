@@ -11,7 +11,7 @@ process SPLIT_PROTEINS {
 
     output:
     tuple val(meta), val(confidence_set_name), path(fasta), path("${confidence_set_name}_split.faa"), path("${confidence_set_name}_split.gff"), emit: fasta_proteins_gff
-    tuple val(meta), val(confidence_set_name), path("${confidence_set_name}_no_proteins.tsv")       , emit: dropped_report
+    tuple val(meta), val(confidence_set_name), path("${confidence_set_name}_split_no_proteins.tsv"), emit: dropped_report, optional: true
 
     script:
     def fasta_file = fasta.name.endsWith('.gz') ? fasta.baseName : fasta.name
@@ -33,7 +33,6 @@ process SPLIT_PROTEINS {
         -o ${confidence_set_name}_split.faa \\
         -p ${proteins_file_faa} \\
         -g ${proteins_file_gff} \\
-        --output-gff ${confidence_set_name}_split.gff \\
-        --dropped-report ${confidence_set_name}_no_proteins.tsv
+        --output-gff ${confidence_set_name}_split.gff
     """
 }
