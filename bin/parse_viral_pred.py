@@ -47,6 +47,22 @@ class Record:
         seq_record.description = ""
         return seq_record
 
+    def with_contig_sequence(self, contig_record):
+        """Return a copy of this Record with the full assembly contig as sequence.
+
+        VirSorter2 trims "full" viral sequences: it removes partial genes at the ends,
+        the duplicated end of circular contigs and low-score ends. The trimmed record keeps
+        the contig name, but the rest of VIRify works on the full contig (the proteins,
+        the ViPhOG annotation and the GFF region cover the whole contig). Without this,
+        the category FASTA has the contig name with only a part of the contig sequence.
+
+        The VirSorter2 metadata (category, circular, prophage range) is kept.
+
+        :param contig_record: The SeqRecord of the contig from the assembly
+        :return: A new Record that holds the assembly sequence
+        """
+        return Record(contig_record, self.category, self.circular, self.prange)
+
     @staticmethod
     def get_prophage_metadata_from_contig(contig_header):
         """Obtain the prophage start and end positions.
@@ -382,17 +398,24 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff, out
                     # sliced fasta
                     for record in sorter_prophages.get(seq_record.id):
                         prophage_predictions_contigs.append(record.get_seq_record())
+                # HC and LC: write the assembly contig, not the trimmed VirSorter2
+                # sequence (see Record.with_contig_sequence). Prophages above keep the
+                # VirSorter2 sequence, as the header has the prophage coordinates.
                 # HC
                 if seq_record.id in sorter_hc:
                     hc_predictions_contigs.append(
-                        sorter_hc.get(seq_record.id).get_seq_record()
+                        sorter_hc.get(seq_record.id)
+                        .with_contig_sequence(seq_record)
+                        .get_seq_record()
                     )
                 # LC
                 elif seq_record.id in finder_lc:
                     lc_predictions_contigs.append(seq_record)
                 elif seq_record.id in sorter_lc and seq_record.id in finder_lowestc:
                     lc_predictions_contigs.append(
-                        sorter_lc.get(seq_record.id).get_seq_record()
+                        sorter_lc.get(seq_record.id)
+                        .with_contig_sequence(seq_record)
+                        .get_seq_record()
                     )
                 elif seq_record.id in pprmeta_lc and seq_record.id in finder_lowestc:
                     lc_predictions_contigs.append(seq_record)

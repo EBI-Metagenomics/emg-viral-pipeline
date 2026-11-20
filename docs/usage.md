@@ -102,7 +102,7 @@ The engine `conda` is not working at the moment until there is a conda recipe fo
 
 ### Example of execution command
 ```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline -r v4.0.0 \
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v4.0.1 \
     --samplesheet samplesheet.csv \
     --cores 4 \
     -profile local,docker \
