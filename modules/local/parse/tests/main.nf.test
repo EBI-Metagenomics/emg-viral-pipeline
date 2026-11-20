@@ -1,0 +1,68 @@
+nextflow_process {
+
+    name "Test parsing the viral predictions into confidence categories"
+    script "../main.nf"
+    process "PARSE"
+
+    tag "subworkflows"
+    tag "parse"
+
+    test("VirSorter2 high and low confidence records hold the full assembly contig") {
+        // Regression: VirSorter2 trims "full" viral sequences (partial genes at the ends,
+        // duplicated end of circular contigs), and PARSE wrote the trimmed sequence under
+        // the full contig name. The proteins and the GFF region cover the whole contig, so
+        // the category FASTA did not agree with them.
+        //
+        // Fixture (tests/parse/), a subset of tests/parse_viral_fixtures/base_fixtures/virsorter2:
+        // - seq3: high confidence, VirSorter2 kept 21..13002 of 13022 bp
+        // - seq7: high confidence, VirSorter2 kept 1..4242 of 4366 bp. The shape is set to
+        //         "circular" to also cover circular contigs.
+        // - seq8: low confidence, VirSorter2 kept 1..4056 of 4179 bp. The VirFinder score and
+        //         p-value are set so that it passes the VirFinder cutoff for VirSorter2 low confidence.
+        when {
+            params {
+                use_virsorter_v1 = false
+            }
+            process {
+                """
+                input[0] = channel.of(
+                    [
+                        [ id:'test' ],
+                        file('${projectDir}/tests/parse/assembly.fasta', checkIfExists: true),
+                        file('${projectDir}/tests/parse/virfinder.tsv', checkIfExists: true),
+                        [
+                            file('${projectDir}/tests/parse/virsorter2/final-viral-boundary.tsv', checkIfExists: true),
+                            file('${projectDir}/tests/parse/virsorter2/final-viral-combined.fa', checkIfExists: true),
+                            file('${projectDir}/tests/parse/virsorter2/final-viral-score.tsv', checkIfExists: true),
+                        ],
+                        file('${projectDir}/tests/parse/pprmeta.csv', checkIfExists: true),
+                    ]
+                )
+                """
+            }
+        }
+        then {
+            assert process.success
+
+            // nft-fasta: .fasta gives [header: sequence], with the full header line as key
+            def assembly = path("${projectDir}/tests/parse/assembly.fasta").fasta
+            def categories = process.out[0][0][1].collectEntries { fna -> [ file(fna).name, path(fna).fasta ] }
+
+            assertAll(
+                { assert categories.keySet() == [ 'high_confidence_viral_contigs.fna', 'low_confidence_viral_contigs.fna' ] as Set },
+                // The VirSorter2 metadata stays in the header
+                { assert categories['high_confidence_viral_contigs.fna'].keySet() == [ 'seq3', 'seq7|phage-circular' ] as Set },
+                { assert categories['low_confidence_viral_contigs.fna'].keySet() == [ 'seq8' ] as Set },
+                // Each record has the full sequence of its assembly contig
+                {
+                    categories.each { _name, records ->
+                        records.each { header, sequence ->
+                            assert sequence == assembly[header.tokenize('|')[0]]
+                        }
+                    }
+                },
+                { assert snapshot(process.out).match() },
+            )
+        }
+    }
+}

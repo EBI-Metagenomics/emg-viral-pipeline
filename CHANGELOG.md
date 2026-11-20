@@ -5,9 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.0.1] - [2026-11-20]
 
 ### Fixed
+- High and low confidence viral contigs from VirSorter2 now hold the full assembly contig. Before,
+  `*_original.fasta` had the VirSorter2-trimmed sequence under the full contig name, so the FASTA
+  did not agree with the proteins, the annotation and the GFF region. CheckV now runs on the same
+  sequence as the annotation.
 - Pipeline no longer fails when a predicted viral contig has no proteins. `split_proteins` now always
   writes its per-category GFF, instead of skipping it when nothing matched and leaving `SPLIT_PROTEINS`
   without a declared output.
@@ -27,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - nf-test coverage for `SPLIT_PROTEINS` and the new `FILTER_NO_PROTEINS` module, and unit tests for the
   `--output-gff` output, which was previously untested.
 
-## [4.0.0] - [2026-08]
+## [4.0.0] - [2026-08-08]
 
 ### Removed
 - Mode `--assemble`. Pipeline now accepts only FASTA file as main input, no reads support anymore.

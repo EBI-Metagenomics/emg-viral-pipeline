@@ -1,0 +1,26 @@
+{
+    "VirSorter2 high and low confidence records hold the full assembly contig": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        [
+                            "high_confidence_viral_contigs.fna:md5,e9954d3f47d6cf396ea1dddae4447a60",
+                            "low_confidence_viral_contigs.fna:md5,251845f6a32074c18ce0155b70aa154b"
+                        ],
+                        "virsorter_metadata.tsv:md5,d9976aff89bf93c3b5dc2520ef037efa",
+                        "test_virus_predictions.stats:md5,8f52f6b50e28accf6aea842430b69252"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-11-20T14:16:43.834395",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}
