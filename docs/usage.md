@@ -90,7 +90,7 @@ Run annotation for a small assembly file (10 contigs, 0.78 Mbp) on your local Li
 
 * `--hmmextend` - run additional HMM databases (pVOGs, RVDB, VOGDB, VPF) for more annotation hits.
 * `--blastextend` - run the additional BLAST-based comparison against IMG/VR (slow).
-* `--publish_all` - publish the expanded, per-step output folder structure (see [Output](output.md)) instead of just `08-final`.
+* `--publish_all` - publish the expanded, per-step output folder structure (see [Output](output.md)). Without it, the pipeline publishes `08-final`, `07-checkv` and the VirSorter2 tables in `01-predictions/virsorter2`.
 * `--output <dir>` - change the name/location of the results folder (default: `results`).
 
 ## Profiles

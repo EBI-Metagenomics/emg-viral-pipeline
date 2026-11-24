@@ -4,18 +4,30 @@
 
 - [Results](#results)
 - [GFF output files](#gff-output-files)
+  - [A contig in more than one category](#a-contig-in-more-than-one-category)
 
 ## Results
 
 ![Sankey plot](../figures/2023-sankey-neto.png)
 
 The outputs generated from viral prediction tools, ViPhOG annotation, taxonomy assign, and CheckV quality are integrated and summarized in a validated gff file.
-By default pipeline produces `08-final` folder with the following structure:
+By default pipeline produces the `08-final` folder, and also the CheckV results and the VirSorter2
+tables. Users need these files to compare the calls of a contig that is in more than one category
+(see [A contig in more than one category](#a-contig-in-more-than-one-category)).
 <details>
 <summary>Structure example per-assembly</summary>
 
     not_matched_proteins_report.tsv
 
+    01-predictions
+        └── virsorter2 [not with --use_virsorter_v1, except virsorter_metadata.tsv]
+            ├── final-viral-boundary.tsv
+            ├── final-viral-score.tsv
+            └── virsorter_metadata.tsv
+    07-checkv
+        ├── high_confidence_viral_contigs_quality_summary.tsv
+        ├── low_confidence_viral_contigs_quality_summary.tsv
+        └── prophages_quality_summary.tsv
     08-final
         ├── annotation
         │   ├── hmmer
@@ -55,7 +67,7 @@ By default pipeline produces `08-final` folder with the following structure:
             └── prophages.sankey.html
 </details>
 
-In order to have expanded output with more files use `--publish_all` option in pipeline execution.
+To get the output of all the steps, use the `--publish_all` option in pipeline execution.
 
 <details>
 <summary>Expanded structure example per-assembly</summary>
@@ -188,4 +200,94 @@ The labels used in the Type column of the gff file correspond to the following n
 | prophage  | [SO:0001006](http://www.sequenceontology.org/browser/current_svn/term/SO:0001006) |
 | CDS | [SO:0000316](http://www.sequenceontology.org/browser/current_svn/term/SO:0000316) |
 
-Note that CDS are reported only when a ViPhOG match has been found.
+The GFF reports all the CDS of each viral sequence. A CDS has the `viphog` and `viphog_taxonomy`
+attributes only when a ViPhOG match has been found.
+
+#### Attributes of `viral_sequence` and `prophage` features
+
+| Attribute | Values | Description |
+|---|---|---|
+| `ID` | `<contig>\|viral_sequence` or `<contig>\|prophage-<start>:<end>` | Identifier of the feature. |
+| `virify_quality` | `HC`, `LC`, `PP` | VIRify category: high confidence, low confidence or putative prophage. |
+| `mobile_element_type` | `phage_linear`, `phage_circular`, `prophage` | `phage_circular` is set only when VirSorter (`--use_virsorter_v1`) or VirSorter2 calls the contig circular. `phage_linear` is the default value. It does not prove that the genome is linear. |
+| `checkv_provirus` | `Yes`, `No` | CheckV `provirus` column. |
+| `checkv_quality` | for example `Complete`, `High-quality`, `Low-quality` | CheckV `checkv_quality` column. |
+| `checkv_miuvig_quality` | for example `High-quality`, `Genome-fragment` | CheckV `miuvig_quality` column. |
+| `checkv_kmer_freq` | number | CheckV `kmer_freq` column. A value higher than 1 can show a duplicated genome. |
+| `checkv_viral_genes` | number | CheckV `viral_genes` column. |
+| `taxonomy` | lineage or `unclassified` | ViPhOG-based lineage. The ranks are separated by `%3B` (an encoded `;`). |
+
+Each `viral_sequence` and `prophage` feature gets the CheckV values of its own sequence. When
+CheckV has no result for a sequence, the `checkv_*` attributes are `NA`.
+
+The GFF has only a part of the CheckV results. For example, it does not have the completeness
+method, such as a direct terminal repeat (DTR). The full CheckV results are in
+`07-checkv/<category>_quality_summary.tsv`.
+
+#### Attributes of `CDS` features
+
+| Attribute | Description |
+|---|---|
+| `ID` | Protein identifier. |
+| `virify_quality` | VIRify category of the CDS (see below). |
+| `viphog` | Best ViPhOG match. Only when a match has been found. |
+| `viphog_taxonomy` | Taxonomic label of the best ViPhOG match. Only when a match has been found. |
+
+#### A contig in more than one category
+
+With VirSorter2, one contig can be in two categories at the same time. A region of the contig can
+be a putative prophage (`PP`), and the whole contig can also be high confidence (`HC`) or low
+confidence (`LC`). Then the GFF has two features on the same contig:
+
+    contig1  VIRify  viral_sequence  1     6015  .  .  .  ID=contig1|viral_sequence;virify_quality=LC;...
+    contig1  VIRify  prophage        3367  4857  .  .  .  ID=contig1|prophage-3367:4857;virify_quality=PP;...
+
+VIRify keeps both calls and does not choose between them. The two calls can disagree. For
+example, CheckV can call the whole contig a complete circular genome, while VirSorter2 calls a
+region of the same contig a prophage. You must decide which call to use.
+
+Each CDS is written only once. A CDS inside the prophage region gets `virify_quality=PP`. The
+other CDS of the contig get the category of the whole contig (`HC` or `LC`).
+
+To compare the two calls, use these files:
+
+| Evidence | File | Published | Contig names |
+|---|---|---|---|
+| CheckV results for each category, including the completeness method | `07-checkv/<category>_quality_summary.tsv` | Always | GFF names with a suffix (see below) |
+| VirSorter2 scores, groups (for example `ssDNA`) and boundaries | `01-predictions/virsorter2/final-viral-{score,boundary}.tsv` | Always | Temporary names |
+| VIRify parse of the VirSorter2 results (category, circular, prophage range) | `01-predictions/virsorter2/virsorter_metadata.tsv` | Always | Temporary names |
+| VirSorter2 viral sequences | `01-predictions/virsorter2/final-viral-combined.fa` | With `--publish_all` | Temporary names |
+| VirFinder scores | `01-predictions/virfinder/` | With `--publish_all` | Temporary names |
+| PPR-Meta calls | `01-predictions/pprmeta/` | With `--publish_all` | Temporary names |
+
+VirFinder and PPR-Meta score every contig of the assembly, and their results are written for each
+chunk of the assembly. For large assemblies these files can be large, so they are published only
+with `--publish_all`.
+
+The prediction tools run on temporary contig names. To link them to the names in the GFF, use
+`08-final/contigs/ACCESSION_map.tsv`. Its columns are `original` (the full FASTA header),
+`temporary` (the name used by the prediction tools) and `short` (the name used in the GFF).
+
+##### Link CheckV rows to GFF features
+
+The CheckV `contig_id` and the GFF use different forms of the same name:
+
+| Sequence | CheckV `contig_id` | GFF column 1 (seqid) | GFF feature `ID` |
+|---|---|---|---|
+| HC or LC contig | `<contig>` | `<contig>` | `<contig>\|viral_sequence` |
+| Circular HC or LC contig | `<contig>\|phage-circular` | `<contig>` | `<contig>\|viral_sequence` |
+| Prophage | `<contig>\|prophage-<start>:<end>` | `<contig>` | `<contig>\|prophage-<start>:<end>` |
+
+For a prophage, the CheckV `contig_id` has the coordinates from VirSorter. The GFF feature can
+have different coordinates:
+
+- A start of `0` becomes `1`, because GFF coordinates start at 1.
+- An end after the end of the contig becomes the contig length. VirSorter2 can give such an end
+  for a circular genome.
+
+Thus, to link a CheckV row to a GFF feature:
+
+1. Remove the `|phage-circular` and `|prophage-<start>:<end>` suffixes from the CheckV
+   `contig_id`. The result is the GFF seqid.
+2. For a prophage, use the prophage start in the CheckV `contig_id` (`0` is `1` in the GFF) to
+   find the `prophage` feature on that seqid. Do not use the end, because the GFF can change it.

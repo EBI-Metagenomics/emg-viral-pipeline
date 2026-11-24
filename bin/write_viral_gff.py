@@ -6,7 +6,9 @@ import argparse
 import csv
 import gzip
 import logging
+import os
 import sys
+from collections.abc import Iterable
 from typing import IO
 
 from Bio import SeqIO
@@ -17,6 +19,22 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 SCORE = "."
+
+# Priority of the VIRify categories for a CDS that is in more than one category.
+# PP is first: it tells that the CDS is inside a prophage region. HC and LC describe
+# the whole contig, and the viral_sequence feature of the contig still has that label.
+QUALITY_PRIORITY = ["PP", "HC", "LC"]
+
+
+def get_quality_rank(quality: str) -> int:
+    """Return the priority of a VIRify quality label (lower value is kept first).
+
+    :param quality: VIRify quality label (HC, LC, PP or unknown).
+    :return: Index in QUALITY_PRIORITY, or len(QUALITY_PRIORITY) for an unknown label.
+    """
+    if quality in QUALITY_PRIORITY:
+        return QUALITY_PRIORITY.index(quality)
+    return len(QUALITY_PRIORITY)
 
 
 def parse_args() -> argparse.Namespace:
@@ -267,18 +285,39 @@ def get_annotation_results(
     return cds_annotations
 
 
+def get_checkv_key(contig_id: str) -> str:
+    """Return the key that links a viral sequence to its CheckV row.
+
+    The key keeps the |prophage-START:END suffix. One contig can be in two categories
+    (for example LC for the whole contig and PP for a region of it), and each category
+    has its own CheckV row. A key without the suffix makes these rows overwrite each other.
+
+    The |phage-circular suffix is removed, as it is not always in the CheckV contig_id.
+
+    :param contig_id: Full viral sequence ID, from the CheckV file or the category GFF.
+    :return: The CheckV lookup key.
+    """
+    return contig_id.replace("|phage-circular", "")
+
+
 def get_checkv_results(
     checkv_files: list[str],
-    sequence_regions: list[tuple[str, int]],
+    viral_sequence_ids: Iterable[str],
+    contigs_len_dict: dict[str, int],
 ) -> dict[str, str]:
-    """Parse CheckV summary files and validate coverage against expected contigs.
+    """Parse CheckV summary files and validate coverage against expected viral sequences.
 
-    Raises if none of the GFF contigs have CheckV results, which indicates a
-    naming mismatch.  Contigs without CheckV results receive NA placeholder values.
+    Raises if none of the viral sequences have CheckV results, which indicates a
+    naming mismatch.  Sequences without CheckV results receive NA placeholder values.
 
     :param checkv_files: Paths to CheckV quality_summary.tsv files.
-    :param sequence_regions: List of (contig_name, length) pairs that will appear in the GFF.
-    :return: Dictionary mapping clean contig name to a semicolon-joined CheckV attribute string.
+    :param viral_sequence_ids: Full IDs of the viral sequences that will appear in the GFF
+                               (the keys of viral_sequences).
+    :param contigs_len_dict: Mapping of base contig name to sequence length. Sequences of
+                             contigs not in the assembly are not checked, as they are not
+                             written to the GFF.
+    :return: Dictionary mapping CheckV key (see get_checkv_key) to a semicolon-joined
+             CheckV attribute string.
     """
     checkv_dict: dict[str, str] = {}
     not_determined = 0
@@ -308,15 +347,21 @@ def get_checkv_results(
                         f"checkv_viral_genes={row['viral_genes']}",
                     ]
                 )
-                checkv_dict[Record.remove_prophage_from_contig(contig_id)] = checkv_info
+                checkv_dict[get_checkv_key(contig_id)] = checkv_info
 
-    gff_contig_names = {name for name, _ in sequence_regions}
-    contigs_with_checkv = gff_contig_names & checkv_dict.keys()
-    contigs_without_checkv = gff_contig_names - checkv_dict.keys()
+    # Only the sequences of contigs in the assembly go into the GFF (see
+    # get_sequence_regions), so only they are checked.
+    gff_sequence_keys = {
+        get_checkv_key(seq_id)
+        for seq_id in viral_sequence_ids
+        if Record.remove_prophage_from_contig(seq_id) in contigs_len_dict
+    }
+    contigs_with_checkv = gff_sequence_keys & checkv_dict.keys()
+    contigs_without_checkv = gff_sequence_keys - checkv_dict.keys()
 
     if not contigs_with_checkv:
         raise ValueError(
-            f"None of the {len(gff_contig_names)} GFF contigs have CheckV results. "
+            f"None of the {len(gff_sequence_keys)} GFF contigs have CheckV results. "
             "CheckV must be run on all viral contigs before generating the GFF. "
             "This likely indicates a naming mismatch between the annotation and CheckV files."
         )
@@ -511,31 +556,65 @@ def get_sequence_regions(
     return sequence_regions
 
 
-def define_virify_quality(virify_annotation_files: list[str]) -> dict[str, str]:
-    """Derive a quality label (HC / LC / PP) for each contig from the annotation file it appears in.
+def get_category_label(file_path: str) -> str:
+    """Return the VIRify quality label (HC / LC / PP) from a category file name.
 
-    The label is inferred from the filename: files containing "high_confidence_viral"
-    map to "HC", "low_confidence" to "LC", and "prophages" to "PP".  If a contig
-    appears in multiple files the first assignment is kept (setdefault semantics).
+    Files containing "high_confidence_viral" map to "HC", "low_confidence" to "LC",
+    and "prophages" to "PP".  Only the file name is checked, not the directories.
 
-    :param virify_annotation_files: Paths to *_annotation.tsv files produced by viral_contigs_annotation.py.
-    :return: Dictionary mapping full contig ID to quality label string.
+    :param file_path: Path to a per-category file (GFF, CheckV summary, ...).
+    :return: The quality label, or "unknown" when the name has no category.
     """
+    file_name = os.path.basename(file_path)
+    if "high_confidence_viral" in file_name:
+        return "HC"
+    if "low_confidence" in file_name:
+        return "LC"
+    if "prophages" in file_name:
+        return "PP"
+    return "unknown"
+
+
+def define_virify_quality(
+    gff_files: list[str], checkv_files: list[str]
+) -> dict[str, str]:
+    """Derive a quality label (HC / LC / PP) for each viral sequence.
+
+    The label comes from the name of the category GFF of the sequence. The category GFFs
+    define the viral sequences of the final GFF (see get_proteins_from_gff), so each of
+    these sequences gets a label, also when CheckV has no row for it.
+
+    When the GFF name has no category (a custom name, outside the pipeline), the label
+    comes from the name of the CheckV file that has a row for the sequence.
+
+    If a sequence appears in multiple GFF files the first label is kept.
+
+    :param gff_files: Per-category GFF3 files (<category>_split.gff from split_proteins).
+    :param checkv_files: Per-category CheckV quality_summary.tsv files.
+    :return: Dictionary mapping full viral sequence ID (the GFF seqid) to quality label.
+    """
+    checkv_quality: dict[str, str] = {}
+    for checkv_file in checkv_files:
+        quality = get_category_label(checkv_file)
+        if quality == "unknown":
+            continue
+        with open(checkv_file) as table_handle:
+            for row in csv.DictReader(table_handle, delimiter="\t"):
+                checkv_quality.setdefault(get_checkv_key(row["contig_id"]), quality)
+
     virify_quality: dict[str, str] = {}
-
-    for virify_summary in virify_annotation_files:
-        quality = "unknown"
-        if "high_confidence_viral" in virify_summary:
-            quality = "HC"
-        elif "low_confidence" in virify_summary:
-            quality = "LC"
-        elif "prophages" in virify_summary:
-            quality = "PP"
-
-        with open(virify_summary, "r") as table_handle:
-            csv_reader = csv.DictReader(table_handle, delimiter="\t")
-            for row in csv_reader:
-                virify_quality.setdefault(row["contig_id"], quality)
+    for gff_file in gff_files:
+        quality = get_category_label(gff_file)
+        with open(gff_file) as fh:
+            for line in fh:
+                if line.startswith("#") or not line.strip():
+                    continue
+                seq_id = line.split("\t")[0]
+                if quality == "unknown":
+                    seq_quality = checkv_quality.get(get_checkv_key(seq_id), "unknown")
+                else:
+                    seq_quality = quality
+                virify_quality.setdefault(seq_id, seq_quality)
 
     return virify_quality
 
@@ -554,10 +633,11 @@ def write_gff(
     """Write the final VIRify GFF3 file.
 
     Produces one mobile_element (viral_sequence or prophage) feature per contig/prophage
-    region and one CDS feature per annotated protein.  All records are sorted by contig
+    region and one CDS feature per annotated protein.  A CDS that is in more than one
+    category is written once (see QUALITY_PRIORITY).  All records are sorted by contig
     name then start position before writing.
 
-    :param checkv_dict: Mapping of clean contig name to CheckV attribute string.
+    :param checkv_dict: Mapping of CheckV key (see get_checkv_key) to CheckV attribute string.
     :param taxonomy_dict: Mapping of full contig ID to %3B-delimited lineage string.
     :param sample_prefix: Output filename prefix (ignored when ena_mapping is provided).
     :param viral_sequences: Mapping of full contig ID to set of viral sequence type strings.
@@ -606,7 +686,7 @@ def write_gff(
                 "gbkey=mobile_element",
                 f"mobile_element_type={mobile_element_type}",
                 checkv_dict.get(
-                    clean_contig_name,
+                    get_checkv_key(contig_name),
                     "checkv_provirus=NA;checkv_quality=NA;checkv_miuvig_quality=NA"
                     ";checkv_kmer_freq=NA;checkv_viral_genes=NA",
                 ),
@@ -634,24 +714,50 @@ def write_gff(
             all_records.append((clean_contig_name, start, mobile_elements_line))
 
     for contig_name, contig_cds in cds_annotations.items():
+        contig_len = contigs_len_dict.get(contig_name)
+        if contig_len is None:
+            continue
+
+        # A contig can be in two categories (e.g. LC for the whole contig and PP for a
+        # region of it), so the same CDS can come from two category GFFs. Write it once,
+        # with the quality of the category that has the highest priority. The ViPhOG
+        # annotation is chosen separately: a category can have no annotation for the CDS
+        # (e.g. no annotation table), so an empty annotation must not replace a hit.
+        unique_cds: dict[tuple, dict] = {}
         for cds_data in contig_cds:
+            cds_id, start, end, direction, annotation, original_contig, _ = cds_data
+            quality = virify_quality.get(original_contig, "unknown")
+            cds_key = (cds_id, start, end, direction)
+            kept = unique_cds.get(cds_key)
+            if kept is None:
+                unique_cds[cds_key] = {
+                    "quality": quality,
+                    "annotation": annotation,
+                    "cds_data": cds_data,
+                }
+            elif get_quality_rank(quality) < get_quality_rank(kept["quality"]):
+                kept["quality"] = quality
+                kept["cds_data"] = cds_data
+                if annotation:
+                    kept["annotation"] = annotation
+            elif not kept["annotation"]:
+                kept["annotation"] = annotation
+
+        for kept in unique_cds.values():
+            quality = kept["quality"]
+            viphog_annotation = kept["annotation"]
             (
                 cds_id,
                 start,
                 end,
                 direction,
-                viphog_annotation,
-                original_contig,
+                _annotation,
+                _original_contig,
                 genecaller,
-            ) = cds_data
+            ) = kept["cds_data"]
             cds_id = cds_id.replace("prophage-0:", "prophage-1:")
-
-            contig_len = contigs_len_dict.get(contig_name)
-            if contig_len is None:
-                continue
             end = min(end, contig_len)
 
-            quality = virify_quality.get(original_contig, "unknown")
             cds_attributes = [
                 f"ID={cds_id}",
                 f"virify_quality={quality}",
@@ -698,7 +804,7 @@ if __name__ == "__main__":
     logger.info("Collecting annotation data")
     contigs_len_dict = get_contig_lengths_per_contig(assembly_file)
     # define virify HC/LC/PP quality
-    virify_quality = define_virify_quality(checkv_files)
+    virify_quality = define_virify_quality(args.gff_files, checkv_files)
     # get viphogs annotation for proteins
     cds_best_hits = get_annotation_results(virify_files, contigs_len_dict)
 
@@ -708,7 +814,9 @@ if __name__ == "__main__":
     )
 
     sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
-    checkv_dict = get_checkv_results(checkv_files, sequence_regions)
+    checkv_dict = get_checkv_results(
+        checkv_files, viral_sequences.keys(), contigs_len_dict
+    )
     taxonomy_dict = get_taxonomy_results(taxonomy_files)
 
     logger.info("Generating the gff output")

@@ -21,7 +21,7 @@ from bin.write_viral_gff import (
 
 def _build_gff_inputs(annotation_files, checkv_files, gff_files, contigs_len_dict):
     """Replace the old aggregate_annotations: derive virify_quality, cds_best_hits, viral_sequences, cds_annotations."""
-    virify_quality = define_virify_quality(checkv_files)
+    virify_quality = define_virify_quality(gff_files, checkv_files)
     cds_best_hits = get_annotation_results(annotation_files, contigs_len_dict)
     viral_sequences, cds_annotations = get_proteins_from_gff(
         gff_files, contigs_len_dict, cds_best_hits
@@ -95,7 +95,9 @@ class TestWriteGFF(unittest.TestCase):
             annotation_files, checkv_files, gff_files, contigs_len_dict
         )
         sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
-        checkv_dict = get_checkv_results(checkv_files, sequence_regions)
+        checkv_dict = get_checkv_results(
+            checkv_files, viral_sequences.keys(), contigs_len_dict
+        )
         taxonomy_dict = get_taxonomy_results(taxonomy_files)
 
         write_gff(
@@ -182,7 +184,9 @@ class TestWriteGFF(unittest.TestCase):
         self.assertFalse(any("prophage-500:1200" in s for s in prophage_types))
 
         sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
-        checkv_dict = get_checkv_results([checkv_tsv], sequence_regions)
+        checkv_dict = get_checkv_results(
+            [checkv_tsv], viral_sequences.keys(), contigs_len_dict
+        )
         taxonomy_dict = get_taxonomy_results([taxonomy_tsv])
 
         write_gff(
@@ -239,7 +243,9 @@ def test_phage_circular_checkv_key_normalization(tmp_path):
     sample_prefix = str(tmp_path / "test_phage_circular")
 
     sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
-    checkv_dict = get_checkv_results([str(checkv_tsv)], sequence_regions)
+    checkv_dict = get_checkv_results(
+        [str(checkv_tsv)], viral_sequences.keys(), contigs_len_dict
+    )
     taxonomy_dict = get_taxonomy_results([str(taxonomy_tsv)])
 
     # Must not raise KeyError
@@ -287,10 +293,9 @@ def test_no_checkv_match_raises_error():
     viral_sequences, _, _ = _build_gff_inputs(
         [str(annotation)], [str(checkv)], [str(gff)], contigs_len_dict
     )
-    sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
 
     with pytest.raises(ValueError, match="None of the.*GFF contigs"):
-        get_checkv_results([str(checkv)], sequence_regions)
+        get_checkv_results([str(checkv)], viral_sequences.keys(), contigs_len_dict)
 
 
 def test_partial_checkv_results_warns(tmp_path):
@@ -344,7 +349,9 @@ def test_partial_checkv_results_warns(tmp_path):
     sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
 
     with patch("bin.write_viral_gff.logger.warning") as mock_warn:
-        checkv_dict = get_checkv_results([str(checkv)], sequence_regions)
+        checkv_dict = get_checkv_results(
+            [str(checkv)], viral_sequences.keys(), contigs_len_dict
+        )
         taxonomy_dict = get_taxonomy_results([str(taxonomy)])
         write_gff(
             checkv_dict,
@@ -398,7 +405,9 @@ def test_contig_missing_from_assembly_is_skipped_with_warning(tmp_path):
 
     with patch("bin.write_viral_gff.logger.warning") as mock_warn:
         sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
-        checkv_dict = get_checkv_results([str(checkv_tsv)], sequence_regions)
+        checkv_dict = get_checkv_results(
+            [str(checkv_tsv)], viral_sequences.keys(), contigs_len_dict
+        )
         taxonomy_dict = get_taxonomy_results([str(taxonomy_tsv)])
         write_gff(
             checkv_dict,
@@ -467,7 +476,9 @@ def test_missing_annotation_file(tmp_path):
         [str(lc_annotation)], checkv_files, gff_files, contigs_len_dict
     )
     sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
-    checkv_dict = get_checkv_results(checkv_files, sequence_regions)
+    checkv_dict = get_checkv_results(
+        checkv_files, viral_sequences.keys(), contigs_len_dict
+    )
     taxonomy_dict = get_taxonomy_results([str(lc_taxonomy)])
 
     sample_prefix = str(tmp_path / "ERZ27225067")
@@ -513,3 +524,304 @@ def test_missing_annotation_file(tmp_path):
         f"CDS count mismatch: output has {output_cds}, expected {expected_cds} "
         f"(input counts per contig: {input_cds_per_contig})"
     )
+
+
+CHECKV_COLUMNS = [
+    "contig_id",
+    "contig_length",
+    "provirus",
+    "proviral_length",
+    "gene_count",
+    "viral_genes",
+    "host_genes",
+    "checkv_quality",
+    "miuvig_quality",
+    "completeness",
+    "completeness_method",
+    "contamination",
+    "kmer_freq",
+    "warnings",
+]
+ANNOTATION_COLUMNS = [
+    "Contig",
+    "CDS_ID",
+    "Start",
+    "End",
+    "Direction",
+    "Best_hit",
+    "Abs_Evalue_exp",
+    "Label",
+]
+TAXONOMY_COLUMNS = [
+    "contig_ID",
+    "superkingdom",
+    "kingdom",
+    "phylum",
+    "subphylum",
+    "class",
+    "order",
+    "suborder",
+    "family",
+    "subfamily",
+    "genus",
+]
+
+
+def _write_tsv(path, rows):
+    """Write rows (lists of fields) to a tab-separated file and return the path."""
+    path.write_text("".join("\t".join(row) + "\n" for row in rows))
+    return str(path)
+
+
+def _write_gff(path, rows):
+    """Write GFF rows (lists of 9 fields) with a GFF3 header and return the path."""
+    path.write_text(
+        "##gff-version 3\n" + "".join("\t".join(row) + "\n" for row in rows)
+    )
+    return str(path)
+
+
+def _cds_row(seqid, start, end, strand, cds_id):
+    """Return the 9 GFF fields of a CDS from Pyrodigal."""
+    return [seqid, "Pyrodigal", "CDS", start, end, ".", strand, "0", f"ID={cds_id}"]
+
+
+@pytest.mark.parametrize("pp_checkv_row", [True, False])
+@pytest.mark.parametrize("prophage_first", [True, False])
+def test_contig_in_low_confidence_and_prophage(tmp_path, prophage_first, pp_checkv_row):
+    """A contig that is LC as a whole and PP for a region of it.
+
+    Each GFF feature must get the CheckV values of its own row, whatever the order of
+    the CheckV files. The CDS inside the prophage region must be written only once.
+    The category labels come from the category GFFs, so they do not change when CheckV
+    has no row for the prophage region (the prophage then gets NA CheckV values).
+    """
+    prophage_id = "contig1|prophage-3367:4857"
+
+    assembly = tmp_path / "assembly.fasta"
+    assembly.write_text(">contig1\n" + "A" * 6015 + "\n")
+
+    lc_gff = _write_gff(
+        tmp_path / "low_confidence_viral_contigs.gff",
+        [
+            _cds_row("contig1", "100", "1000", "+", "contig1_1"),
+            _cds_row("contig1", "3400", "4000", "+", "contig1_2"),
+            _cds_row("contig1", "4100", "4800", "-", "contig1_3"),
+        ],
+    )
+    pp_gff = _write_gff(
+        tmp_path / "prophages.gff",
+        [
+            _cds_row(prophage_id, "3400", "4000", "+", "contig1_2"),
+            _cds_row(prophage_id, "4100", "4800", "-", "contig1_3"),
+        ],
+    )
+
+    # contig1_2 has a ViPhOG hit only in the LC table. PP has priority for the
+    # quality label, but its empty annotation must not replace the LC hit.
+    lc_annotation = _write_tsv(
+        tmp_path / "low_confidence_viral_contigs_annotation.tsv",
+        [
+            ANNOTATION_COLUMNS,
+            ["contig1", "contig1_1", "100", "1000", "1", "No hit", "NA", ""],
+            [
+                "contig1",
+                "contig1_2",
+                "3400",
+                "4000",
+                "1",
+                "ViPhOG42.faa",
+                "10",
+                "Caudoviricetes",
+            ],
+        ],
+    )
+    pp_annotation = _write_tsv(
+        tmp_path / "prophages_annotation.tsv",
+        [
+            ANNOTATION_COLUMNS,
+            [prophage_id, "contig1_2", "3400", "4000", "1", "No hit", "NA", ""],
+        ],
+    )
+
+    lc_checkv = _write_tsv(
+        tmp_path / "low_confidence_viral_contigs_quality_summary.tsv",
+        [
+            CHECKV_COLUMNS,
+            [
+                "contig1",
+                "6015",
+                "No",
+                "NA",
+                "8",
+                "5",
+                "0",
+                "Complete",
+                "High-quality",
+                "100.0",
+                "DTR",
+                "0.0",
+                "1.03",
+                "",
+            ],
+        ],
+    )
+    pp_checkv_rows = [CHECKV_COLUMNS]
+    if pp_checkv_row:
+        pp_checkv_rows.append(
+            [
+                prophage_id,
+                "1491",
+                "No",
+                "NA",
+                "2",
+                "1",
+                "0",
+                "Low-quality",
+                "Genome-fragment",
+                "20.0",
+                "AAI-based",
+                "0.0",
+                "1.0",
+                "",
+            ]
+        )
+    pp_checkv = _write_tsv(tmp_path / "prophages_quality_summary.tsv", pp_checkv_rows)
+
+    taxonomy = _write_tsv(tmp_path / "taxonomy.tsv", [TAXONOMY_COLUMNS])
+
+    checkv_files = [lc_checkv, pp_checkv]
+    gff_files = [lc_gff, pp_gff]
+    if prophage_first:
+        checkv_files.reverse()
+        gff_files.reverse()
+
+    contigs_len_dict = get_contig_lengths_per_contig(str(assembly))
+    viral_sequences, cds_annotations, virify_quality = _build_gff_inputs(
+        [lc_annotation, pp_annotation],
+        checkv_files,
+        gff_files,
+        contigs_len_dict,
+    )
+    sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
+    checkv_dict = get_checkv_results(
+        checkv_files, viral_sequences.keys(), contigs_len_dict
+    )
+    taxonomy_dict = get_taxonomy_results([taxonomy])
+
+    write_gff(
+        checkv_dict,
+        taxonomy_dict,
+        str(tmp_path / "sample"),
+        viral_sequences,
+        cds_annotations,
+        virify_quality,
+        contigs_len_dict,
+        sequence_regions,
+    )
+
+    data_lines = [
+        line.split("\t")
+        for line in (tmp_path / "sample_virify.gff").read_text().splitlines()
+        if line and not line.startswith("#")
+    ]
+
+    mobile_elements = {cols[2]: cols[8] for cols in data_lines if cols[2] != "CDS"}
+    assert "virify_quality=LC" in mobile_elements["viral_sequence"]
+    assert "checkv_quality=Complete" in mobile_elements["viral_sequence"]
+    assert "checkv_kmer_freq=1.03" in mobile_elements["viral_sequence"]
+    assert "virify_quality=PP" in mobile_elements["prophage"]
+    if pp_checkv_row:
+        assert "checkv_quality=Low-quality" in mobile_elements["prophage"]
+        assert "checkv_miuvig_quality=Genome-fragment" in mobile_elements["prophage"]
+        assert "checkv_kmer_freq=1.0;" in mobile_elements["prophage"]
+    else:
+        assert "checkv_quality=NA" in mobile_elements["prophage"]
+
+    cds_ids = [cols[8].split(";")[0] for cols in data_lines if cols[2] == "CDS"]
+    assert sorted(cds_ids) == ["ID=contig1_1", "ID=contig1_2", "ID=contig1_3"]
+    # The CDS inside the prophage region get PP, the CDS outside it keep LC.
+    cds_quality = {
+        cols[8].split(";")[0]: cols[8].split(";")[1]
+        for cols in data_lines
+        if cols[2] == "CDS"
+    }
+    assert cds_quality == {
+        "ID=contig1_1": "virify_quality=LC",
+        "ID=contig1_2": "virify_quality=PP",
+        "ID=contig1_3": "virify_quality=PP",
+    }
+    cds_attrs = {
+        cols[8].split(";")[0]: cols[8] for cols in data_lines if cols[2] == "CDS"
+    }
+    assert "viphog=ViPhOG42" in cds_attrs["ID=contig1_2"]
+    assert "viphog_taxonomy=Caudoviricetes" in cds_attrs["ID=contig1_2"]
+
+
+def test_checkv_match_only_for_contig_missing_from_assembly_raises(tmp_path):
+    """The CheckV check ignores sequences of contigs that are not in the assembly.
+
+    These sequences are not written to the GFF. If CheckV matches only such a
+    sequence, no GFF feature gets CheckV values, so the naming-mismatch error is raised.
+    """
+    checkv = _write_tsv(
+        tmp_path / "checkv.tsv",
+        [
+            CHECKV_COLUMNS,
+            [
+                "missing_contig",
+                "900",
+                "No",
+                "NA",
+                "2",
+                "1",
+                "0",
+                "Low-quality",
+                "Genome-fragment",
+                "20.0",
+                "AAI-based",
+                "0.0",
+                "1.0",
+                "",
+            ],
+        ],
+    )
+    contigs_len_dict = {"contig1": 1000}
+
+    with pytest.raises(ValueError, match="None of the 1 GFF contigs"):
+        get_checkv_results([checkv], ["contig1", "missing_contig"], contigs_len_dict)
+
+
+def test_define_virify_quality_falls_back_to_checkv_file_name(tmp_path):
+    """The category label comes from the GFF file name, or from the CheckV file name
+    when the GFF file name has no category (custom names outside the pipeline)."""
+    checkv_columns = ["contig_id", "viral_genes", "checkv_quality"]
+
+    custom_gff = _write_gff(
+        tmp_path / "annotations.gff",
+        [
+            _cds_row("contig1", "1", "100", "+", "contig1_1"),
+            _cds_row("contig2", "1", "100", "+", "contig2_1"),
+        ],
+    )
+    pp_gff = _write_gff(
+        tmp_path / "prophages_split.gff",
+        [_cds_row("contig3|prophage-1:500", "1", "100", "+", "contig3_1")],
+    )
+    hc_checkv = _write_tsv(
+        tmp_path / "high_confidence_viral_contigs_quality_summary.tsv",
+        [checkv_columns, ["contig1", "1", "High-quality"]],
+    )
+    # The PP GFF name wins over the CheckV name of another category.
+    lc_checkv = _write_tsv(
+        tmp_path / "low_confidence_viral_contigs_quality_summary.tsv",
+        [checkv_columns, ["contig3|prophage-1:500", "1", "Low-quality"]],
+    )
+
+    virify_quality = define_virify_quality([custom_gff, pp_gff], [hc_checkv, lc_checkv])
+
+    assert virify_quality == {
+        "contig1": "HC",
+        "contig2": "unknown",
+        "contig3|prophage-1:500": "PP",
+    }
