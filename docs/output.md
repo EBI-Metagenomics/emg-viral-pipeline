@@ -45,6 +45,7 @@ tables. Users need these files to compare the calls of a contig that is in more 
         │           ├── plot_pdfs.tar.gz
         │           └── prophages_prot_ann_table_filtered.tsv
         ├── contigs
+        │   ├── ACCESSION_detection_evidence.tsv
         │   ├── ACCESSION_map.tsv
         │   ├── ACCESSION_renamed_original.fasta
         │   ├── high_confidence_viral_contigs_original.fasta
@@ -143,6 +144,7 @@ To get the output of all the steps, use the `--publish_all` option in pipeline e
         │           ├── plot_pdfs.tar.gz
         │           └── prophages_prot_ann_table_filtered.tsv
         ├── contigs
+        │   ├── ACCESSION_detection_evidence.tsv
         │   ├── ACCESSION_map.tsv
         │   ├── ACCESSION_renamed_original.fasta
         │   ├── high_confidence_viral_contigs_original.fasta
@@ -249,10 +251,13 @@ region of the same contig a prophage. You must decide which call to use.
 Each CDS is written only once. A CDS inside the prophage region gets `virify_quality=PP`. The
 other CDS of the contig get the category of the whole contig (`HC` or `LC`).
 
-To compare the two calls, use these files:
+To compare the two calls, start with the detection evidence table (see
+[Detection evidence table](#detection-evidence-table)). It has the values of all the prediction
+tools and the CheckV quality, with the GFF names. The other files have more details:
 
 | Evidence | File | Published | Contig names |
 |---|---|---|---|
+| Rule, tool values and CheckV quality for each HC, LC and PP sequence | `08-final/contigs/ACCESSION_detection_evidence.tsv` | Always | GFF names with a suffix (see below) |
 | CheckV results for each category, including the completeness method | `07-checkv/<category>_quality_summary.tsv` | Always | GFF names with a suffix (see below) |
 | VirSorter2 scores, groups (for example `ssDNA`) and boundaries | `01-predictions/virsorter2/final-viral-{score,boundary}.tsv` | Always | Temporary names |
 | VIRify parse of the VirSorter2 results (category, circular, prophage range) | `01-predictions/virsorter2/virsorter_metadata.tsv` | Always | Temporary names |
@@ -268,9 +273,46 @@ The prediction tools run on temporary contig names. To link them to the names in
 `08-final/contigs/ACCESSION_map.tsv`. Its columns are `original` (the full FASTA header),
 `temporary` (the name used by the prediction tools) and `short` (the name used in the GFF).
 
+##### Detection evidence table
+
+`08-final/contigs/ACCESSION_detection_evidence.tsv` has one row for each HC, LC and PP sequence.
+A contig in more than one category has one row for each category. Contigs that VIRify did not
+call are not in the table. If VIRify calls no sequence, the pipeline does not write the table.
+`NA` means that the tool has no value for the sequence.
+
+| Column | Description |
+|---|---|
+| `sequence_id` | Sequence ID, in the same format as the CheckV `contig_id` (see below). |
+| `contig` | Contig name, as in GFF column 1. |
+| `virify_quality` | `HC`, `LC` or `PP`. |
+| `rule` | The rule that put the sequence in its category (see below). |
+| `prophage_start`, `prophage_end` | Prophage coordinates from VirSorter. Only for `PP`. |
+| `circular` | `True` when VIRify calls the sequence circular (`phage_circular` in the GFF). |
+| `virfinder_score`, `virfinder_pvalue` | VirFinder `score` and `pvalue` of the contig. |
+| `pprmeta_possible_source`, `pprmeta_phage_score` | PPR-Meta `Possible_source` and `phage_score` of the contig. |
+| `virsorter_category` | VirSorter category (1 to 5). Only with `--use_virsorter_v1`. |
+| `virsorter2_max_score`, `virsorter2_max_score_group` | VirSorter2 `max_score` and `max_score_group` (for example `dsDNAphage` or `ssDNA`). |
+| `virsorter2_shape` | VirSorter2 `shape` of the contig (for example `circular`). VIRify sets a prophage to linear, but this column keeps the VirSorter2 value. |
+| `checkv_quality`, `miuvig_quality`, `completeness`, `completeness_method`, `contamination` | Values of the CheckV row whose `contig_id` is the `sequence_id`. A `contig_id` without the `\|phage-circular` suffix also matches. `NA` if CheckV did not run on the category, for example because the category has no proteins. |
+
+For `PP` rows, the VirSorter columns have the values of the prophage call. For `HC` and `LC` rows,
+they have the values of the whole-contig call, if VirSorter made one.
+
+The `rule` column has one of these values. `virsorter` is `virsorter2`, unless the pipeline ran
+with `--use_virsorter_v1`.
+
+| Rule | Category | Meaning |
+|---|---|---|
+| `virsorter_high_confidence` | HC | VirSorter category 1 or 2, or VirSorter2 score at or above the cutoff (0.9 by default). |
+| `virsorter_prophage` | PP | VirSorter category 4 or 5, or a VirSorter2 partial sequence. |
+| `virfinder_score_0.9` | LC | VirFinder score at or above 0.9 and p-value below 0.05. |
+| `virsorter_low_confidence_and_virfinder_score_0.7` | LC | VirSorter category 3 or VirSorter2 score below the cutoff, and VirFinder score from 0.7 to 0.9 with p-value below 0.05. |
+| `pprmeta_phage_and_virfinder_score_0.7` | LC | PPR-Meta source `phage`, and VirFinder score from 0.7 to 0.9 with p-value below 0.05. |
+
 ##### Link CheckV rows to GFF features
 
-The CheckV `contig_id` and the GFF use different forms of the same name:
+The CheckV `contig_id` and the GFF use different forms of the same name. The `sequence_id`
+column of the detection evidence table has the same format as the CheckV `contig_id`.
 
 | Sequence | CheckV `contig_id` | GFF column 1 (seqid) | GFF feature `ID` |
 |---|---|---|---|

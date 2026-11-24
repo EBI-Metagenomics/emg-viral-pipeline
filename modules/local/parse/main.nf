@@ -18,6 +18,9 @@
                         Absolute or relative path of directory where output
                         viral prediction files should be stored (default: cwd)
 
+  It also writes detection_calls.tsv: one row per HC, LC or PP sequence, with the rule
+  that put it in its category (see DETECTION_EVIDENCE).
+
   NOTE: only outputs .fna files if some low confidence or high confidence viral seqs were identified, otherwise outputs nothing.
 */
 
@@ -33,7 +36,7 @@ process PARSE {
   tuple val(meta), path(fasta), path(virfinder), path(virsorter), path(pprmeta)
 
   output:
-  tuple val(meta), path("*.fna"), path('virsorter_metadata.tsv'), path("${meta.id}_virus_predictions.stats"), optional: true
+  tuple val(meta), path("*.fna"), path('virsorter_metadata.tsv'), path("${meta.id}_virus_predictions.stats"), path("detection_calls.tsv"), optional: true
 
   when: fasta.size() > 0
 

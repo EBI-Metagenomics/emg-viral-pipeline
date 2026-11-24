@@ -94,5 +94,8 @@ workflow DETECT {
   PARSE(renamed_assembly.join(virfinder_output).join(virsorter_output).join(pprmeta_output))
 
   emit:
-  detect_output = PARSE.out.map { meta, fasta, _vs_meta, _log -> tuple(meta, fasta) }
+  detect_output = PARSE.out.map { meta, fasta, _vs_meta, _log, _calls -> tuple(meta, fasta) }
+  calls         = PARSE.out.map { meta, _fasta, _vs_meta, _log, calls -> tuple(meta, calls) }  // [meta, detection_calls.tsv]
+  virfinder     = virfinder_output  // [meta, VirFinder table of all contigs]
+  pprmeta       = pprmeta_output    // [meta, PPR-Meta table of all contigs]
 }

@@ -117,4 +117,5 @@ workflow ANNOTATE {
     emit:
     assign_output = ASSIGN.out
     chromomap = chromomap_ch
+    checkv = checkv_results  // [meta, [CheckV quality summaries of the categories]]
 }
