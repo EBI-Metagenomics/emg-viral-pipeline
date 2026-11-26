@@ -12,13 +12,13 @@
                             "low_confidence_viral_contigs.fna:md5,251845f6a32074c18ce0155b70aa154b"
                         ],
                         "virsorter_metadata.tsv:md5,d9976aff89bf93c3b5dc2520ef037efa",
-                        "test_virus_predictions.stats:md5,8f52f6b50e28accf6aea842430b69252",
-                        "detection_calls.tsv:md5,b6a114608b7bc8afa8407543cc27fa75"
+                        "test_virus_predictions.stats:md5,cc8dd76ce93abf9f35ede12a22aec3c0",
+                        "detection_calls.tsv:md5,266080a5cb77e3c642e6a65f0221277a"
                     ]
                 ]
             }
         ],
-        "timestamp": "2026-11-20T14:16:43.834395",
+        "timestamp": "2026-11-26T13:54:31.72558",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"

@@ -20,22 +20,6 @@ logger = logging.getLogger(__name__)
 
 SCORE = "."
 
-# Priority of the VIRify categories for a CDS that is in more than one category.
-# PP is first: it tells that the CDS is inside a prophage region. HC and LC describe
-# the whole contig, and the viral_sequence feature of the contig still has that label.
-QUALITY_PRIORITY = ["PP", "HC", "LC"]
-
-
-def get_quality_rank(quality: str) -> int:
-    """Return the priority of a VIRify quality label (lower value is kept first).
-
-    :param quality: VIRify quality label (HC, LC, PP or unknown).
-    :return: Index in QUALITY_PRIORITY, or len(QUALITY_PRIORITY) for an unknown label.
-    """
-    if quality in QUALITY_PRIORITY:
-        return QUALITY_PRIORITY.index(quality)
-    return len(QUALITY_PRIORITY)
-
 
 def parse_args() -> argparse.Namespace:
     """Parse and return command-line arguments."""
@@ -285,14 +269,16 @@ def get_annotation_results(
     return cds_annotations
 
 
-def get_checkv_key(contig_id: str) -> str:
-    """Return the key that links a viral sequence to its CheckV row.
+def remove_circular_suffix(contig_id: str) -> str:
+    """Return the CheckV key of a viral sequence: the ID without |phage-circular.
 
-    The key keeps the |prophage-START:END suffix. One contig can be in two categories
-    (for example LC for the whole contig and PP for a region of it), and each category
-    has its own CheckV row. A key without the suffix makes these rows overwrite each other.
+    The CheckV contig_id does not always have the |phage-circular suffix, but the category
+    GFF has it. The suffix is a flag, not a part of the name: a contig is circular or not,
+    so its removal never makes two sequences have the same key.
 
-    The |phage-circular suffix is removed, as it is not always in the CheckV contig_id.
+    The |prophage-START:END suffix stays. A contig can have more than one prophage, and
+    each prophage has its own CheckV row. A key without this suffix makes these rows
+    overwrite each other.
 
     :param contig_id: Full viral sequence ID, from the CheckV file or the category GFF.
     :return: The CheckV lookup key.
@@ -316,7 +302,7 @@ def get_checkv_results(
     :param contigs_len_dict: Mapping of base contig name to sequence length. Sequences of
                              contigs not in the assembly are not checked, as they are not
                              written to the GFF.
-    :return: Dictionary mapping CheckV key (see get_checkv_key) to a semicolon-joined
+    :return: Dictionary mapping CheckV key (see remove_circular_suffix) to a semicolon-joined
              CheckV attribute string.
     """
     checkv_dict: dict[str, str] = {}
@@ -347,12 +333,12 @@ def get_checkv_results(
                         f"checkv_viral_genes={row['viral_genes']}",
                     ]
                 )
-                checkv_dict[get_checkv_key(contig_id)] = checkv_info
+                checkv_dict[remove_circular_suffix(contig_id)] = checkv_info
 
     # Only the sequences of contigs in the assembly go into the GFF (see
     # get_sequence_regions), so only they are checked.
     gff_sequence_keys = {
-        get_checkv_key(seq_id)
+        remove_circular_suffix(seq_id)
         for seq_id in viral_sequence_ids
         if Record.remove_prophage_from_contig(seq_id) in contigs_len_dict
     }
@@ -587,7 +573,8 @@ def define_virify_quality(
     When the GFF name has no category (a custom name, outside the pipeline), the label
     comes from the name of the CheckV file that has a row for the sequence.
 
-    If a sequence appears in multiple GFF files the first label is kept.
+    Each contig is in one category only (see parse_viral_pred.py), so each sequence is
+    in one GFF file only.
 
     :param gff_files: Per-category GFF3 files (<category>_split.gff from split_proteins).
     :param checkv_files: Per-category CheckV quality_summary.tsv files.
@@ -600,7 +587,9 @@ def define_virify_quality(
             continue
         with open(checkv_file) as table_handle:
             for row in csv.DictReader(table_handle, delimiter="\t"):
-                checkv_quality.setdefault(get_checkv_key(row["contig_id"]), quality)
+                checkv_quality.setdefault(
+                    remove_circular_suffix(row["contig_id"]), quality
+                )
 
     virify_quality: dict[str, str] = {}
     for gff_file in gff_files:
@@ -611,7 +600,9 @@ def define_virify_quality(
                     continue
                 seq_id = line.split("\t")[0]
                 if quality == "unknown":
-                    seq_quality = checkv_quality.get(get_checkv_key(seq_id), "unknown")
+                    seq_quality = checkv_quality.get(
+                        remove_circular_suffix(seq_id), "unknown"
+                    )
                 else:
                     seq_quality = quality
                 virify_quality.setdefault(seq_id, seq_quality)
@@ -633,11 +624,10 @@ def write_gff(
     """Write the final VIRify GFF3 file.
 
     Produces one mobile_element (viral_sequence or prophage) feature per contig/prophage
-    region and one CDS feature per annotated protein.  A CDS that is in more than one
-    category is written once (see QUALITY_PRIORITY).  All records are sorted by contig
+    region and one CDS feature per annotated protein.  All records are sorted by contig
     name then start position before writing.
 
-    :param checkv_dict: Mapping of CheckV key (see get_checkv_key) to CheckV attribute string.
+    :param checkv_dict: Mapping of CheckV key (see remove_circular_suffix) to CheckV attributes.
     :param taxonomy_dict: Mapping of full contig ID to %3B-delimited lineage string.
     :param sample_prefix: Output filename prefix (ignored when ena_mapping is provided).
     :param viral_sequences: Mapping of full contig ID to set of viral sequence type strings.
@@ -647,6 +637,7 @@ def write_gff(
     :param sequence_regions: Sorted list of (contig_name, length) for ##sequence-region headers.
     :param ena_mapping: Optional mapping of contig names to ENA ERZ accessions; when provided
                         the output filename uses the ERZ accession prefix.
+    :raises ValueError: If a CDS is in more than one category GFF.
     """
     if ena_mapping:
         ena_assembly_accession = next(iter(ena_mapping.values())).split(".")[0]
@@ -686,7 +677,7 @@ def write_gff(
                 "gbkey=mobile_element",
                 f"mobile_element_type={mobile_element_type}",
                 checkv_dict.get(
-                    get_checkv_key(contig_name),
+                    remove_circular_suffix(contig_name),
                     "checkv_provirus=NA;checkv_quality=NA;checkv_miuvig_quality=NA"
                     ";checkv_kmer_freq=NA;checkv_viral_genes=NA",
                 ),
@@ -718,46 +709,31 @@ def write_gff(
         if contig_len is None:
             continue
 
-        # A contig can be in two categories (e.g. LC for the whole contig and PP for a
-        # region of it), so the same CDS can come from two category GFFs. Write it once,
-        # with the quality of the category that has the highest priority. The ViPhOG
-        # annotation is chosen separately: a category can have no annotation for the CDS
-        # (e.g. no annotation table), so an empty annotation must not replace a hit.
-        unique_cds: dict[tuple, dict] = {}
+        # Each contig is in one category only (see parse_viral_pred.py), so each CDS
+        # comes from one category GFF. A CDS in two category GFFs (for example, from
+        # the results of an older VIRify version) would give duplicate GFF rows.
+        written_cds: set[tuple] = set()
         for cds_data in contig_cds:
-            cds_id, start, end, direction, annotation, original_contig, _ = cds_data
-            quality = virify_quality.get(original_contig, "unknown")
-            cds_key = (cds_id, start, end, direction)
-            kept = unique_cds.get(cds_key)
-            if kept is None:
-                unique_cds[cds_key] = {
-                    "quality": quality,
-                    "annotation": annotation,
-                    "cds_data": cds_data,
-                }
-            elif get_quality_rank(quality) < get_quality_rank(kept["quality"]):
-                kept["quality"] = quality
-                kept["cds_data"] = cds_data
-                if annotation:
-                    kept["annotation"] = annotation
-            elif not kept["annotation"]:
-                kept["annotation"] = annotation
-
-        for kept in unique_cds.values():
-            quality = kept["quality"]
-            viphog_annotation = kept["annotation"]
             (
                 cds_id,
                 start,
                 end,
                 direction,
-                _annotation,
-                _original_contig,
+                viphog_annotation,
+                original_contig,
                 genecaller,
-            ) = kept["cds_data"]
+            ) = cds_data
+            cds_key = (cds_id, start, end, direction)
+            if cds_key in written_cds:
+                raise ValueError(
+                    f"CDS {cds_id} of contig {contig_name} is in more than one category "
+                    "GFF. Each contig must be in one category only."
+                )
+            written_cds.add(cds_key)
             cds_id = cds_id.replace("prophage-0:", "prophage-1:")
             end = min(end, contig_len)
 
+            quality = virify_quality.get(original_contig, "unknown")
             cds_attributes = [
                 f"ID={cds_id}",
                 f"virify_quality={quality}",

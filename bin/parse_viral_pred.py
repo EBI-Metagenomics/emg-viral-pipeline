@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import argparse
 import csv
 import os
@@ -11,6 +13,7 @@ from pathlib import Path
 
 import pandas as pd
 from Bio import SeqIO
+from Bio.SeqRecord import SeqRecord
 
 MAX_N_PCT = 50
 
@@ -72,20 +75,18 @@ class Record:
     def get_prophage_metadata_from_contig(contig_header):
         """Obtain the prophage start and end positions.
         As well as if the prophage is circular.
-        This method returns None,None,None if the header doesn't
+        This method returns None,None,circular if the header doesn't
         have a prophage.
+
+        Only the VIRify suffixes count (|prophage-<start>:<end> and |phage-circular),
+        so a contig name that contains "prophage" or "phage-circular" is not metadata.
         :param contig_header: A fasta header
         :return: (int) start, (int) end, (bool) circular
         """
-        circular = "phage-circular" in contig_header
-        if "prophage" in contig_header:
-            prange = contig_header.split("prophage-")[1]
-            match = re.search(
-                r"(?P<start>\d+):(?P<end>\d+)", prange, re.IGNORECASE
-            ).groupdict()
-            start = int(match["start"])
-            end = int(match["end"])
-            return start, end, circular
+        circular = "|phage-circular" in contig_header
+        match = re.search(r"\|prophage-(\d+):(\d+)", contig_header)
+        if match:
+            return int(match[1]), int(match[2]), circular
         return None, None, circular
 
     @staticmethod
@@ -355,174 +356,141 @@ def sanity_check_sequence(sequence):
     return n_pct < MAX_N_PCT
 
 
+def get_whole_contig_record(
+    virsorter_record: Record, contig_record: SeqRecord, virsorter: str
+) -> SeqRecord:
+    """Return the sequence to write for a VirSorter call of the whole contig (HC or LC).
+
+    VirSorter2 trims "full" sequences, so a VirSorter2 call gets the assembly contig
+    (see Record.with_contig_sequence). A VirSorter v1 call keeps the VirSorter sequence.
+
+    :param virsorter_record: The VirSorter record of the contig.
+    :param contig_record: The contig from the assembly.
+    :param virsorter: "virsorter" (v1) or "virsorter2".
+    :return: The sequence, with the VIRify suffixes in its ID.
+    """
+    if virsorter == "virsorter2":
+        virsorter_record = virsorter_record.with_contig_sequence(contig_record)
+    return virsorter_record.get_seq_record()
+
+
+def format_dropped_calls(dropped_calls: list[tuple]) -> str | None:
+    """Format the calls of a contig that VIRify did not keep, for the detection calls table.
+
+    :param dropped_calls: Calls as (quality, rule, [(sequence, VirSorter record), ...]).
+    :return: The calls as <quality>:<rule>, separated by ",". A prophage call has its range
+             (PP:<rule>:<start>-<end>), one entry per prophage. None if there is no call.
+    """
+    entries = []
+    for quality, rule, sequences in dropped_calls:
+        if quality == "PP":
+            for _, record in sequences:
+                start, end = (int(pos) for pos in record.prange)
+                entries.append(f"PP:{rule}:{start}-{end}")
+        else:
+            entries.append(f"{quality}:{rule}")
+    return ",".join(entries) or None
+
+
 def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff, outdir):
     """Parse VirSorter, VirFinder and PPR-Meta outputs and merge the results.
     High confidence viral contigs:
-    -  VirSorter reported as categories 1 and 2
+    - VirSorter reported as categories 1 and 2
+      (VirSorter2: a full sequence with score >= vs_cutoff)
+    Putative prophages are prophages:
+    - VirSorter reported as categories 4 and 5
+      (which correspond to VirSorter confidence categories 1 and 2;
+      VirSorter2: a partial sequence)
     Low confidence viral contigs:
     - VirFinder reported p < 0.05 and score >= 0.9
     - OR ( VirFinder reported p < 0.05 and 0.7 <= score < 0.9 AND
       ( VirSorter reported as category 3 or PPR-Meta reported as phage)) )
-    Putative prophages are prophages:
-    - VirSorter reported as categories 4 and 5
-      (which correspond to VirSorter confidence categories 1 and 2).
+
+    Each contig is in one category only. When a contig matches more than one rule, the
+    first rule in the order above is kept (HC, then PP, then LC). The other rules that
+    matched are written to the dropped_calls column of the detection calls table, so
+    that users can check the decision.
+
     Returns high conf., low and prophage SeqRecords,
             virsorter high conf., low conf. and prophage Records, and
             the assignments (one dict per written sequence, with the rule that
             put it in its category) for the detection calls table
     """
-    hc_predictions_contigs = []
-    lc_predictions_contigs = []
-    prophage_predictions_contigs = []
-    # One entry per written sequence, for the detection calls table
-    assignments = []
-
-    pprmeta_lc = parse_pprmeta(pprmeta)
-    finder_lc, finder_lowestc = parse_virus_finder(finder)
-    sorter_hc, sorter_lc, sorter_prophages = (
+    pprmeta_phages = parse_pprmeta(pprmeta)
+    # VirFinder p < 0.05, and score >= 0.9 (high) or 0.7 <= score < 0.9 (low)
+    virfinder_high, virfinder_low = parse_virus_finder(finder)
+    virsorter_hc, virsorter_lc, virsorter_prophages = (
         parse_virus_sorter(sorter)
         if sorter is not None
         else parse_virus_sorter2(sorter2, vs_cutoff)
     )
-    vs = "virsorter" if sorter else "virsorter2"
+    virsorter = "virsorter" if sorter else "virsorter2"
 
-    def add(predictions, seq_record, contig, quality, rule, sorter_record=None):
-        """Write a sequence to a category and record why it is in that category."""
-        predictions.append(seq_record)
-        assignments.append(
-            {
-                "sequence_id": seq_record.id,
-                "contig": contig,
-                "virify_quality": quality,
-                "rule": rule,
-                "sorter_record": sorter_record,
-            }
-        )
-
+    sequences_by_quality = {"HC": [], "LC": [], "PP": []}
+    # One entry per written sequence, for the detection calls table
+    assignments = []
     skipped_contigs = []
+    contigs_with_dropped_calls = 0
     with open(assembly) as handle:
-        for seq_record in SeqIO.parse(handle, "fasta"):
-            contig = seq_record.id
-            if not sanity_check_sequence(seq_record.seq):
+        for contig_record in SeqIO.parse(handle, "fasta"):
+            contig = contig_record.id
+            if not sanity_check_sequence(contig_record.seq):
                 skipped_contigs.append(contig)
                 continue
-            # VirSorter record of the whole contig, if any (for the calls table)
-            sorter_contig = sorter_hc.get(contig) or sorter_lc.get(contig)
-            if sorter:
-                # VirSorter1
-                if contig in sorter_hc:
-                    add(
-                        hc_predictions_contigs,
-                        sorter_hc.get(contig).get_seq_record(),
-                        contig,
-                        "HC",
-                        f"{vs}_high_confidence",
-                        sorter_hc.get(contig),
-                    )
-                    # Pro
-                elif contig in sorter_prophages:
-                    # a contig may have several prophages
-                    # for prophages write the record as it holds the
-                    # sliced fasta
-                    for record in sorter_prophages.get(contig):
-                        add(
-                            prophage_predictions_contigs,
-                            record.get_seq_record(),
-                            contig,
-                            "PP",
-                            f"{vs}_prophage",
-                            record,
-                        )
-                    # LC
-                elif contig in finder_lc:
-                    add(
-                        lc_predictions_contigs,
-                        seq_record,
-                        contig,
-                        "LC",
-                        "virfinder_score_0.9",
-                        sorter_contig,
-                    )
-                elif contig in sorter_lc and contig in finder_lowestc:
-                    add(
-                        lc_predictions_contigs,
-                        sorter_lc.get(contig).get_seq_record(),
-                        contig,
-                        "LC",
-                        f"{vs}_low_confidence_and_virfinder_score_0.7",
-                        sorter_lc.get(contig),
-                    )
-                elif contig in pprmeta_lc and contig in finder_lowestc:
-                    add(
-                        lc_predictions_contigs,
-                        seq_record,
-                        contig,
-                        "LC",
-                        "pprmeta_phage_and_virfinder_score_0.7",
-                        sorter_contig,
-                    )
-            else:
-                # VirSorter2
-                # Pro
-                if contig in sorter_prophages:
-                    # a contig may have several prophages
-                    # for prophages write the record as it holds the
-                    # sliced fasta
-                    for record in sorter_prophages.get(contig):
-                        add(
-                            prophage_predictions_contigs,
-                            record.get_seq_record(),
-                            contig,
-                            "PP",
-                            f"{vs}_prophage",
-                            record,
-                        )
-                # HC and LC: write the assembly contig, not the trimmed VirSorter2
-                # sequence (see Record.with_contig_sequence). Prophages above keep the
-                # VirSorter2 sequence, as the header has the prophage coordinates.
-                # HC
-                if contig in sorter_hc:
-                    add(
-                        hc_predictions_contigs,
-                        sorter_hc.get(contig)
-                        .with_contig_sequence(seq_record)
-                        .get_seq_record(),
-                        contig,
-                        "HC",
-                        f"{vs}_high_confidence",
-                        sorter_hc.get(contig),
-                    )
-                # LC
-                elif contig in finder_lc:
-                    add(
-                        lc_predictions_contigs,
-                        seq_record,
-                        contig,
-                        "LC",
-                        "virfinder_score_0.9",
-                        sorter_contig,
-                    )
-                elif contig in sorter_lc and contig in finder_lowestc:
-                    add(
-                        lc_predictions_contigs,
-                        sorter_lc.get(contig)
-                        .with_contig_sequence(seq_record)
-                        .get_seq_record(),
-                        contig,
-                        "LC",
-                        f"{vs}_low_confidence_and_virfinder_score_0.7",
-                        sorter_lc.get(contig),
-                    )
-                elif contig in pprmeta_lc and contig in finder_lowestc:
-                    add(
-                        lc_predictions_contigs,
-                        seq_record,
-                        contig,
-                        "LC",
-                        "pprmeta_phage_and_virfinder_score_0.7",
-                        sorter_contig,
-                    )
+            hc_record = virsorter_hc.get(contig)
+            lc_record = virsorter_lc.get(contig)
+            prophage_records = virsorter_prophages.get(contig, [])
 
+            # The rules that the contig matches, in priority order. Each call is
+            # (quality, rule, [(sequence to write, VirSorter record), ...]). The VirSorter
+            # record gives the VirSorter values of the detection calls table.
+            calls = []
+            if hc_record:
+                sequence = get_whole_contig_record(hc_record, contig_record, virsorter)
+                calls.append(
+                    ("HC", f"{virsorter}_high_confidence", [(sequence, hc_record)])
+                )
+            if prophage_records:
+                # Prophages keep the VirSorter sequence: its ID has the prophage range
+                sequences = [
+                    (record.get_seq_record(), record) for record in prophage_records
+                ]
+                calls.append(("PP", f"{virsorter}_prophage", sequences))
+            if contig in virfinder_high:
+                calls.append(
+                    ("LC", "virfinder_score_0.9", [(contig_record, lc_record)])
+                )
+            if lc_record and contig in virfinder_low:
+                sequence = get_whole_contig_record(lc_record, contig_record, virsorter)
+                rule = f"{virsorter}_low_confidence_and_virfinder_score_0.7"
+                calls.append(("LC", rule, [(sequence, lc_record)]))
+            if contig in pprmeta_phages and contig in virfinder_low:
+                rule = "pprmeta_phage_and_virfinder_score_0.7"
+                calls.append(("LC", rule, [(contig_record, lc_record)]))
+            if not calls:
+                continue
+
+            (quality, rule, sequences), *dropped = calls
+            dropped_calls = format_dropped_calls(dropped)
+            if dropped_calls:
+                contigs_with_dropped_calls += 1
+            for sequence, virsorter_record in sequences:
+                sequences_by_quality[quality].append(sequence)
+                assignments.append(
+                    {
+                        "sequence_id": sequence.id,
+                        "contig": contig,
+                        "virify_quality": quality,
+                        "rule": rule,
+                        "dropped_calls": dropped_calls,
+                        "virsorter_record": virsorter_record,
+                    }
+                )
+
+    print(
+        f"Number of contigs that matched more than one rule {contigs_with_dropped_calls}"
+        " (see the dropped_calls column of detection_calls.tsv)"
+    )
     print(f"Number of skipped contigs {len(skipped_contigs)}")
     # report skipped contigs
     if skipped_contigs:
@@ -532,12 +500,12 @@ def merge_annotations(pprmeta, finder, sorter, sorter2, assembly, vs_cutoff, out
             print("Skipped contigs were written to {}")
 
     return (
-        hc_predictions_contigs,
-        lc_predictions_contigs,
-        prophage_predictions_contigs,
-        sorter_hc,
-        sorter_lc,
-        sorter_prophages,
+        sequences_by_quality["HC"],
+        sequences_by_quality["LC"],
+        sequences_by_quality["PP"],
+        virsorter_hc,
+        virsorter_lc,
+        virsorter_prophages,
         assignments,
     )
 
@@ -549,6 +517,7 @@ CALL_COLUMNS = [
     "contig",
     "virify_quality",
     "rule",
+    "dropped_calls",
     "prophage_start",
     "prophage_end",
     "circular",
@@ -581,18 +550,19 @@ def get_call_rows(assignments):
     """
     rows = []
     for assignment in assignments:
-        sorter_record = assignment["sorter_record"]
-        evidence = sorter_record.evidence if sorter_record else {}
+        virsorter_record = assignment["virsorter_record"]
+        evidence = virsorter_record.evidence if virsorter_record else {}
 
         prophage_start = prophage_end = None
-        if assignment["virify_quality"] == "PP" and sorter_record.prange:
-            prophage_start, prophage_end = (int(pos) for pos in sorter_record.prange)
+        if assignment["virify_quality"] == "PP" and virsorter_record.prange:
+            prophage_start, prophage_end = (int(pos) for pos in virsorter_record.prange)
 
         values = {
             "sequence_id": assignment["sequence_id"],
             "contig": assignment["contig"],
             "virify_quality": assignment["virify_quality"],
             "rule": assignment["rule"],
+            "dropped_calls": assignment["dropped_calls"],
             "prophage_start": prophage_start,
             "prophage_end": prophage_end,
             "circular": is_circular(assignment["sequence_id"], assignment["contig"]),
@@ -610,8 +580,9 @@ def get_call_rows(assignments):
 def write_detection_calls(assignments, output_file):
     """Write the detection calls table: one row per HC, LC or PP sequence.
 
-    Each row has the rule that put the sequence in its category and the VirSorter (or
-    VirSorter2) values. Only this script knows the rule, so it writes this table.
+    Each row has the rule that put the sequence in its category, the other rules that
+    matched the contig (dropped_calls) and the VirSorter (or VirSorter2) values. Only this
+    script knows the rule, so it writes this table.
 
     :param assignments: Assignments from merge_annotations.
     :param output_file: Path of the TSV file to write.

@@ -1,4 +1,4 @@
-sequence_id	contig	virify_quality	rule	prophage_start	prophage_end	circular	virsorter_category	virsorter2_max_score	virsorter2_max_score_group	virsorter2_shape
-seq3	seq3	HC	virsorter2_high_confidence	NA	NA	False	NA	0.967	dsDNAphage	linear
-seq7|phage-circular	seq7	HC	virsorter2_high_confidence	NA	NA	True	NA	1.0	dsDNAphage	circular
-seq8	seq8	LC	virsorter2_low_confidence_and_virfinder_score_0.7	NA	NA	False	NA	0.887	dsDNAphage	linear
+sequence_id	contig	virify_quality	rule	dropped_calls	prophage_start	prophage_end	circular	virsorter_category	virsorter2_max_score	virsorter2_max_score_group	virsorter2_shape
+seq3	seq3	HC	virsorter2_high_confidence	NA	NA	NA	False	NA	0.967	dsDNAphage	linear
+seq7|phage-circular	seq7	HC	virsorter2_high_confidence	NA	NA	NA	True	NA	1.0	dsDNAphage	circular
+seq8	seq8	LC	virsorter2_low_confidence_and_virfinder_score_0.7	NA	NA	NA	False	NA	0.887	dsDNAphage	linear

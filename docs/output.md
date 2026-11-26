@@ -4,7 +4,7 @@
 
 - [Results](#results)
 - [GFF output files](#gff-output-files)
-  - [A contig in more than one category](#a-contig-in-more-than-one-category)
+  - [When the prediction tools disagree](#when-the-prediction-tools-disagree)
 
 ## Results
 
@@ -12,8 +12,8 @@
 
 The outputs generated from viral prediction tools, ViPhOG annotation, taxonomy assign, and CheckV quality are integrated and summarized in a validated gff file.
 By default pipeline produces the `08-final` folder, and also the CheckV results and the VirSorter2
-tables. Users need these files to compare the calls of a contig that is in more than one category
-(see [A contig in more than one category](#a-contig-in-more-than-one-category)).
+tables. Those files can be used to check why a contig is in its category
+(see [When the prediction tools disagree](#when-the-prediction-tools-disagree)).
 <details>
 <summary>Structure example per-assembly</summary>
 
@@ -220,7 +220,9 @@ attributes only when a ViPhOG match has been found.
 | `taxonomy` | lineage or `unclassified` | ViPhOG-based lineage. The ranks are separated by `%3B` (an encoded `;`). |
 
 Each `viral_sequence` and `prophage` feature gets the CheckV values of its own sequence. When
-CheckV has no result for a sequence, the `checkv_*` attributes are `NA`.
+CheckV has no row for a sequence, the `checkv_*` attributes are `NA`. When CheckV cannot estimate
+the quality of a sequence, it still writes a row: the GFF then has `checkv_quality=Not-determined`
+and the other values of that row.
 
 The GFF has only a part of the CheckV results. For example, it does not have the completeness
 method, such as a direct terminal repeat (DTR). The full CheckV results are in
@@ -235,29 +237,55 @@ method, such as a direct terminal repeat (DTR). The full CheckV results are in
 | `viphog` | Best ViPhOG match. Only when a match has been found. |
 | `viphog_taxonomy` | Taxonomic label of the best ViPhOG match. Only when a match has been found. |
 
-#### A contig in more than one category
+#### When the prediction tools disagree
 
-With VirSorter2, one contig can be in two categories at the same time. A region of the contig can
-be a putative prophage (`PP`), and the whole contig can also be high confidence (`HC`) or low
-confidence (`LC`). Then the GFF has two features on the same contig:
+The prediction tools can disagree about a contig. For example, VirSorter2 finds a prophage in a
+part of the contig, and VirFinder calls the whole contig viral. Then the contig can be `PP` or
+`LC`.
 
-    contig1  VIRify  viral_sequence  1     6015  .  .  .  ID=contig1|viral_sequence;virify_quality=LC;...
-    contig1  VIRify  prophage        3367  4857  .  .  .  ID=contig1|prophage-3367:4857;virify_quality=PP;...
+VIRify puts each contig in one category only. When more than one category is possible, VIRify uses
+this priority (with VirSorter2, and with VirSorter v1 under `--use_virsorter_v1`):
 
-VIRify keeps both calls and does not choose between them. The two calls can disagree. For
-example, CheckV can call the whole contig a complete circular genome, while VirSorter2 calls a
-region of the same contig a prophage. You must decide which call to use.
+| Priority | Category | Call |
+|---|---|---|
+| 1 | `HC` | VirSorter calls the whole contig viral, with high confidence. |
+| 2 | `PP` | VirSorter calls a part of the contig a prophage. |
+| 3 | `LC` | One of these: a VirFinder score of 0.9 or more; a VirFinder score from 0.7 to 0.9 and a low-confidence VirSorter call; a VirFinder score from 0.7 to 0.9 and a PPR-Meta `phage` call. |
 
-Each CDS is written only once. A CDS inside the prophage region gets `virify_quality=PP`. The
-other CDS of the contig get the category of the whole contig (`HC` or `LC`).
+Only VirSorter can give `HC` or `PP`. VirFinder and PPR-Meta can give only `LC`. PPR-Meta never
+calls a contig alone: its `phage` call counts only with a VirFinder score from 0.7 to 0.9. Each
+VirFinder score must also have a p-value below 0.05. The rule names are in the
+[Detection evidence table](#detection-evidence-table) section.
 
-To compare the two calls, start with the detection evidence table (see
-[Detection evidence table](#detection-evidence-table)). It has the values of all the prediction
-tools and the CheckV quality, with the GFF names. The other files have more details:
+`PP` has priority over `LC` because the two tools give different types of results. VirSorter
+examines the genes of the contig and finds the start and the end of the viral region. VirFinder
+gives one score for the whole contig, so a prophage inside the contig can be sufficient for a
+high score.
+
+The rules that matched but were not kept are in the `dropped_calls` column of the detection
+evidence table (see [Detection evidence table](#detection-evidence-table)). For example:
+
+| contig | virify_quality | rule | dropped_calls | virfinder_score | pprmeta_possible_source |
+|---|---|---|---|---|---|
+| contig1 | PP | virsorter2_prophage | LC:virfinder_score_0.9 | 0.983 | phage |
+
+Here VIRify reports only the prophage region (`PP`), and the GFF has only the `prophage` feature.
+
+VIRify selects the category before it splits the proteins into the categories. A CDS stays in a
+prophage only when more than 90% of the CDS, or more than 90% of the prophage, is inside the
+other. Thus a prophage region can keep no CDS, for example when the CDS in the proteins GFF do not
+agree with the genes that VirSorter used. Then the contig is not in the final GFF, also when a
+dropped call (for example `LC`) would have kept it. VIRify does not use the dropped call instead.
+The contig is in `08-final/prophages_no_proteins.tsv` (with `--publish_all`, see
+[Contigs without proteins](#contigs-without-proteins)), and its row stays in the detection evidence
+table.
+
+If you think that the dropped call is correct, for example for a complete phage genome, use the
+values in the table and the files below to check it:
 
 | Evidence | File | Published | Contig names |
 |---|---|---|---|
-| Rule, tool values and CheckV quality for each HC, LC and PP sequence | `08-final/contigs/ACCESSION_detection_evidence.tsv` | Always | GFF names with a suffix (see below) |
+| Rule, dropped calls, tool values and CheckV quality for each HC, LC and PP sequence | `08-final/contigs/ACCESSION_detection_evidence.tsv` | Always | GFF names with a suffix (see below) |
 | CheckV results for each category, including the completeness method | `07-checkv/<category>_quality_summary.tsv` | Always | GFF names with a suffix (see below) |
 | VirSorter2 scores, groups (for example `ssDNA`) and boundaries | `01-predictions/virsorter2/final-viral-{score,boundary}.tsv` | Always | Temporary names |
 | VIRify parse of the VirSorter2 results (category, circular, prophage range) | `01-predictions/virsorter2/virsorter_metadata.tsv` | Always | Temporary names |
@@ -276,7 +304,7 @@ The prediction tools run on temporary contig names. To link them to the names in
 ##### Detection evidence table
 
 `08-final/contigs/ACCESSION_detection_evidence.tsv` has one row for each HC, LC and PP sequence.
-A contig in more than one category has one row for each category. Contigs that VIRify did not
+A contig with more than one prophage has one row for each prophage. Contigs that VIRify did not
 call are not in the table. If VIRify calls no sequence, the pipeline does not write the table.
 `NA` means that the tool has no value for the sequence.
 
@@ -286,6 +314,7 @@ call are not in the table. If VIRify calls no sequence, the pipeline does not wr
 | `contig` | Contig name, as in GFF column 1. |
 | `virify_quality` | `HC`, `LC` or `PP`. |
 | `rule` | The rule that put the sequence in its category (see below). |
+| `dropped_calls` | The other rules that matched the contig but were not kept, as `<category>:<rule>`, separated by `,`. A prophage call has its range: `PP:<rule>:<start>-<end>`. `NA` when only one rule matched. See [When the prediction tools disagree](#when-the-prediction-tools-disagree). |
 | `prophage_start`, `prophage_end` | Prophage coordinates from VirSorter. Only for `PP`. |
 | `circular` | `True` when VIRify calls the sequence circular (`phage_circular` in the GFF). |
 | `virfinder_score`, `virfinder_pvalue` | VirFinder `score` and `pvalue` of the contig. |
@@ -298,8 +327,9 @@ call are not in the table. If VIRify calls no sequence, the pipeline does not wr
 For `PP` rows, the VirSorter columns have the values of the prophage call. For `HC` and `LC` rows,
 they have the values of the whole-contig call, if VirSorter made one.
 
-The `rule` column has one of these values. `virsorter` is `virsorter2`, unless the pipeline ran
-with `--use_virsorter_v1`.
+The `rule` and `dropped_calls` columns have these values. `virsorter` is `virsorter2`, unless the
+pipeline ran with `--use_virsorter_v1`. When more than one rule matches, VIRify keeps the first
+rule of this table.
 
 | Rule | Category | Meaning |
 |---|---|---|

@@ -41,6 +41,8 @@ class TestWriteGFF(unittest.TestCase):
             "NODE_2_length_876543_cov_16.902388|phage-circular",
             "NODE_3_length_637829_cov_11.42453|prophage-100:500",
             "NODE_3_length_637829_cov_11.42453|prophage-21696:135184",
+            "sample_prophage_contig",
+            "sample-phage-circular-01",
         ]
         expected = [
             "pos.phage.0_3",
@@ -49,6 +51,8 @@ class TestWriteGFF(unittest.TestCase):
             "NODE_2_length_876543_cov_16.902388",
             "NODE_3_length_637829_cov_11.42453",
             "NODE_3_length_637829_cov_11.42453",
+            "sample_prophage_contig",
+            "sample-phage-circular-01",
         ]
         inputs_cleaned = map(Record.remove_prophage_from_contig, inputs)
         self.assertListEqual(list(inputs_cleaned), expected)
@@ -61,6 +65,10 @@ class TestWriteGFF(unittest.TestCase):
             "NODE_2_length_876543_cov_16.902388|phage-circular",
             "NODE_3_length_637829_cov_11.42453|prophage-100:500",
             "NODE_3_length_637829_cov_11.42453|prophage-21696:135184",
+            # A contig name with "prophage" or "phage-circular" is not metadata
+            "sample_prophage_contig",
+            "sample-phage-circular-01",
+            "sample_prophage_contig|prophage-10:500|phage-circular",
         ]
         expected = [
             (21696, 135184, False),
@@ -69,6 +77,9 @@ class TestWriteGFF(unittest.TestCase):
             (None, None, True),
             (100, 500, False),
             (21696, 135184, False),
+            (None, None, False),
+            (None, None, False),
+            (10, 500, True),
         ]
         extraction = map(Record.get_prophage_metadata_from_contig, inputs)
         self.assertListEqual(list(extraction), expected)
@@ -586,46 +597,55 @@ def _cds_row(seqid, start, end, strand, cds_id):
     return [seqid, "Pyrodigal", "CDS", start, end, ".", strand, "0", f"ID={cds_id}"]
 
 
-@pytest.mark.parametrize("pp_checkv_row", [True, False])
-@pytest.mark.parametrize("prophage_first", [True, False])
-def test_contig_in_low_confidence_and_prophage(tmp_path, prophage_first, pp_checkv_row):
-    """A contig that is LC as a whole and PP for a region of it.
+def _checkv_row(contig_id, length, quality, miuvig_quality, kmer_freq):
+    """Return the fields of a CheckV quality_summary.tsv row (see CHECKV_COLUMNS)."""
+    return [
+        contig_id,
+        length,
+        "No",
+        "NA",
+        "2",
+        "1",
+        "0",
+        quality,
+        miuvig_quality,
+        "20.0",
+        "AAI-based",
+        "0.0",
+        kmer_freq,
+        "",
+    ]
 
-    Each GFF feature must get the CheckV values of its own row, whatever the order of
-    the CheckV files. The CDS inside the prophage region must be written only once.
-    The category labels come from the category GFFs, so they do not change when CheckV
-    has no row for the prophage region (the prophage then gets NA CheckV values).
+
+@pytest.mark.parametrize("second_checkv_row", [True, False])
+def test_contig_with_two_prophages(tmp_path, second_checkv_row):
+    """A contig with two prophage regions gives two prophage features.
+
+    Each prophage feature must get the CheckV values of its own row. A prophage without
+    a CheckV row gets NA CheckV values, and still gets its PP label from the category
+    GFF. Each CDS is written once, with the PP label.
     """
-    prophage_id = "contig1|prophage-3367:4857"
+    first_id = "contig1|prophage-100:2000"
+    second_id = "contig1|prophage-3367:4857"
 
     assembly = tmp_path / "assembly.fasta"
     assembly.write_text(">contig1\n" + "A" * 6015 + "\n")
 
-    lc_gff = _write_gff(
-        tmp_path / "low_confidence_viral_contigs.gff",
-        [
-            _cds_row("contig1", "100", "1000", "+", "contig1_1"),
-            _cds_row("contig1", "3400", "4000", "+", "contig1_2"),
-            _cds_row("contig1", "4100", "4800", "-", "contig1_3"),
-        ],
-    )
     pp_gff = _write_gff(
         tmp_path / "prophages.gff",
         [
-            _cds_row(prophage_id, "3400", "4000", "+", "contig1_2"),
-            _cds_row(prophage_id, "4100", "4800", "-", "contig1_3"),
+            _cds_row(first_id, "150", "1000", "+", "contig1_1"),
+            _cds_row(second_id, "3400", "4000", "+", "contig1_2"),
+            _cds_row(second_id, "4100", "4800", "-", "contig1_3"),
         ],
     )
-
-    # contig1_2 has a ViPhOG hit only in the LC table. PP has priority for the
-    # quality label, but its empty annotation must not replace the LC hit.
-    lc_annotation = _write_tsv(
-        tmp_path / "low_confidence_viral_contigs_annotation.tsv",
+    pp_annotation = _write_tsv(
+        tmp_path / "prophages_annotation.tsv",
         [
             ANNOTATION_COLUMNS,
-            ["contig1", "contig1_1", "100", "1000", "1", "No hit", "NA", ""],
+            [first_id, "contig1_1", "150", "1000", "1", "No hit", "NA", ""],
             [
-                "contig1",
+                second_id,
                 "contig1_2",
                 "3400",
                 "4000",
@@ -636,76 +656,24 @@ def test_contig_in_low_confidence_and_prophage(tmp_path, prophage_first, pp_chec
             ],
         ],
     )
-    pp_annotation = _write_tsv(
-        tmp_path / "prophages_annotation.tsv",
-        [
-            ANNOTATION_COLUMNS,
-            [prophage_id, "contig1_2", "3400", "4000", "1", "No hit", "NA", ""],
-        ],
-    )
-
-    lc_checkv = _write_tsv(
-        tmp_path / "low_confidence_viral_contigs_quality_summary.tsv",
-        [
-            CHECKV_COLUMNS,
-            [
-                "contig1",
-                "6015",
-                "No",
-                "NA",
-                "8",
-                "5",
-                "0",
-                "Complete",
-                "High-quality",
-                "100.0",
-                "DTR",
-                "0.0",
-                "1.03",
-                "",
-            ],
-        ],
-    )
-    pp_checkv_rows = [CHECKV_COLUMNS]
-    if pp_checkv_row:
-        pp_checkv_rows.append(
-            [
-                prophage_id,
-                "1491",
-                "No",
-                "NA",
-                "2",
-                "1",
-                "0",
-                "Low-quality",
-                "Genome-fragment",
-                "20.0",
-                "AAI-based",
-                "0.0",
-                "1.0",
-                "",
-            ]
+    checkv_rows = [
+        CHECKV_COLUMNS,
+        _checkv_row(first_id, "1901", "Medium-quality", "Genome-fragment", "1.03"),
+    ]
+    if second_checkv_row:
+        checkv_rows.append(
+            _checkv_row(second_id, "1491", "Low-quality", "Genome-fragment", "1.0")
         )
-    pp_checkv = _write_tsv(tmp_path / "prophages_quality_summary.tsv", pp_checkv_rows)
-
+    pp_checkv = _write_tsv(tmp_path / "prophages_quality_summary.tsv", checkv_rows)
     taxonomy = _write_tsv(tmp_path / "taxonomy.tsv", [TAXONOMY_COLUMNS])
-
-    checkv_files = [lc_checkv, pp_checkv]
-    gff_files = [lc_gff, pp_gff]
-    if prophage_first:
-        checkv_files.reverse()
-        gff_files.reverse()
 
     contigs_len_dict = get_contig_lengths_per_contig(str(assembly))
     viral_sequences, cds_annotations, virify_quality = _build_gff_inputs(
-        [lc_annotation, pp_annotation],
-        checkv_files,
-        gff_files,
-        contigs_len_dict,
+        [pp_annotation], [pp_checkv], [pp_gff], contigs_len_dict
     )
     sequence_regions = get_sequence_regions(viral_sequences, contigs_len_dict)
     checkv_dict = get_checkv_results(
-        checkv_files, viral_sequences.keys(), contigs_len_dict
+        [pp_checkv], viral_sequences.keys(), contigs_len_dict
     )
     taxonomy_dict = get_taxonomy_results([taxonomy])
 
@@ -726,36 +694,69 @@ def test_contig_in_low_confidence_and_prophage(tmp_path, prophage_first, pp_chec
         if line and not line.startswith("#")
     ]
 
-    mobile_elements = {cols[2]: cols[8] for cols in data_lines if cols[2] != "CDS"}
-    assert "virify_quality=LC" in mobile_elements["viral_sequence"]
-    assert "checkv_quality=Complete" in mobile_elements["viral_sequence"]
-    assert "checkv_kmer_freq=1.03" in mobile_elements["viral_sequence"]
-    assert "virify_quality=PP" in mobile_elements["prophage"]
-    if pp_checkv_row:
-        assert "checkv_quality=Low-quality" in mobile_elements["prophage"]
-        assert "checkv_miuvig_quality=Genome-fragment" in mobile_elements["prophage"]
-        assert "checkv_kmer_freq=1.0;" in mobile_elements["prophage"]
+    prophages = {
+        cols[8].split(";")[0]: cols[8] for cols in data_lines if cols[2] == "prophage"
+    }
+    assert set(prophages) == {f"ID={first_id}", f"ID={second_id}"}
+    assert "virify_quality=PP" in prophages[f"ID={first_id}"]
+    assert "checkv_quality=Medium-quality" in prophages[f"ID={first_id}"]
+    assert "checkv_kmer_freq=1.03" in prophages[f"ID={first_id}"]
+    assert "virify_quality=PP" in prophages[f"ID={second_id}"]
+    if second_checkv_row:
+        assert "checkv_quality=Low-quality" in prophages[f"ID={second_id}"]
+        assert "checkv_kmer_freq=1.0;" in prophages[f"ID={second_id}"]
     else:
-        assert "checkv_quality=NA" in mobile_elements["prophage"]
+        assert "checkv_quality=NA" in prophages[f"ID={second_id}"]
 
-    cds_ids = [cols[8].split(";")[0] for cols in data_lines if cols[2] == "CDS"]
-    assert sorted(cds_ids) == ["ID=contig1_1", "ID=contig1_2", "ID=contig1_3"]
-    # The CDS inside the prophage region get PP, the CDS outside it keep LC.
-    cds_quality = {
-        cols[8].split(";")[0]: cols[8].split(";")[1]
-        for cols in data_lines
-        if cols[2] == "CDS"
-    }
-    assert cds_quality == {
-        "ID=contig1_1": "virify_quality=LC",
-        "ID=contig1_2": "virify_quality=PP",
-        "ID=contig1_3": "virify_quality=PP",
-    }
     cds_attrs = {
         cols[8].split(";")[0]: cols[8] for cols in data_lines if cols[2] == "CDS"
     }
+    assert sorted(cds_attrs) == ["ID=contig1_1", "ID=contig1_2", "ID=contig1_3"]
+    assert all("virify_quality=PP" in attrs for attrs in cds_attrs.values())
     assert "viphog=ViPhOG42" in cds_attrs["ID=contig1_2"]
     assert "viphog_taxonomy=Caudoviricetes" in cds_attrs["ID=contig1_2"]
+
+
+def test_cds_in_two_categories_raises(tmp_path):
+    """A CDS in two category GFFs (for example, from an older VIRify version) stops
+    the writer, as it would give duplicate GFF rows."""
+    prophage_id = "contig1|prophage-3367:4857"
+    assembly = tmp_path / "assembly.fasta"
+    assembly.write_text(">contig1\n" + "A" * 6015 + "\n")
+    lc_gff = _write_gff(
+        tmp_path / "low_confidence_viral_contigs.gff",
+        [_cds_row("contig1", "3400", "4000", "+", "contig1_2")],
+    )
+    pp_gff = _write_gff(
+        tmp_path / "prophages.gff",
+        [_cds_row(prophage_id, "3400", "4000", "+", "contig1_2")],
+    )
+    lc_checkv = _write_tsv(
+        tmp_path / "low_confidence_viral_contigs_quality_summary.tsv",
+        [
+            CHECKV_COLUMNS,
+            _checkv_row("contig1", "6015", "Complete", "High-quality", "1.0"),
+        ],
+    )
+
+    contigs_len_dict = get_contig_lengths_per_contig(str(assembly))
+    viral_sequences, cds_annotations, virify_quality = _build_gff_inputs(
+        [], [lc_checkv], [lc_gff, pp_gff], contigs_len_dict
+    )
+
+    with pytest.raises(
+        ValueError, match="contig1_2 of contig contig1 is in more than one"
+    ):
+        write_gff(
+            get_checkv_results([lc_checkv], viral_sequences.keys(), contigs_len_dict),
+            {},
+            str(tmp_path / "sample"),
+            viral_sequences,
+            cds_annotations,
+            virify_quality,
+            contigs_len_dict,
+            get_sequence_regions(viral_sequences, contigs_len_dict),
+        )
 
 
 def test_checkv_match_only_for_contig_missing_from_assembly_raises(tmp_path):

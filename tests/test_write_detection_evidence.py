@@ -14,6 +14,7 @@ CALL_COLUMNS = [
     "contig",
     "virify_quality",
     "rule",
+    "dropped_calls",
     "prophage_start",
     "prophage_end",
     "circular",
@@ -101,22 +102,22 @@ def _tool_tables(tmp_path, contig, virfinder_rows=None):
     return virfinder, pprmeta
 
 
-def test_evidence_for_contig_in_low_confidence_and_prophage(tmp_path):
-    """A contig that is LC (VirFinder) and has a VirSorter2 prophage call.
+def test_evidence_for_prophage_with_dropped_low_confidence_call(tmp_path):
+    """A contig with a VirSorter2 prophage call, and an LC call (VirFinder) not kept.
 
-    The table has one row per category, with the short names of the map file, the
-    values of each tool and the CheckV row of each sequence.
+    The row has the short names of the map file, the dropped LC call, the values of
+    each tool and the CheckV row of the prophage.
     """
     calls = _write_rows(
         tmp_path / "detection_calls.tsv",
         [
             CALL_COLUMNS,
-            _call("seq1", "seq1", "LC", "virfinder_score_0.9", circular="False"),
             _call(
                 "seq1|prophage-3367:4857",
                 "seq1",
                 "PP",
                 "virsorter2_prophage",
+                dropped_calls="LC:virfinder_score_0.9",
                 prophage_start="3367",
                 prophage_end="4857",
                 circular="False",
@@ -135,10 +136,6 @@ def test_evidence_for_contig_in_low_confidence_and_prophage(tmp_path):
             ["ERZ1_99", "seq99", "ERZ1_99"],
         ],
     )
-    checkv_lc = _write_rows(
-        tmp_path / "low_confidence_viral_contigs_quality_summary.tsv",
-        [CHECKV_COLUMNS, _checkv("ERZ1_1674", "Complete", "100.0")],
-    )
     checkv_pp = _write_rows(
         tmp_path / "prophages_quality_summary.tsv",
         [CHECKV_COLUMNS, _checkv("ERZ1_1674|prophage-3367:4857", "Low-quality", "")],
@@ -146,46 +143,27 @@ def test_evidence_for_contig_in_low_confidence_and_prophage(tmp_path):
     output = tmp_path / "evidence.tsv"
 
     row_count = write_detection_evidence(
-        calls, virfinder, pprmeta, [checkv_lc, checkv_pp], map_file, output
+        calls, virfinder, pprmeta, [checkv_pp], map_file, output
     )
 
     rows = _read_evidence(output)
-    assert row_count == 2
+    assert row_count == 1
     assert list(rows[0].keys()) == EVIDENCE_COLUMNS
-    tool_values = {
-        "contig": "ERZ1_1674",
-        "virfinder_score": "0.98",
-        "virfinder_pvalue": "0.001",
-        "pprmeta_possible_source": "phage",
-        "pprmeta_phage_score": "0.91",
-        "virsorter_category": "NA",
-        "completeness_method": "AAI-based (high-confidence)",
-        "contamination": "0.0",
-    }
     assert rows == [
         {
-            **tool_values,
-            "sequence_id": "ERZ1_1674",
-            "virify_quality": "LC",
-            "rule": "virfinder_score_0.9",
-            "prophage_start": "NA",
-            "prophage_end": "NA",
-            "circular": "False",
-            "virsorter2_max_score": "NA",
-            "virsorter2_max_score_group": "NA",
-            "virsorter2_shape": "NA",
-            "checkv_quality": "Complete",
-            "miuvig_quality": "Complete",
-            "completeness": "100.0",
-        },
-        {
-            **tool_values,
             "sequence_id": "ERZ1_1674|prophage-3367:4857",
+            "contig": "ERZ1_1674",
             "virify_quality": "PP",
             "rule": "virsorter2_prophage",
+            "dropped_calls": "LC:virfinder_score_0.9",
             "prophage_start": "3367",
             "prophage_end": "4857",
             "circular": "False",
+            "virfinder_score": "0.98",
+            "virfinder_pvalue": "0.001",
+            "pprmeta_possible_source": "phage",
+            "pprmeta_phage_score": "0.91",
+            "virsorter_category": "NA",
             "virsorter2_max_score": "0.95",
             "virsorter2_max_score_group": "ssDNA",
             "virsorter2_shape": "circular",
@@ -193,6 +171,8 @@ def test_evidence_for_contig_in_low_confidence_and_prophage(tmp_path):
             "miuvig_quality": "Low-quality",
             # CheckV writes an empty completeness when it cannot estimate it
             "completeness": "NA",
+            "completeness_method": "AAI-based (high-confidence)",
+            "contamination": "0.0",
         },
     ]
 

@@ -15,9 +15,9 @@
 """Write the detection evidence table: one row per HC, LC or PP sequence.
 
 The table joins the detection calls of parse_viral_pred.py (the rule and the VirSorter
-values) with the VirFinder, PPR-Meta and CheckV values of each sequence. It uses the
-short contig names of the GFF, so users can compare the calls of a contig that is in
-more than one category.
+values, and the calls that were not kept) with the VirFinder, PPR-Meta and CheckV values
+of each sequence. It uses the short contig names of the GFF, so users can check why a
+contig is in its category.
 """
 
 from __future__ import annotations
@@ -42,6 +42,7 @@ EVIDENCE_COLUMNS = [
     "contig",
     "virify_quality",
     "rule",
+    "dropped_calls",
     "prophage_start",
     "prophage_end",
     "circular",
@@ -58,12 +59,13 @@ EVIDENCE_COLUMNS = [
 MISSING_VALUE = "NA"
 
 
-def get_checkv_key(sequence_id: str) -> str:
-    """Return the key that links a sequence to its CheckV row.
+def remove_circular_suffix(sequence_id: str) -> str:
+    """Return the CheckV key of a sequence: the ID without |phage-circular.
 
-    The key is the sequence ID without the phage-circular suffix, with the prophage
-    coordinates. write_viral_gff.py uses the same key, so a CheckV contig_id with or
-    without the suffix matches.
+    The CheckV contig_id does not always have the |phage-circular suffix. The suffix is
+    a flag, not a part of the name: a contig is circular or not, so its removal never
+    makes two sequences have the same key. The |prophage-START:END suffix stays, as
+    each prophage of a contig has its own CheckV row. write_viral_gff.py uses the same key.
 
     :param sequence_id: Sequence ID or CheckV contig_id.
     :return: The CheckV key.
@@ -113,13 +115,15 @@ def read_checkv_rows(
 
     :param checkv_files: Paths to the CheckV quality_summary.tsv files.
     :param sequence_ids: Sequence IDs to keep (short names, with the suffixes).
-    :return: Dictionary mapping the CheckV key (see get_checkv_key) to its CheckV row.
+    :return: Dictionary mapping the CheckV key (see remove_circular_suffix) to its CheckV row.
     :raises ValueError: If more than one row has the same CheckV key.
     """
-    keys = {get_checkv_key(sequence_id) for sequence_id in sequence_ids}
+    keys = {remove_circular_suffix(sequence_id) for sequence_id in sequence_ids}
     rows = {}
     for checkv_file in checkv_files:
-        file_rows = read_rows(checkv_file, "contig_id", "\t", keys, get_checkv_key)
+        file_rows = read_rows(
+            checkv_file, "contig_id", "\t", keys, remove_circular_suffix
+        )
         for key, row in file_rows.items():
             if key in rows:
                 raise ValueError(f"More than one CheckV row for {key}")
@@ -187,7 +191,7 @@ def get_evidence_rows(
         sequence_id = restore_sequence_id(call["sequence_id"], contig, contig_names)
         virfinder = virfinder_rows.get(contig, {})
         pprmeta = pprmeta_rows.get(contig, {})
-        checkv = checkv_rows.get(get_checkv_key(sequence_id), {})
+        checkv = checkv_rows.get(remove_circular_suffix(sequence_id), {})
         values = {
             **call,
             "sequence_id": sequence_id,
