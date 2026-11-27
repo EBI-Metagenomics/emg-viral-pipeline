@@ -11,8 +11,8 @@
 ![Sankey plot](../figures/2023-sankey-neto.png)
 
 The outputs generated from viral prediction tools, ViPhOG annotation, taxonomy assign, and CheckV quality are integrated and summarized in a validated gff file.
-By default pipeline produces the `08-final` folder, and also the CheckV results and the VirSorter2
-tables. Those files can be used to check why a contig is in its category
+By default pipeline produces the `08-final` folder, and also the CheckV results and the VirSorter2,
+VirFinder and PPR-Meta tables. Those files can be used to check why a contig is in its category
 (see [When the prediction tools disagree](#when-the-prediction-tools-disagree)).
 <details>
 <summary>Structure example per-assembly</summary>
@@ -20,6 +20,10 @@ tables. Those files can be used to check why a contig is in its category
     not_matched_proteins_report.tsv
 
     01-predictions
+        ├── pprmeta
+        │   └── ACCESSION_pprmeta.csv
+        ├── virfinder
+        │   └── ACCESSION_virfinder.tsv
         └── virsorter2 [not with --use_virsorter_v1, except virsorter_metadata.tsv]
             ├── final-viral-boundary.tsv
             ├── final-viral-score.tsv
@@ -78,9 +82,9 @@ To get the output of all the steps, use the `--publish_all` option in pipeline e
     ├── 01-predictions
     │   ├── ACCESSION_virus_predictions.stats
     │   ├── pprmeta
-    │   │   └── ACCESSION*pprmeta.csv
+    │   │   └── ACCESSION_pprmeta.csv
     │   ├── virfinder
-    │   │   └── ACCESSION*.txt
+    │   │   └── ACCESSION_virfinder.tsv
     │   └── virsorter2
     │       ├── final-viral-boundary.tsv
     │       ├── final-viral-combined.fa
@@ -290,12 +294,11 @@ values in the table and the files below to check it:
 | VirSorter2 scores, groups (for example `ssDNA`) and boundaries | `01-predictions/virsorter2/final-viral-{score,boundary}.tsv` | Always | Temporary names |
 | VIRify parse of the VirSorter2 results (category, circular, prophage range) | `01-predictions/virsorter2/virsorter_metadata.tsv` | Always | Temporary names |
 | VirSorter2 viral sequences | `01-predictions/virsorter2/final-viral-combined.fa` | With `--publish_all` | Temporary names |
-| VirFinder scores | `01-predictions/virfinder/` | With `--publish_all` | Temporary names |
-| PPR-Meta calls | `01-predictions/pprmeta/` | With `--publish_all` | Temporary names |
+| VirFinder scores | `01-predictions/virfinder/ACCESSION_virfinder.tsv` | Always | Temporary names |
+| PPR-Meta calls | `01-predictions/pprmeta/ACCESSION_pprmeta.csv` | Always | Temporary names |
 
-VirFinder and PPR-Meta score every contig of the assembly, and their results are written for each
-chunk of the assembly. For large assemblies these files can be large, so they are published only
-with `--publish_all`.
+VirFinder and PPR-Meta score every contig of the assembly, not only the viral contigs. The pipeline
+runs them on chunks of the assembly and publishes one table for each tool, merged from the chunks.
 
 The prediction tools run on temporary contig names. To link them to the names in the GFF, use
 `08-final/contigs/ACCESSION_map.tsv`. Its columns are `original` (the full FASTA header),
