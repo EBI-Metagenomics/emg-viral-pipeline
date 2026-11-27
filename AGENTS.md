@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 VIRify is a Nextflow DSL2 pipeline for detection, annotation, and taxonomic classification of viral
 contigs in metagenomic/metatranscriptomic assemblies. Part of EBI's MGnify services. Current version
-is 4.0.0; requires Nextflow >= 25.10.0.
+is 4.1.0; requires Nextflow >= 25.10.0.
 
 Taxonomic classification relies on ViPhOG HMM profiles (22,013 orthologous viral protein domains).
 
@@ -119,7 +119,8 @@ rewritten back to the faa header's protein name.
   `process_high`, `process_long`, `process_high_memory`, `error_ignore`, `error_retry`.
 - `configs/modules.config` — per-process `publishDir` and `ext` args. Most publish blocks are gated
   on `enabled: params.publish_all`. By default only `08-final`, `07-checkv` (CheckV summaries) and the
-  small VirSorter2 tables in `01-predictions/virsorter2` are published.
+  detection tables in `01-predictions` (VirSorter2, and the merged VirFinder and PPR-Meta tables)
+  are published.
 - Containers are declared **in each module's `main.nf`** (quay.io / seqera wave), not in
   modules.config. Dockerfiles for the custom images live in `containers/`.
 - `nextflow_schema.json` + `assets/schema_input.json` validate params and the samplesheet.
@@ -133,7 +134,8 @@ Columns: `id`, `assembly` (required), `proteins_gff`, `proteins_faa`. The latter
 
 Results are per-sample: `${output}/${meta.id}/<numbered dir>/`. Default published output is
 `08-final/` (annotation, contigs, gff, krona, sankey), `07-checkv/` (CheckV summaries) and the
-VirSorter2 score/boundary tables plus `virsorter_metadata.tsv` in `01-predictions/virsorter2/`;
+VirSorter2 score/boundary tables plus `virsorter_metadata.tsv` in `01-predictions/virsorter2/`, and
+the merged `<id>_virfinder.tsv` / `<id>_pprmeta.csv` in `01-predictions/{virfinder,pprmeta}/`;
 `--publish_all` additionally emits the rest of `01-predictions`, `02-protein-prediction`, `03-hmmer`,
 `04-blast`, `05-plots`, `06-taxonomy`. Directory names come from the `*dir` params in `nextflow.config`.
 

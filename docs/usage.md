@@ -90,7 +90,7 @@ Run annotation for a small assembly file (10 contigs, 0.78 Mbp) on your local Li
 
 * `--hmmextend` - run additional HMM databases (pVOGs, RVDB, VOGDB, VPF) for more annotation hits.
 * `--blastextend` - run the additional BLAST-based comparison against IMG/VR (slow).
-* `--publish_all` - publish the expanded, per-step output folder structure (see [Output](output.md)). Without it, the pipeline publishes `08-final`, `07-checkv` and the VirSorter2 tables in `01-predictions/virsorter2`.
+* `--publish_all` - publish the expanded, per-step output folder structure (see [Output](output.md)). Without it, the pipeline publishes `08-final`, `07-checkv` and the VirSorter2, VirFinder and PPR-Meta tables in `01-predictions`.
 * `--output <dir>` - change the name/location of the results folder (default: `results`).
 
 ## Profiles
@@ -102,7 +102,7 @@ The engine `conda` is not working at the moment until there is a conda recipe fo
 
 ### Example of execution command
 ```bash
-nextflow run EBI-Metagenomics/emg-viral-pipeline -r v4.0.1 \
+nextflow run EBI-Metagenomics/emg-viral-pipeline -r v4.1.0 \
     --samplesheet samplesheet.csv \
     --cores 4 \
     -profile local,docker \

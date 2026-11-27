@@ -5,9 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.0.1] - [2026-11-20]
+## [4.1.0] - [2026-11-27]
 
 ### Fixed
+- Each contig is now in one category only. With VirSorter2, a contig could be a prophage (`PP`) and
+  also a high or low confidence contig (`HC` or `LC`), and the GFF had features for both. The
+  priority is now `HC` > `PP` > `LC`, the same as with VirSorter v1. Known limit: when a prophage
+  keeps no CDS, the contig is not in the GFF, also when a dropped `LC` call would have kept it.
+- GFF: CheckV rows are now linked by the full sequence ID, with the prophage suffix. Before, the
+  `LC` and `PP` rows of a contig used the same key, and the file order decided which CheckV values
+  each feature got.
+- GFF: each CDS is written once. A CDS inside a prophage region gets `PP`.
+- GFF: the `virify_quality` label now comes from the category file name. Before, a sequence with no
+  CheckV row got `unknown`.
 - High and low confidence viral contigs from VirSorter2 now hold the full assembly contig. Before,
   `*_original.fasta` had the VirSorter2-trimmed sequence under the full contig name, so the FASTA
   did not agree with the proteins, the annotation and the GFF region. CheckV now runs on the same
@@ -30,6 +40,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   produces no final GFF.
 - nf-test coverage for `SPLIT_PROTEINS` and the new `FILTER_NO_PROTEINS` module, and unit tests for the
   `--output-gff` output, which was previously untested.
+- `08-final/<id>_detection_evidence.tsv`, always published: one row per `HC`, `LC` and `PP`
+  sequence, with the rule that set its category, the calls that VIRify did not keep
+  (`dropped_calls`), and the VirFinder, PPR-Meta and CheckV values.
+- Docs: the GFF attributes, and how VIRify selects one category when the prediction tools disagree.
+
+### Changed
+- The CheckV summaries (`07-checkv`) and the detection tool results in `01-predictions` are now
+  always published, not only with `--publish_all`: the VirSorter2 score, boundary and metadata
+  tables, `virfinder/<id>_virfinder.tsv` and `pprmeta/<id>_pprmeta.csv`.
+- VirFinder and PPR-Meta results are now published as one table per sample, merged from the
+  assembly chunks. The per-chunk files are no longer published.
 
 ## [4.0.0] - [2026-08-08]
 
