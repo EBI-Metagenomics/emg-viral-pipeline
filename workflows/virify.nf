@@ -5,6 +5,7 @@ include { samplesheetToList                 } from 'plugin/nf-schema'
 /**************************
 * MODULES
 **************************/
+include { DETECTION_EVIDENCE                } from '../modules/local/detection_evidence'
 include { FILTER_NO_PROTEINS                } from '../modules/local/filter_no_proteins'
 include { RESTORE as RESTORE_CATEGORY_FASTA } from '../modules/local/restore'
 include { RESTORE as RESTORE_FILTERED_FASTA } from '../modules/local/restore'
@@ -209,6 +210,20 @@ workflow VIRIFY {
         DOWNLOAD_DATABASES.out.checkv_downloaded_db,
         factor_file,
         mashmap_ref_ch,
+    )
+
+    // ----------- detection evidence: one row per HC/LC/PP sequence
+    // A sample whose categories all lost their proteins has no CheckV results. It still
+    // gets the table, with NA in the CheckV columns.
+    DETECTION_EVIDENCE(
+        DETECT.out.calls
+            .join(DETECT.out.virfinder)
+            .join(DETECT.out.pprmeta)
+            .join(mapfile)
+            .join(ANNOTATE.out.checkv, remainder: true)
+            .map { meta, calls, virfinder, pprmeta, map_tsv, checkv ->
+                [meta, calls, virfinder, pprmeta, map_tsv, checkv ?: []]
+            }
     )
 
     // ----------- PLOT

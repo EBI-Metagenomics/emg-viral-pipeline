@@ -1,10 +1,14 @@
+import csv
 import hashlib
 import os
 import shutil
 import tempfile
 import unittest
 
+import pytest
+
 from bin.parse_viral_pred import (
+    CALL_COLUMNS,
     _parse_virsorter_metadata,
     main,
     merge_annotations,
@@ -322,6 +326,310 @@ class ParseViralPredictions(unittest.TestCase):
             )
 
         shutil.rmtree(test_dir)
+
+
+def _write_rows(path, rows, delimiter="\t"):
+    """Write rows (lists of fields) to a delimited file and return the path."""
+    path.write_text("".join(delimiter.join(row) + "\n" for row in rows))
+    return str(path)
+
+
+def _read_calls(path):
+    """Read the detection calls table as a list of dicts."""
+    with open(path) as handle:
+        return list(csv.DictReader(handle, delimiter="\t"))
+
+
+def _write_virsorter2(tmp_path, sequences):
+    """Write the three VirSorter2 result files and return their paths.
+
+    :param sequences: One dict per VirSorter2 sequence, with the keys seqname_new (for
+                      example seq1||full or seq1||0_partial), max_score, group, start,
+                      end and shape.
+    """
+    score = _write_rows(
+        tmp_path / "final-viral-score.tsv",
+        [["seqname", "max_score", "max_score_group", "length"]]
+        + [
+            [seq["seqname_new"], seq["max_score"], seq["group"], "1491"]
+            for seq in sequences
+        ],
+    )
+    boundary_columns = [
+        "seqname",
+        "trim_orf_index_start",
+        "trim_orf_index_end",
+        "trim_bp_start",
+        "trim_bp_end",
+        "trim_pr",
+        "partial",
+        "pr_full",
+        "hallmark_cnt",
+        "group",
+        "shape",
+        "seqname_new",
+    ]
+    boundary = _write_rows(
+        tmp_path / "final-viral-boundary.tsv",
+        [boundary_columns]
+        + [
+            [
+                seq["seqname_new"].split("||")[0],
+                "2",
+                "3",
+                seq["start"],
+                seq["end"],
+                seq["max_score"],
+                "1" if "partial" in seq["seqname_new"] else "0",
+                "0.4",
+                "1",
+                seq["group"],
+                seq["shape"],
+                seq["seqname_new"],
+            ]
+            for seq in sequences
+        ],
+    )
+    fasta = tmp_path / "final-viral-combined.fa"
+    fasta.write_text(
+        "".join(f">{seq['seqname_new']}\n" + "ACGT" * 372 + "\n" for seq in sequences)
+    )
+    return [score, boundary, str(fasta)]
+
+
+def _write_tool_results(tmp_path, virfinder_score, pprmeta_source, length=6015):
+    """Write the assembly (one contig, seq1) and its VirFinder and PPR-Meta results.
+
+    :return: Paths of the assembly, the VirFinder table and the PPR-Meta table.
+    """
+    assembly = tmp_path / "assembly.fasta"
+    assembly.write_text(">seq1\n" + "ACGT" * (length // 4) + "ACG"[: length % 4] + "\n")
+    virfinder = _write_rows(
+        tmp_path / "virfinder.tsv",
+        [
+            ["name", "length", "score", "pvalue"],
+            ["seq1", str(length), virfinder_score, "0.001"],
+        ],
+    )
+    pprmeta = _write_rows(
+        tmp_path / "pprmeta.csv",
+        [
+            ["Header", "Length", "phage_score", "Possible_source"],
+            ["seq1", str(length), "0.91", pprmeta_source],
+        ],
+        delimiter=",",
+    )
+    return str(assembly), virfinder, pprmeta
+
+
+def test_detection_calls_for_contig_in_low_confidence_and_prophage(tmp_path):
+    """A contig that is LC (VirFinder) and has a VirSorter2 prophage call.
+
+    The prophage call is kept, as PP comes before LC. The contig is not written to the
+    LC category, and the LC call is in dropped_calls.
+    """
+    assembly, virfinder, pprmeta = _write_tool_results(tmp_path, "0.98", "phage")
+    vs2_files = _write_virsorter2(
+        tmp_path,
+        [
+            {
+                "seqname_new": "seq1||0_partial",
+                "max_score": "0.95",
+                "group": "ssDNA",
+                "start": "3367",
+                "end": "4857",
+                "shape": "circular",
+            }
+        ],
+    )
+    outdir = tmp_path / "out"
+    main(pprmeta, virfinder, None, vs2_files, assembly, outdir, 0.9)
+
+    assert (outdir / "prophages.fna").exists()
+    assert not (outdir / "low_confidence_viral_contigs.fna").exists()
+
+    rows = _read_calls(outdir / "detection_calls.tsv")
+    assert list(rows[0].keys()) == CALL_COLUMNS
+    # VIRify sets the prophage to linear, but the table keeps the VirSorter2 shape
+    # of the contig (circular), so users can see the conflict.
+    assert rows == [
+        {
+            "sequence_id": "seq1|prophage-3367:4857",
+            "contig": "seq1",
+            "virify_quality": "PP",
+            "rule": "virsorter2_prophage",
+            "dropped_calls": "LC:virfinder_score_0.9",
+            "prophage_start": "3367",
+            "prophage_end": "4857",
+            "circular": "False",
+            "virsorter_category": "NA",
+            "virsorter2_max_score": "0.95",
+            "virsorter2_max_score_group": "ssDNA",
+            "virsorter2_shape": "circular",
+        }
+    ]
+
+
+def test_detection_calls_for_two_low_confidence_rules(tmp_path):
+    """A contig that matches two LC rules is written once, with the first rule.
+
+    The second LC rule is in dropped_calls.
+    """
+    assembly, virfinder, pprmeta = _write_tool_results(tmp_path, "0.75", "phage")
+    vs2_files = _write_virsorter2(
+        tmp_path,
+        [
+            {
+                "seqname_new": "seq1||full",
+                "max_score": "0.6",
+                "group": "dsDNAphage",
+                "start": "1",
+                "end": "6015",
+                "shape": "linear",
+            }
+        ],
+    )
+    outdir = tmp_path / "out"
+    main(pprmeta, virfinder, None, vs2_files, assembly, outdir, 0.9)
+
+    rows = _read_calls(outdir / "detection_calls.tsv")
+    assert [
+        (row["sequence_id"], row["virify_quality"], row["rule"], row["dropped_calls"])
+        for row in rows
+    ] == [
+        (
+            "seq1",
+            "LC",
+            "virsorter2_low_confidence_and_virfinder_score_0.7",
+            "LC:pprmeta_phage_and_virfinder_score_0.7",
+        )
+    ]
+
+
+def test_virsorter_high_confidence_before_prophages(tmp_path):
+    """VirSorter v1: a contig in HC and with two prophage calls is written as HC only.
+
+    Both prophage calls are in dropped_calls, with their ranges.
+    """
+    assembly, virfinder, pprmeta = _write_tool_results(tmp_path, "0.98", "phage")
+    sequence = "ACGT" * 250 + "\n"
+    hc_fasta = tmp_path / "VIRSorter_cat-1.fasta"
+    hc_fasta.write_text(">VIRSorter_seq1-cat_1\n" + sequence)
+    pp_fasta = tmp_path / "VIRSorter_prophages_cat-4.fasta"
+    pp_fasta.write_text(
+        ">VIRSorter_seq1_gene_1_gene_5-100-900-cat_4\n"
+        + sequence
+        + ">VIRSorter_seq1_gene_8_gene_12-2000-3000-cat_4\n"
+        + sequence
+    )
+    outdir = tmp_path / "out"
+    main(
+        pprmeta, virfinder, [str(hc_fasta), str(pp_fasta)], None, assembly, outdir, 0.9
+    )
+
+    assert (outdir / "high_confidence_viral_contigs.fna").exists()
+    assert not (outdir / "prophages.fna").exists()
+    assert not (outdir / "low_confidence_viral_contigs.fna").exists()
+
+    rows = _read_calls(outdir / "detection_calls.tsv")
+    assert [
+        (row["virify_quality"], row["rule"], row["dropped_calls"]) for row in rows
+    ] == [
+        (
+            "HC",
+            "virsorter_high_confidence",
+            (
+                "PP:virsorter_prophage:100-900,PP:virsorter_prophage:2000-3000,"
+                "LC:virfinder_score_0.9"
+            ),
+        )
+    ]
+
+
+def _virfinder_only_run(tmp_path, name, virfinder_score):
+    """Run main with VirFinder and PPR-Meta only, for one 2 kb contig."""
+    assembly = tmp_path / "assembly.fasta"
+    assembly.write_text(f">{name}\n" + "ACGT" * 500 + "\n")
+    virfinder = _write_rows(
+        tmp_path / "virfinder.tsv",
+        [
+            ["name", "length", "score", "pvalue"],
+            [name, "2000", virfinder_score, "0.01"],
+        ],
+    )
+    pprmeta = _write_rows(
+        tmp_path / "pprmeta.csv",
+        [
+            ["Header", "Length", "phage_score", "Possible_source"],
+            [name, "2000", "0.1", "chromosome"],
+        ],
+        delimiter=",",
+    )
+    outdir = tmp_path / "out"
+    try:
+        main(pprmeta, virfinder, [], None, str(assembly), outdir, 0.9)
+    except SystemExit:
+        pass  # main exits when no sequence is viral
+    return _read_calls(outdir / "detection_calls.tsv")
+
+
+def test_detection_calls_written_when_no_sequence_is_viral(tmp_path):
+    """The table has only the header when no sequence is viral."""
+    assert _virfinder_only_run(tmp_path, "seq1", "0.1") == []
+
+
+@pytest.mark.parametrize("name", ["sample-phage-circular-01", "seq1|phage-circular"])
+def test_detection_calls_circular_only_from_suffix(tmp_path, name):
+    """A contig name that contains "phage-circular" does not make the call circular.
+
+    Only a suffix that VIRify adds after the contig name counts.
+    """
+    rows = _virfinder_only_run(tmp_path, name, "0.95")
+    assert [(row["sequence_id"], row["circular"]) for row in rows] == [(name, "False")]
+
+
+def test_detection_calls_without_dropped_calls(tmp_path):
+    """A contig that matches one rule only has NA in dropped_calls."""
+    rows = _virfinder_only_run(tmp_path, "seq1", "0.95")
+    assert [(row["rule"], row["dropped_calls"]) for row in rows] == [
+        ("virfinder_score_0.9", "NA")
+    ]
+
+
+def test_detection_calls_without_score_group(tmp_path):
+    """A VirSorter2 score table without max_score_group gives the same categories.
+
+    The calls table has NA for the group. Fixture: tests/parse/ (the PARSE nf-test).
+    """
+    fixtures = os.path.join(os.path.dirname(__file__), "parse")
+    score_file = tmp_path / "final-viral-score.tsv"
+    with open(os.path.join(fixtures, "virsorter2", "final-viral-score.tsv")) as handle:
+        rows = [line.rstrip("\n").split("\t") for line in handle]
+    group = rows[0].index("max_score_group")
+    _write_rows(score_file, [row[:group] + row[group + 1 :] for row in rows])
+    outdir = tmp_path / "out"
+
+    main(
+        os.path.join(fixtures, "pprmeta.csv"),
+        os.path.join(fixtures, "virfinder.tsv"),
+        None,
+        [
+            os.path.join(fixtures, "virsorter2", "final-viral-boundary.tsv"),
+            os.path.join(fixtures, "virsorter2", "final-viral-combined.fa"),
+            str(score_file),
+        ],
+        os.path.join(fixtures, "assembly.fasta"),
+        outdir,
+        0.9,
+    )
+
+    calls = _read_calls(outdir / "detection_calls.tsv")
+    assert [(row["sequence_id"], row["virify_quality"]) for row in calls] == [
+        ("seq3", "HC"),
+        ("seq7|phage-circular", "HC"),
+        ("seq8", "LC"),
+    ]
+    assert {row["virsorter2_max_score_group"] for row in calls} == {"NA"}
 
 
 if __name__ == "__main__":

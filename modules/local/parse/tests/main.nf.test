@@ -61,6 +61,16 @@ nextflow_process {
                         }
                     }
                 },
+                // The detection calls table has one row per sequence, with the rule
+                {
+                    def calls = path(process.out[0][0][4]).readLines()*.split('\t')
+                    assert calls[0].take(4) == [ 'sequence_id', 'contig', 'virify_quality', 'rule' ]
+                    assert calls.drop(1).collect { row -> row.take(4) } == [
+                        [ 'seq3', 'seq3', 'HC', 'virsorter2_high_confidence' ],
+                        [ 'seq7|phage-circular', 'seq7', 'HC', 'virsorter2_high_confidence' ],
+                        [ 'seq8', 'seq8', 'LC', 'virsorter2_low_confidence_and_virfinder_score_0.7' ],
+                    ]
+                },
                 { assert snapshot(process.out).match() },
             )
         }

@@ -1,0 +1,53 @@
+{
+    "One row per called sequence, with the short names and the CheckV values": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test_detection_evidence.tsv:md5,88496274a3b82e3a8dc610963348d6da"
+                ]
+            ]
+        ],
+        "timestamp": "2026-11-26T13:54:21.013222",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "A sample without CheckV results gets NA in the CheckV columns": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test_detection_evidence.tsv:md5,e584170ad764e5823946ea289037b022"
+                ]
+            ]
+        ],
+        "timestamp": "2026-11-26T13:54:24.661143",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "Stub": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test_detection_evidence.tsv:md5,d41d8cd98f00b204e9800998ecf8427e"
+                ]
+            ]
+        ],
+        "timestamp": "2026-11-24T12:00:00.000000",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

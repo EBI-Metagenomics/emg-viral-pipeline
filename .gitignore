@@ -47,3 +47,4 @@ __pycache__/
 .DS_Store
 .claude/
 .serena/
+.mi/

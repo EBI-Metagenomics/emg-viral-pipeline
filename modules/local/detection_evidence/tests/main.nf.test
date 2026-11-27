@@ -1,0 +1,111 @@
+nextflow_process {
+
+    name "Test joining the detection calls with the tool and CheckV values"
+    script "../main.nf"
+    process "DETECTION_EVIDENCE"
+
+    tag "subworkflows"
+    tag "detection_evidence"
+
+    // Fixture (tests/detection_evidence/):
+    // - detection_calls.tsv: the PARSE output of the PARSE nf-test (temporary names seq3, seq7, seq8)
+    // - map.tsv: temporary to short names (contig_3, contig_7, contig_8)
+    // - CheckV quality summaries for HC (contig_3, contig_7|phage-circular) and LC (contig_8)
+    // The VirFinder and PPR-Meta tables are the PARSE fixture (tests/parse/).
+
+    test("One row per called sequence, with the short names and the CheckV values") {
+        when {
+            process {
+                """
+                input[0] = channel.of(
+                    [
+                        [ id:'test' ],
+                        file('${projectDir}/tests/detection_evidence/detection_calls.tsv', checkIfExists: true),
+                        file('${projectDir}/tests/parse/virfinder.tsv', checkIfExists: true),
+                        file('${projectDir}/tests/parse/pprmeta.csv', checkIfExists: true),
+                        file('${projectDir}/tests/detection_evidence/map.tsv', checkIfExists: true),
+                        [
+                            file('${projectDir}/tests/detection_evidence/high_confidence_viral_contigs_quality_summary.tsv', checkIfExists: true),
+                            file('${projectDir}/tests/detection_evidence/low_confidence_viral_contigs_quality_summary.tsv', checkIfExists: true),
+                        ],
+                    ]
+                )
+                """
+            }
+        }
+        then {
+            assert process.success
+
+            def rows = path(process.out.tsv[0][1]).readLines().collect { line -> line.split('\t', -1).toList() }
+            def header = rows[0]
+            def values = rows.drop(1).collect { row -> [ header, row ].transpose().collectEntries() }
+
+            assertAll(
+                { assert values*.sequence_id == [ 'contig_3', 'contig_7|phage-circular', 'contig_8' ] },
+                { assert values*.virify_quality == [ 'HC', 'HC', 'LC' ] },
+                { assert values*.virfinder_score == [ '0.210332560885484', '0.50220317970255', '0.8' ] },
+                // The circular contig matches its CheckV row (contig_id with |phage-circular)
+                { assert values*.checkv_quality == [ 'Medium-quality', 'Complete', 'Not-determined' ] },
+                // CheckV writes an empty completeness when it cannot estimate it
+                { assert values*.completeness == [ '62.5', '100.0', 'NA' ] },
+                { assert snapshot(process.out.tsv).match() },
+            )
+        }
+    }
+
+    test("A sample without CheckV results gets NA in the CheckV columns") {
+        when {
+            process {
+                """
+                input[0] = channel.of(
+                    [
+                        [ id:'test' ],
+                        file('${projectDir}/tests/detection_evidence/detection_calls.tsv', checkIfExists: true),
+                        file('${projectDir}/tests/parse/virfinder.tsv', checkIfExists: true),
+                        file('${projectDir}/tests/parse/pprmeta.csv', checkIfExists: true),
+                        file('${projectDir}/tests/detection_evidence/map.tsv', checkIfExists: true),
+                        [],
+                    ]
+                )
+                """
+            }
+        }
+        then {
+            assert process.success
+
+            def rows = path(process.out.tsv[0][1]).readLines().collect { line -> line.split('\t', -1).toList() }
+            def checkv = rows[0].indexOf('checkv_quality')
+
+            assertAll(
+                { assert rows.drop(1)*.getAt(checkv) == [ 'NA', 'NA', 'NA' ] },
+                { assert snapshot(process.out.tsv).match() },
+            )
+        }
+    }
+
+    test("Stub") {
+        options "-stub"
+        when {
+            process {
+                """
+                input[0] = channel.of(
+                    [
+                        [ id:'test' ],
+                        file('${projectDir}/tests/detection_evidence/detection_calls.tsv', checkIfExists: true),
+                        file('${projectDir}/tests/parse/virfinder.tsv', checkIfExists: true),
+                        file('${projectDir}/tests/parse/pprmeta.csv', checkIfExists: true),
+                        file('${projectDir}/tests/detection_evidence/map.tsv', checkIfExists: true),
+                        [],
+                    ]
+                )
+                """
+            }
+        }
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out.tsv).match() },
+            )
+        }
+    }
+}

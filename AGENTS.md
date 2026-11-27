@@ -118,7 +118,8 @@ rewritten back to the faa header's protein name.
 - `configs/base.config` — resource labels: `process_single`, `process_low`, `process_medium`,
   `process_high`, `process_long`, `process_high_memory`, `error_ignore`, `error_retry`.
 - `configs/modules.config` — per-process `publishDir` and `ext` args. Most publish blocks are gated
-  on `enabled: params.publish_all`; only `08-final` content is published by default.
+  on `enabled: params.publish_all`. By default only `08-final`, `07-checkv` (CheckV summaries) and the
+  small VirSorter2 tables in `01-predictions/virsorter2` are published.
 - Containers are declared **in each module's `main.nf`** (quay.io / seqera wave), not in
   modules.config. Dockerfiles for the custom images live in `containers/`.
 - `nextflow_schema.json` + `assets/schema_input.json` validate params and the samplesheet.
@@ -131,9 +132,10 @@ Columns: `id`, `assembly` (required), `proteins_gff`, `proteins_faa`. The latter
 ### Outputs
 
 Results are per-sample: `${output}/${meta.id}/<numbered dir>/`. Default published output is
-`08-final/` (annotation, contigs, gff, krona, sankey); `--publish_all` additionally emits
-`01-predictions`, `02-protein-prediction`, `03-hmmer`, `04-blast`, `05-plots`, `06-taxonomy`,
-`07-checkv`. Directory names come from the `*dir` params in `nextflow.config`.
+`08-final/` (annotation, contigs, gff, krona, sankey), `07-checkv/` (CheckV summaries) and the
+VirSorter2 score/boundary tables plus `virsorter_metadata.tsv` in `01-predictions/virsorter2/`;
+`--publish_all` additionally emits the rest of `01-predictions`, `02-protein-prediction`, `03-hmmer`,
+`04-blast`, `05-plots`, `06-taxonomy`. Directory names come from the `*dir` params in `nextflow.config`.
 
 ### Key flags
 
@@ -153,7 +155,13 @@ Removed in 4.0.0 — do not reintroduce or reference: `--fasta`, `--assemble`, `
 
 ## Important bin/ scripts
 
-- `parse_viral_pred.py` — merges VirSorter/VirFinder/PPR-Meta output into the three categories
+- `parse_viral_pred.py` — merges VirSorter/VirFinder/PPR-Meta output into the three categories; each
+  contig goes into **one** category only (priority HC > PP > LC, for VirSorter v1 and VirSorter2). Also
+  writes `detection_calls.tsv` (the rule, the `dropped_calls` that matched but were not kept, and the
+  VirSorter values per sequence, temporary names). It is the only place that knows the rules, so do
+  not re-derive them elsewhere
+- `write_detection_evidence.py` — `DETECTION_EVIDENCE` (after CheckV): joins `detection_calls.tsv` with
+  VirFinder, PPR-Meta, CheckV and the RENAME map into `08-final/<id>_detection_evidence.tsv`
 - `check_proteins_compatibility.py` — validates a user-supplied fasta/faa/gff triplet
 - `split_proteins_by_categories.py` — splits faa/gff per confidence category
 - `viral_contigs_annotation.py` — HMM hits → annotation tables
