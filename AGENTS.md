@@ -161,7 +161,7 @@ Removed in 4.0.0 — do not reintroduce or reference: `--fasta`, `--assemble`, `
   VirSorter values per sequence, temporary names). It is the only place that knows the rules, so do
   not re-derive them elsewhere
 - `write_detection_evidence.py` — `DETECTION_EVIDENCE` (after CheckV): joins `detection_calls.tsv` with
-  VirFinder, PPR-Meta, CheckV and the RENAME map into `08-final/contigs/<id>_detection_evidence.tsv`
+  VirFinder, PPR-Meta, CheckV and the RENAME map into `08-final/<id>_detection_evidence.tsv`
 - `check_proteins_compatibility.py` — validates a user-supplied fasta/faa/gff triplet
 - `split_proteins_by_categories.py` — splits faa/gff per confidence category
 - `viral_contigs_annotation.py` — HMM hits → annotation tables

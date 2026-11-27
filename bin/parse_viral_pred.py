@@ -17,6 +17,19 @@ from Bio.SeqRecord import SeqRecord
 
 MAX_N_PCT = 50
 
+# VirSorter (v1) category, the last character of the sequence name, to the VIRify category.
+# 1-3 are calls on the whole contig, 4-6 are prophages (VirSorter prophage categories 1-3).
+# 1 and 4: "pretty sure" (viral hallmark genes and enrichment in viral-like genes)
+# 2 and 5: "quite sure" (hallmark genes or enrichment in viral-like genes)
+# 3 and 6: "not so sure" (weaker viral signal). VIRify does not use category 6.
+VIRSORTER_V1_CATEGORIES = {
+    "1": "high_confidence",
+    "2": "high_confidence",
+    "3": "low_confidence",
+    "4": "prophage",
+    "5": "prophage",
+}
+
 
 class Record:
     """Simple class to aggregate the results"""
@@ -73,10 +86,13 @@ class Record:
 
     @staticmethod
     def get_prophage_metadata_from_contig(contig_header):
-        """Obtain the prophage start and end positions.
-        As well as if the prophage is circular.
-        This method returns None,None,circular if the header doesn't
-        have a prophage.
+        """Read the VIRify metadata suffixes of a contig header.
+
+        The metadata is the prophage start and end positions, and the circular flag of
+        the contig. VirSorter (v1) or VirSorter2 calls the contig circular, and
+        get_seq_record writes the flag as the |phage-circular suffix. This method only
+        reads it back; it does not decide if the contig is circular.
+        The start and end are None if the header has no prophage suffix.
 
         Only the VIRify suffixes count (|prophage-<start>:<end> and |phage-circular),
         so a contig name that contains "prophage" or "phage-circular" is not metadata.
@@ -179,6 +195,7 @@ def parse_virus_sorter(sorter_files):
     Low confidence are contigs in the category 3
     Putative prophages are in categories 4 and 5
     (which correspond to VirSorter confidence categories 1 and 2)
+    See VIRSORTER_V1_CATEGORIES for the meaning of each category.
     """
     high_confidence = {}
     low_confidence = {}
@@ -193,15 +210,16 @@ def parse_virus_sorter(sorter_files):
                 clean_name, circular, prange = _parse_virsorter_metadata(record.id)
                 record.id = clean_name
                 evidence = {"virsorter_category": category}
-                if category in ["1", "2"]:
+                virify_category = VIRSORTER_V1_CATEGORIES.get(category)
+                if virify_category == "high_confidence":
                     high_confidence[record.id] = Record(
                         record, "high_confidence", circular, evidence=evidence
                     )
-                elif category == "3":
+                elif virify_category == "low_confidence":
                     low_confidence[record.id] = Record(
                         record, "low_confidence", circular, evidence=evidence
                     )
-                elif category in ["4", "5"]:
+                elif virify_category == "prophage":
                     # add the prophage position within the contig
                     prophages.setdefault(record.id, []).append(
                         Record(record, "prophage", circular, prange, evidence)

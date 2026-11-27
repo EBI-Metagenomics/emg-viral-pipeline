@@ -45,13 +45,13 @@ tables. Those files can be used to check why a contig is in its category
         │           ├── plot_pdfs.tar.gz
         │           └── prophages_prot_ann_table_filtered.tsv
         ├── contigs
-        │   ├── ACCESSION_detection_evidence.tsv
         │   ├── ACCESSION_map.tsv
         │   ├── ACCESSION_renamed_original.fasta
         │   ├── high_confidence_viral_contigs_original.fasta
         │   ├── low_confidence_viral_contigs_original.fasta
         │   └── prophages_original.fasta
         ├── chromomap [optional step]
+        ├── ACCESSION_detection_evidence.tsv
         ├── gff
         │   ├── ACCESSION_virify.gff.gz
         │   ├── ACCESSION_virify.gff.gz.csi
@@ -144,13 +144,13 @@ To get the output of all the steps, use the `--publish_all` option in pipeline e
         │           ├── plot_pdfs.tar.gz
         │           └── prophages_prot_ann_table_filtered.tsv
         ├── contigs
-        │   ├── ACCESSION_detection_evidence.tsv
         │   ├── ACCESSION_map.tsv
         │   ├── ACCESSION_renamed_original.fasta
         │   ├── high_confidence_viral_contigs_original.fasta
         │   ├── low_confidence_viral_contigs_original.fasta
         │   └── prophages_original.fasta
         ├── chromomap [optional step]
+        ├── ACCESSION_detection_evidence.tsv
         ├── ACCESSION_no_proteins.tsv [only if contigs were dropped]
         ├── high_confidence_viral_contigs_no_proteins.tsv [only if contigs were dropped]
         ├── low_confidence_viral_contigs_no_proteins.tsv [only if contigs were dropped]
@@ -240,8 +240,8 @@ method, such as a direct terminal repeat (DTR). The full CheckV results are in
 #### When the prediction tools disagree
 
 The prediction tools can disagree about a contig. For example, VirSorter2 finds a prophage in a
-part of the contig, and VirFinder calls the whole contig viral. Then the contig can be `PP` or
-`LC`.
+part of the contig, and VirFinder calls the whole contig viral. Then the contig matches a `PP` rule
+and an `LC` rule.
 
 VIRify puts each contig in one category only. When more than one category is possible, VIRify uses
 this priority (with VirSorter2, and with VirSorter v1 under `--use_virsorter_v1`):
@@ -285,7 +285,7 @@ values in the table and the files below to check it:
 
 | Evidence | File | Published | Contig names |
 |---|---|---|---|
-| Rule, dropped calls, tool values and CheckV quality for each HC, LC and PP sequence | `08-final/contigs/ACCESSION_detection_evidence.tsv` | Always | GFF names with a suffix (see below) |
+| Rule, dropped calls, tool values and CheckV quality for each HC, LC and PP sequence | `08-final/ACCESSION_detection_evidence.tsv` | Always | GFF names with a suffix (see below) |
 | CheckV results for each category, including the completeness method | `07-checkv/<category>_quality_summary.tsv` | Always | GFF names with a suffix (see below) |
 | VirSorter2 scores, groups (for example `ssDNA`) and boundaries | `01-predictions/virsorter2/final-viral-{score,boundary}.tsv` | Always | Temporary names |
 | VIRify parse of the VirSorter2 results (category, circular, prophage range) | `01-predictions/virsorter2/virsorter_metadata.tsv` | Always | Temporary names |
@@ -303,7 +303,7 @@ The prediction tools run on temporary contig names. To link them to the names in
 
 ##### Detection evidence table
 
-`08-final/contigs/ACCESSION_detection_evidence.tsv` has one row for each HC, LC and PP sequence.
+`08-final/ACCESSION_detection_evidence.tsv` has one row for each HC, LC and PP sequence.
 A contig with more than one prophage has one row for each prophage. Contigs that VIRify did not
 call are not in the table. If VIRify calls no sequence, the pipeline does not write the table.
 `NA` means that the tool has no value for the sequence.
